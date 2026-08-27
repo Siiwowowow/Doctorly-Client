@@ -1,0 +1,67 @@
+"use client";
+
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { io, Socket } from "socket.io-client";
+import { useAuth } from "./AuthProvider";
+
+interface SocketContextType {
+  socket: Socket | null;
+  isConnected: boolean;
+}
+
+const SocketContext = createContext<SocketContextType>({
+  socket: null,
+  isConnected: false,
+});
+
+export const useSocket = () => useContext(SocketContext);
+
+export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const { user, isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      if (socket) {
+        socket.disconnect();
+        setSocket(null);
+        setIsConnected(false);
+      }
+      return;
+    }
+
+    const socketUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api/v1", "") || "http://localhost:5000";
+    
+    const socketInstance = io(socketUrl, {
+      withCredentials: true,
+      transports: ["websocket", "polling"],
+      query: {
+        userId: user.id,
+      }
+    });
+
+    socketInstance.on("connect", () => {
+      console.log("Socket connected:", socketInstance.id);
+      setIsConnected(true);
+    });
+
+    socketInstance.on("disconnect", () => {
+      console.log("Socket disconnected");
+      setIsConnected(false);
+    });
+
+    setSocket(socketInstance);
+
+    return () => {
+      socketInstance.disconnect();
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user]);
+
+  return (
+    <SocketContext.Provider value={{ socket, isConnected }}>
+      {children}
+    </SocketContext.Provider>
+  );
+};

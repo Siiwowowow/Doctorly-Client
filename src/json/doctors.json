@@ -1,0 +1,46 @@
+[
+  {
+    "name": "Dr. Anjali Sharma",
+    "specialty": "Senior Cardiologist",
+    "experience": "15+ Years",
+    "rating": 4.9,
+    "reviews": 124,
+    "fee": "৳ 1000",
+    "availability": "Today, 4:00 PM",
+    "isOnline": true,
+    "image": "/doctors/doctor1.png"
+  },
+  {
+    "name": "Dr. Rakesh Kumar",
+    "specialty": "Pediatrician",
+    "experience": "12+ Years",
+    "rating": 4.8,
+    "reviews": 89,
+    "fee": "৳ 800",
+    "availability": "Tomorrow, 10:00 AM",
+    "isOnline": false,
+    "image": "/doctors/doctor5.png"
+  },
+  {
+    "name": "Dr. Nusrat Jahan",
+    "specialty": "Dermatologist",
+    "experience": "8+ Years",
+    "rating": 4.7,
+    "reviews": 210,
+    "fee": "৳ 1200",
+    "availability": "Today, 6:30 PM",
+    "isOnline": true,
+    "image": "/doctors/doctor3.png"
+  },
+  {
+    "name": "Dr. Salima Rahman",
+    "specialty": "Neurologist",
+    "experience": "20+ Years",
+    "rating": 5.0,
+    "reviews": 340,
+    "fee": "৳ 1500",
+    "availability": "Wed, 11:00 AM",
+    "isOnline": false,
+    "image": "/doctors/doctor6.png"
+  }
+]

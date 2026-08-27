@@ -1,0 +1,23 @@
+[
+  {
+    "name": "Aisha Khan",
+    "type": "Video Consultation",
+    "time": "10:30 AM",
+    "status": "Confirmed",
+    "avatar": "/doctors/doctor1.png"
+  },
+  {
+    "name": "Rahim Ahmed",
+    "type": "Follow-up",
+    "time": "11:45 AM",
+    "status": "Confirmed",
+    "avatar": "/doctors/doctor4.png"
+  },
+  {
+    "name": "Nusrat Jahan",
+    "type": "Video Consultation",
+    "time": "01:30 PM",
+    "status": "Pending",
+    "avatar": "/doctors/doctor7.png"
+  }
+]

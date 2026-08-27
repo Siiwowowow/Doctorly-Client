@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Meera Singh",
+    "age": "48",
+    "location": "Dhaka",
+    "consultation": "Cardiology",
+    "rating": 5,
+    "quote": "Doctorly has truly transformed healthcare for my family. Accessing specialist doctors from home is a lifesaver. The doctors are compassionate and the process is seamless.",
+    "role": "Patient",
+    "image": "/doctors/doctor4.png"
+  },
+  {
+    "name": "Tariq Rahman",
+    "age": "35",
+    "location": "Chittagong",
+    "consultation": "Pediatrics",
+    "rating": 5,
+    "quote": "As a working parent, taking time off to visit a clinic was always difficult. Now I can consult with top pediatricians for my son during my lunch break. Highly recommended.",
+    "role": "Patient",
+    "image": "/doctors/doctor1.png"
+  },
+  {
+    "name": "Sadia Islam",
+    "age": "28",
+    "location": "Sylhet",
+    "consultation": "Dermatology",
+    "rating": 4,
+    "quote": "The video quality is excellent and the digital prescription feature is so convenient. I felt completely heard by my doctor, just like an in-person visit.",
+    "role": "Patient",
+    "image": "/doctors/doctor7.png"
+  }
+]

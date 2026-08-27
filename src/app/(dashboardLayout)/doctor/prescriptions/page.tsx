@@ -1,0 +1,148 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client"
+
+import { useEffect, useState, Suspense } from "react"
+import { useSearchParams } from "next/navigation"
+import { Prescription } from "@/types/api.types"
+import { getMyPrescriptions } from "@/services/prescription.services"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Pill, Search, Calendar, FileText, Plus } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import Link from "next/link"
+import { format } from "date-fns"
+import { useToast } from "@/hooks/use-toast"
+
+function PrescriptionList() {
+  const { toast } = useToast()
+  const searchParams = useSearchParams()
+  const patientIdFilter = searchParams.get("patientId")
+  
+  const [prescriptions, setPrescriptions] = useState<Prescription[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState("")
+
+  useEffect(() => {
+    const fetchPrescriptions = async () => {
+      try {
+        const res = await getMyPrescriptions()
+        let data = res.data || []
+        
+        if (patientIdFilter) {
+          data = data.filter((p: Prescription) => p.patientId === patientIdFilter)
+        }
+        
+        setPrescriptions(data)
+      } catch (error: any) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error.message || "Failed to load prescriptions.",
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchPrescriptions()
+  }, [patientIdFilter, toast])
+
+  const filteredPrescriptions = prescriptions.filter((p) => {
+    return p.patient?.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+           p.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           p.instructions.toLowerCase().includes(searchQuery.toLowerCase())
+  })
+
+  // Sort by created date, newest first
+  filteredPrescriptions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">Prescriptions</h1>
+          <p className="text-muted-foreground">Manage and view patient prescriptions.</p>
+        </div>
+        <Button asChild>
+          <Link href="/doctor/prescriptions/new">
+            <Plus className="mr-2 h-4 w-4" />
+            Write Prescription
+          </Link>
+        </Button>
+      </div>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="relative w-full max-w-sm">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input 
+              placeholder="Search by patient or ID..." 
+              className="pl-8" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="space-y-4">
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-24 w-full" />
+            </div>
+          ) : filteredPrescriptions.length === 0 ? (
+            <div className="py-12 text-center text-muted-foreground border rounded-lg border-dashed">
+              <Pill className="h-12 w-12 opacity-20 mb-3 mx-auto" />
+              <p>{patientIdFilter ? "No prescriptions found for this patient." : "No prescriptions found."}</p>
+              <Button variant="link" asChild className="mt-2">
+                <Link href="/doctor/prescriptions/new">Write a new prescription</Link>
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredPrescriptions.map((prescription) => (
+                <div key={prescription.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-xl hover:border-primary/50 transition-colors gap-4">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-primary/10 p-3 rounded-full shrink-0">
+                      <FileText className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-lg">{prescription.patient?.name || "Unknown Patient"}</h3>
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mt-1">
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="h-3.5 w-3.5" />
+                          <span>{format(new Date(prescription.createdAt), "MMM dd, yyyy")}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Pill className="h-3.5 w-3.5" />
+                          <span>{prescription.medicines?.length || 0} Medicines</span>
+                        </div>
+                      </div>
+                      <p className="text-sm mt-2 text-muted-foreground line-clamp-1">{prescription.instructions}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex w-full sm:w-auto mt-2 sm:mt-0 gap-2">
+                    <Button variant="outline" className="w-full sm:w-auto" onClick={() => {
+                        toast({ title: "Feature coming soon", description: "Prescription details view is under development." })
+                    }}>
+                      View PDF
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+export default function DoctorPrescriptionsPage() {
+  return (
+    <Suspense fallback={<Skeleton className="h-125 w-full" />}>
+      <PrescriptionList />
+    </Suspense>
+  )
+}

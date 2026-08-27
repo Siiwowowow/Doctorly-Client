@@ -1,0 +1,69 @@
+"use server";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// src/services/call.services.ts
+import { ApiResponse } from "@/types/api.types";
+import { cookies } from "next/headers";
+
+const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+export async function initiateCall(data: { receiverId: string, appointmentId: string, isVideoCall?: boolean }): Promise<ApiResponse<any>> {
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get("accessToken")?.value;
+
+    const res = await fetch(`${BASE_API_URL}/calls`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Cookie: `accessToken=${accessToken}; better-auth.session_token=${cookieStore.get("better-auth.session_token")?.value}`
+        },
+        body: JSON.stringify(data)
+    });
+
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to initiate call");
+    }
+
+    return res.json();
+}
+
+export async function acceptCall(callId: string): Promise<ApiResponse<any>> {
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get("accessToken")?.value;
+
+    const res = await fetch(`${BASE_API_URL}/calls/${callId}/accept`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+            Cookie: `accessToken=${accessToken}; better-auth.session_token=${cookieStore.get("better-auth.session_token")?.value}`
+        }
+    });
+
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to accept call");
+    }
+
+    return res.json();
+}
+
+export async function endCall(callId: string): Promise<ApiResponse<any>> {
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get("accessToken")?.value;
+
+    const res = await fetch(`${BASE_API_URL}/calls/${callId}/end`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+            Cookie: `accessToken=${accessToken}; better-auth.session_token=${cookieStore.get("better-auth.session_token")?.value}`
+        }
+    });
+
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to end call");
+    }
+
+    return res.json();
+}
+

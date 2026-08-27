@@ -1,0 +1,20 @@
+[
+  {
+    "category": "Heart Health",
+    "title": "Understanding Cholesterol: What Your Numbers Mean",
+    "time": "5 min read",
+    "image": "/doctors/doctor2.png"
+  },
+  {
+    "category": "Nutrition",
+    "title": "10 Superfoods to Boost Your Immune System Naturally",
+    "time": "4 min read",
+    "image": "/doctors/doctor5.png"
+  },
+  {
+    "category": "Mental Wellness",
+    "title": "Managing Stress in a Fast-Paced Work Environment",
+    "time": "6 min read",
+    "image": "/doctors/doctor6.png"
+  }
+]
