@@ -63,8 +63,8 @@ export default function SpecialtiesManagementPage() {
       setTitle("")
       setDescription("")
     },
-    onError: (err: any) => {
-      toast({ variant: "destructive", title: "Operation failed", description: err.message })
+    onError: (err: unknown) => {
+      toast({ variant: "destructive", title: "Operation failed", description: err instanceof Error ? err.message : "Unknown error" })
     }
   })
 
@@ -74,8 +74,8 @@ export default function SpecialtiesManagementPage() {
       toast({ title: "Specialty deleted successfully" })
       queryClient.invalidateQueries({ queryKey: ['admin-specialties'] })
     },
-    onError: (err: any) => {
-      toast({ variant: "destructive", title: "Failed to delete specialty", description: err.message })
+    onError: (err: unknown) => {
+      toast({ variant: "destructive", title: "Failed to delete specialty", description: err instanceof Error ? err.message : "Unknown error" })
     }
   })
 

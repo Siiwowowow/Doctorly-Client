@@ -1,7 +1,8 @@
 import React from "react";
 import { getAllSpecialties } from "@/services/specialty.services";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Stethoscope } from "lucide-react";
+import { Specialty } from "@/types/api.types";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -11,7 +12,7 @@ export const metadata = {
 };
 
 export default async function SpecialtiesPage() {
-  let specialties: any[] = [];
+  let specialties: Specialty[] = [];
   try {
     const res = await getAllSpecialties();
     specialties = res.data || [];

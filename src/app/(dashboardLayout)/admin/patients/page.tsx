@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getAllPatients, updatePatientStatus, deletePatient } from '@/services/patient.services'
+import { getAllPatients, deletePatient } from '@/services/patient.services'
 import {
   Table,
   TableBody,
@@ -41,8 +41,8 @@ export default function PatientsManagementPage() {
       toast({ title: "Patient deleted successfully" })
       queryClient.invalidateQueries({ queryKey: ['admin-patients'] })
     },
-    onError: (err: any) => {
-      toast({ variant: "destructive", title: "Failed to delete patient", description: err.message })
+    onError: (err: unknown) => {
+      toast({ variant: "destructive", title: "Failed to delete patient", description: err instanceof Error ? err.message : "Unknown error" })
     }
   })
 

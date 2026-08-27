@@ -3,6 +3,7 @@
 import React from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getDoctorById } from '@/services/doctor.services'
+import { DoctorSpecialty } from '@/types/api.types'
 import { useParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -139,7 +140,7 @@ export default function DoctorDetailsPage() {
             <CardContent>
               {doctor.specialties && doctor.specialties.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
-                  {doctor.specialties.map((s: any) => (
+                  {doctor.specialties.map((s: DoctorSpecialty) => (
                     <Badge key={s.specialtyId} variant="secondary">
                       {s.specialty?.title}
                     </Badge>

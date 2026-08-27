@@ -2,7 +2,6 @@
 
 import {
   Search,
-  MapPin,
   CalendarDays,
   Star,
   CheckCircle2,

@@ -2,7 +2,7 @@
 "use client"
 
 import React, { useState, useEffect, useRef } from "react"
-import { Card, CardContent } from "@/components/ui/card"
+// removed Card imports
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -10,7 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { useAuth } from "@/providers/AuthProvider"
 import { useSocket } from "@/providers/SocketProvider"
 import { getMyConversations, getConversationMessages, sendChatMessage, markConversationAsRead } from "@/services/chat.services"
-import { Loader2, Send, Search, MessageSquare, CheckCircle2 } from "lucide-react"
+import { Loader2, Search, MessageSquare, CheckCircle2, Send } from "lucide-react"
 import { format } from "date-fns"
 import { toast } from "sonner"
 
@@ -34,7 +34,7 @@ export default function ChatPage() {
       try {
         const res = await getMyConversations()
         setConversations(res.data || [])
-      } catch (error) {
+      } catch {
         toast.error("Failed to load conversations")
       } finally {
         setLoadingConv(false)
@@ -52,8 +52,10 @@ export default function ChatPage() {
       try {
         const res = await getConversationMessages(activeConversationId)
         setMessages(Array.isArray(res.data) ? res.data : [])
-        markConversationAsRead(activeConversationId)
-      } catch (error) {
+        if (socket && isConnected) {
+            (socket as any).emit("chat:read", { conversationId: activeConversationId });
+        }
+      } catch {
         toast.error("Failed to load messages")
       } finally {
         setLoadingMsgs(false)
@@ -76,7 +78,9 @@ export default function ChatPage() {
     const handleMessage = (msg: any) => {
       if (msg.conversationId === activeConversationId && activeConversationId) {
         setMessages(prev => [...prev, msg])
-        markConversationAsRead(activeConversationId)
+        if (socket && isConnected) {
+            (socket as any).emit("chat:read", { conversationId: activeConversationId });
+        }
       }
       
       // Update conversation list to show latest message
@@ -92,16 +96,40 @@ export default function ChatPage() {
       })
     }
 
-    (socket as any)?.on("message", handleMessage)
+    const handleRead = (payload: { conversationId: string; readerId: string; readAt: string }) => {
+        if (payload.conversationId === activeConversationId && payload.readerId !== user?.id) {
+            setMessages(prev => prev.map(m => ({ ...m, isRead: true })));
+        }
+    }
+
+    (socket as any)?.on("chat:message", handleMessage);
+    (socket as any)?.on("chat:read", handleRead);
 
     return () => {
-      (socket as any)?.off("message", handleMessage)
+      (socket as any)?.off("chat:message", handleMessage);
+      (socket as any)?.off("chat:read", handleRead);
     }
-  }, [socket, isConnected, activeConversationId])
+  }, [socket, isConnected, activeConversationId, user?.id])
+
+  // Join and leave conversation rooms
+  useEffect(() => {
+    if (!socket || !isConnected || !activeConversationId) return;
+
+    (socket as any).emit("chat:join-conversation", { conversationId: activeConversationId });
+
+    return () => {
+      (socket as any).emit("chat:leave-conversation", { conversationId: activeConversationId });
+    };
+  }, [socket, isConnected, activeConversationId]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newMessage.trim() || !activeConversationId) return
+
+    const conv = conversations.find(c => c.id === activeConversationId);
+    const otherUserId = conv?.participants?.find((p: any) => p.userId !== user?.id)?.userId;
+
+    if (!otherUserId) return;
 
     const tempId = `temp-${Date.now()}`
     const tempMsg = {
@@ -116,18 +144,26 @@ export default function ChatPage() {
     setMessages(prev => [...prev, tempMsg])
     setNewMessage("")
 
-    try {
-      const res = await sendChatMessage(activeConversationId, { content: tempMsg.content })
-      setMessages(prev => prev.map(m => m.id === tempId ? res.data : m))
-      
-      // Update conversations list
-      setConversations(prev => {
-        const updated = prev.map(c => c.id === activeConversationId ? { ...c, lastMessageAt: res.data.createdAt } : c)
-        return updated.sort((a, b) => new Date(b.lastMessageAt || 0).getTime() - new Date(a.lastMessageAt || 0).getTime())
-      })
-    } catch (error) {
-      toast.error("Failed to send message")
-      setMessages(prev => prev.filter(m => m.id !== tempId)) // remove temp on fail
+    if (socket && isConnected) {
+        (socket as any).emit("chat:send", {
+            recipientId: otherUserId,
+            content: tempMsg.content,
+            conversationId: activeConversationId,
+            tempId: tempId
+        }, (status: { success: boolean; error?: string }) => {
+            if (!status.success) {
+                toast.error("Failed to send message");
+                setMessages(prev => prev.filter(m => m.id !== tempId));
+            } else {
+                // Update conversations list
+                setConversations(prev => {
+                    const updated = prev.map(c => c.id === activeConversationId ? { ...c, lastMessageAt: tempMsg.createdAt } : c)
+                    return updated.sort((a, b) => new Date(b.lastMessageAt || 0).getTime() - new Date(a.lastMessageAt || 0).getTime())
+                })
+            }
+        });
+    } else {
+        toast.error("Not connected to chat server");
     }
   }
 

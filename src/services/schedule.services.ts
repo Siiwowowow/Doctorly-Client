@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 
 const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-export async function getAllSchedules(queryParams?: Record<string, any>): Promise<ApiResponse<Schedule[]>> {
+export async function getAllSchedules(queryParams?: Record<string, unknown>): Promise<ApiResponse<Schedule[]>> {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
 

@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from 'react'
+import React from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getAllUsers, updateUserStatus, updateUserRole, deleteUser } from '@/services/admin.services'
 import { Role, UserStatus } from '@/types/api.types'
@@ -41,8 +41,8 @@ export default function UsersManagementPage() {
       toast({ title: "Status updated successfully" })
       queryClient.invalidateQueries({ queryKey: ['admin-users'] })
     },
-    onError: (err: any) => {
-      toast({ variant: "destructive", title: "Failed to update status", description: err.message })
+    onError: (err: unknown) => {
+      toast({ variant: "destructive", title: "Failed to update status", description: err instanceof Error ? err.message : "Unknown error" })
     }
   })
 
@@ -52,8 +52,8 @@ export default function UsersManagementPage() {
       toast({ title: "Role updated successfully" })
       queryClient.invalidateQueries({ queryKey: ['admin-users'] })
     },
-    onError: (err: any) => {
-      toast({ variant: "destructive", title: "Failed to update role", description: err.message })
+    onError: (err: unknown) => {
+      toast({ variant: "destructive", title: "Failed to update role", description: err instanceof Error ? err.message : "Unknown error" })
     }
   })
 
@@ -63,8 +63,8 @@ export default function UsersManagementPage() {
       toast({ title: "User deleted successfully" })
       queryClient.invalidateQueries({ queryKey: ['admin-users'] })
     },
-    onError: (err: any) => {
-      toast({ variant: "destructive", title: "Failed to delete user", description: err.message })
+    onError: (err: unknown) => {
+      toast({ variant: "destructive", title: "Failed to delete user", description: err instanceof Error ? err.message : "Unknown error" })
     }
   })
 

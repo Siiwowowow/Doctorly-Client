@@ -1,11 +1,11 @@
 "use server";
 // src/services/prescription.services.ts
-import { ApiResponse } from "@/types/api.types";
+import { ApiResponse, Prescription } from "@/types/api.types";
 import { cookies } from "next/headers";
 
 const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-export async function getMyPrescriptions(): Promise<ApiResponse<any[]>> {
+export async function getMyPrescriptions(): Promise<ApiResponse<Prescription[]>> {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
 
@@ -24,7 +24,7 @@ export async function getMyPrescriptions(): Promise<ApiResponse<any[]>> {
     return res.json();
 }
 
-export async function getPrescriptionById(id: string): Promise<ApiResponse<any>> {
+export async function getPrescriptionById(id: string): Promise<ApiResponse<Prescription>> {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
 
@@ -43,7 +43,7 @@ export async function getPrescriptionById(id: string): Promise<ApiResponse<any>>
     return res.json();
 }
 
-export async function createPrescription(data: any): Promise<ApiResponse<any>> {
+export async function createPrescription(data: Partial<Prescription>): Promise<ApiResponse<Prescription>> {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
 
@@ -66,7 +66,7 @@ export async function createPrescription(data: any): Promise<ApiResponse<any>> {
 
 import { httpClient } from "@/lib/axios/httpClient";
 
-export const getAllPrescriptionsAdmin = async (params?: Record<string, unknown>): Promise<ApiResponse<any[]>> => {
-    return await httpClient.get<any[]>("/prescriptions", { params });
+export const getAllPrescriptionsAdmin = async (params?: Record<string, unknown>): Promise<ApiResponse<Prescription[]>> => {
+    return await httpClient.get<Prescription[]>("/prescriptions", { params });
 };
 

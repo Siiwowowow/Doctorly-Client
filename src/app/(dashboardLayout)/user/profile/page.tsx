@@ -2,10 +2,9 @@ import React from "react";
 import { getPatientProfile } from "@/services/patient.services";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Phone, MapPin, Mail, Calendar, Edit3 } from "lucide-react";
+import { User, Phone, MapPin, Mail, Calendar, Droplet } from "lucide-react";
+import { EditProfileDialog } from "./components/EditProfileDialog";
 
 export const metadata = {
   title: "My Profile | Doctorly",
@@ -46,10 +45,7 @@ export default async function PatientProfilePage() {
               <h1 className="text-2xl font-bold">{profile.name}</h1>
               <p className="text-muted-foreground">{profile.email}</p>
             </div>
-            <Button variant="outline" className="gap-2 mb-2">
-              <Edit3 className="size-4" />
-              Edit Profile
-            </Button>
+            <EditProfileDialog profile={profile} />
           </div>
         </CardContent>
       </Card>
@@ -84,6 +80,13 @@ export default async function PatientProfilePage() {
               <div className="flex items-center gap-3 p-3 bg-muted/40 rounded-lg border border-border/50">
                 <Phone className="size-4 text-muted-foreground" />
                 <span className="font-medium">{profile.contactNumber || "Not provided"}</span>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-muted-foreground">Blood Group</Label>
+              <div className="flex items-center gap-3 p-3 bg-muted/40 rounded-lg border border-border/50">
+                <Droplet className="size-4 text-red-500/70" />
+                <span className="font-medium">{profile.bloodGroup || "Not provided"}</span>
               </div>
             </div>
             <div className="space-y-2">

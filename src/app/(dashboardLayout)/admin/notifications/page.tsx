@@ -3,9 +3,9 @@
 import React from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getMyNotifications, markNotificationAsRead, markAllNotificationsAsRead } from '@/services/notification.services'
+import { Notification } from '@/types/api.types'
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -42,7 +42,7 @@ export default function NotificationsManagementPage() {
     return (
       <div className="space-y-4">
         <Skeleton className="h-10 w-[250px]" />
-        <Skeleton className="h-[400px] w-full" />
+        <Skeleton className="h-100 w-full" />
       </div>
     )
   }
@@ -56,7 +56,7 @@ export default function NotificationsManagementPage() {
   }
 
   const notifications = notificationsData?.data || []
-  const unreadCount = notifications.filter((n: any) => !n.isRead).length
+  const unreadCount = notifications.filter((n: Notification) => !n.isRead).length
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -90,7 +90,7 @@ export default function NotificationsManagementPage() {
             <p>You have no notifications.</p>
           </div>
         ) : (
-          notifications.map((notification: any) => (
+          notifications.map((notification: Notification) => (
             <Card key={notification.id} className={!notification.isRead ? "border-l-4 border-l-primary" : ""}>
               <CardHeader className="py-4">
                 <div className="flex items-start justify-between">

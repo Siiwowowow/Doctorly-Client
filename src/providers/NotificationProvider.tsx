@@ -34,7 +34,7 @@ export const useNotifications = () => useContext(NotificationContext);
 
 export const NotificationProvider = ({ children }: { children: React.ReactNode }) => {
   const { socket, isConnected } = useSocket();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -59,7 +59,7 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
   useEffect(() => {
     if (!socket || !isConnected) return;
 
-    const handleNewNotification = (notification: any) => {
+    const handleNewNotification = (notification: Notification) => {
       setNotifications((prev) => [notification, ...prev]);
       setUnreadCount((prev) => prev + 1);
       
@@ -68,10 +68,10 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
       });
     };
 
-    socket.on("notification", handleNewNotification);
+    socket.on("notification:new", handleNewNotification);
 
     return () => {
-      socket.removeListener("notification", handleNewNotification);
+      socket.removeListener("notification:new", handleNewNotification);
     };
   }, [socket, isConnected]);
 

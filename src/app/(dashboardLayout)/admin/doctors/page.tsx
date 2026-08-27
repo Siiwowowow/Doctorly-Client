@@ -2,8 +2,8 @@
 
 import React from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getAllDoctorsAdmin, updateDoctorStatus, deleteDoctor } from '@/services/doctor.services'
-import { Doctor } from '@/types/api.types'
+import { getAllDoctorsAdmin, deleteDoctor } from '@/services/doctor.services'
+import { Doctor, DoctorSpecialty } from '@/types/api.types'
 import {
   Table,
   TableBody,
@@ -24,7 +24,7 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, Eye, Ban, CheckCircle, Trash2 } from "lucide-react"
+import { MoreHorizontal, Eye, Trash2 } from "lucide-react"
 import Link from 'next/link'
 
 export default function DoctorsManagementPage() {
@@ -42,8 +42,8 @@ export default function DoctorsManagementPage() {
       toast({ title: "Doctor deleted successfully" })
       queryClient.invalidateQueries({ queryKey: ['admin-doctors'] })
     },
-    onError: (err: any) => {
-      toast({ variant: "destructive", title: "Failed to delete doctor", description: err.message })
+    onError: (err: unknown) => {
+      toast({ variant: "destructive", title: "Failed to delete doctor", description: err instanceof Error ? err.message : "Unknown error" })
     }
   })
 
@@ -64,7 +64,7 @@ export default function DoctorsManagementPage() {
     )
   }
 
-  const doctors = doctorsData?.data || []
+  const doctors: Doctor[] = doctorsData?.data || []
 
   return (
     <div className="space-y-6">
@@ -103,7 +103,7 @@ export default function DoctorsManagementPage() {
                   <TableCell>{doctor.email}</TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
-                      {doctor.specialties?.slice(0, 2).map((s: any) => (
+                      {doctor.specialties?.slice(0, 2).map((s: DoctorSpecialty) => (
                         <Badge key={s.specialtyId} variant="secondary" className="text-xs">
                           {s.specialty?.title}
                         </Badge>

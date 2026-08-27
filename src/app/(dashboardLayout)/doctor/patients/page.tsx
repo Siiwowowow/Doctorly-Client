@@ -2,15 +2,15 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Patient, Gender } from "@/types/api.types"
+import { Patient } from "@/types/api.types"
 import { getAllPatients } from "@/services/patient.services"
-import { Search, User, Phone, MapPin, FileText, Pill } from "lucide-react"
+import { Search, User, Phone, MapPin } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
-import { Badge } from "@/components/ui/badge"
+
 import { useToast } from "@/hooks/use-toast"
 
 export default function DoctorPatientsPage() {
@@ -36,7 +36,7 @@ export default function DoctorPatientsPage() {
       }
     }
     fetchPatients()
-  }, [])
+  }, [toast])
 
   const filteredPatients = patients.filter((patient) => {
     return patient.name.toLowerCase().includes(searchQuery.toLowerCase()) || 

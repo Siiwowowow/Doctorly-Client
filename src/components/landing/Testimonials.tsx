@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 
 import TESTIMONIALS from "@/json/testimonials.json";
 
@@ -37,9 +38,11 @@ export default function Testimonials() {
                     
                     <div className="shrink-0">
                       <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-doctorly-secondary/50">
-                        <img 
+                        <Image 
                           src={testimonial.image} 
                           alt={testimonial.name} 
+                          width={128}
+                          height={128}
                           className="w-full h-full object-cover"
                         />
                       </div>

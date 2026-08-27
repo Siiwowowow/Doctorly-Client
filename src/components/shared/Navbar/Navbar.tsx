@@ -4,7 +4,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { AnimatePresence, motion, Variants } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { useAuth } from "@/providers/AuthProvider";
 import { useLocale, useTranslations } from "next-intl";
 import { useNotifications } from "@/providers/NotificationProvider";
@@ -49,7 +49,6 @@ import {
   ShieldCheck,
   Stethoscope,
   User,
-  UserPlus,
   X,
   Bell,
 } from "lucide-react";
@@ -62,7 +61,6 @@ const navLinks = [
   { key: "findDoctors", href: "/doctors", icon: Search },
   { key: "specialties", href: "/specialties", icon: Stethoscope },
   { key: "appointments", href: "/user/appointments", icon: CalendarDays },
-  { key: "resources", href: "/resources", icon: FileText },
 ];
 
 // --------------------------------------------------

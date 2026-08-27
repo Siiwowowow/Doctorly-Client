@@ -3,13 +3,14 @@ import { getMyPrescriptions } from "@/services/prescription.services";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Pill, Download, Calendar, Search } from "lucide-react";
+import { Prescription } from "@/types/api.types";
 
 export const metadata = {
   title: "Prescriptions | Doctorly",
 };
 
 export default async function PrescriptionsPage() {
-  let prescriptions = [];
+  let prescriptions: Prescription[] = [];
   try {
     const res = await getMyPrescriptions();
     prescriptions = res.data || [];
@@ -41,7 +42,7 @@ export default async function PrescriptionsPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {prescriptions.map((prescription: any) => (
+          {prescriptions.map((prescription: Prescription) => (
             <Card key={prescription.id} className="overflow-hidden shadow-sm transition-all hover:shadow-md border-border/50 flex flex-col h-full">
               <CardHeader className="bg-muted/30 border-b border-border/50 pb-4">
                 <div className="flex justify-between items-start">

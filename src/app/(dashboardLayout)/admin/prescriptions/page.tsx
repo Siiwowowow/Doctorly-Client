@@ -3,6 +3,7 @@
 import React from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getAllPrescriptionsAdmin } from '@/services/prescription.services'
+import { Prescription } from '@/types/api.types'
 import {
   Table,
   TableBody,
@@ -68,7 +69,7 @@ export default function PrescriptionsManagementPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              prescriptions.map((prescription: any) => (
+              prescriptions.map((prescription: Prescription) => (
                 <TableRow key={prescription.id}>
                   <TableCell className="font-medium whitespace-nowrap">
                     {format(new Date(prescription.createdAt), "MMM dd, yyyy")}

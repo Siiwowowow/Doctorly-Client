@@ -1,5 +1,4 @@
-/* eslint-disable react/no-unescaped-entities */
-import { Video, Mic, Share2, MoreHorizontal, MessageSquare, PhoneOff, CheckCircle2, FileText, User } from "lucide-react";
+import { Video, Mic, Share2, MessageSquare, PhoneOff, CheckCircle2, FileText, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 

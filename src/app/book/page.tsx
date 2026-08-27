@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Loader2, CalendarDays, AlertCircle, Clock } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { getDoctorById } from "@/services/doctor.services";
 import { getDoctorSchedulesByDoctorId } from "@/services/doctorSchedule.services";
 import { createAppointment } from "@/services/appointment.services";
@@ -40,7 +41,7 @@ export default function BookConsultationPage() {
         ]);
         setDoctor(doctorRes.data);
         setSchedules(scheduleRes.data || []);
-      } catch (error) {
+      } catch {
         toast.error("Failed to load booking details.");
       } finally {
         setLoading(false);
@@ -75,12 +76,12 @@ export default function BookConsultationPage() {
         } else {
           router.push("/user/appointments");
         }
-      } catch (paymentError) {
+      } catch {
         toast.error("Booking successful, but failed to initiate payment.");
         router.push("/user/appointments");
       }
-    } catch (error: any) {
-      toast.error(error.message || "Failed to book appointment.");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Failed to book appointment.");
       setIsBooking(false);
     }
   };
@@ -166,9 +167,9 @@ export default function BookConsultationPage() {
             ) : doctor ? (
               <div className="space-y-6">
                 <div className="flex items-center gap-4 rounded-xl border border-border/50 bg-muted/30 p-4">
-                  <div className="size-16 rounded-full bg-doctorly-primary/10 flex items-center justify-center overflow-hidden">
+                  <div className="relative size-16 rounded-full bg-doctorly-primary/10 flex items-center justify-center overflow-hidden">
                     {doctor.profilePhoto ? (
-                      <img src={doctor.profilePhoto} alt={doctor.name} className="size-full object-cover" />
+                      <Image src={doctor.profilePhoto} alt={doctor.name} fill className="object-cover" />
                     ) : (
                       <span className="text-doctorly-primary font-bold text-xl">{doctor.name.slice(0, 2).toUpperCase()}</span>
                     )}

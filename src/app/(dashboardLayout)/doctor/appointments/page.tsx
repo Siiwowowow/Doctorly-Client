@@ -14,6 +14,8 @@ import Link from "next/link"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
+import { useRouter } from "next/navigation"
+import { initiateCall } from "@/services/call.services"
 
 export default function DoctorAppointmentsPage() {
   const { toast } = useToast()
@@ -22,6 +24,8 @@ export default function DoctorAppointmentsPage() {
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState<string>("ALL")
   const [searchQuery, setSearchQuery] = useState("")
+  const [isCalling, setIsCalling] = useState(false)
+  const router = useRouter()
 
   const fetchAppointments = useCallback(async () => {
     setLoading(true)
@@ -57,6 +61,29 @@ export default function DoctorAppointmentsPage() {
         title: "Failed to update status",
         description: error.message || "Could not change appointment status.",
       })
+    }
+  }
+
+  const handleStartCall = async (apt: Appointment) => {
+    if (!apt.patientId) return;
+    setIsCalling(true);
+    try {
+      const res = await initiateCall({
+        receiverId: apt.patientId,
+        appointmentId: apt.id,
+        isVideoCall: true
+      });
+      if (res.data?.id) {
+        router.push(`/video-call/${res.data.id}`);
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Failed to initiate call",
+        description: error.message || "Could not start video call.",
+      });
+    } finally {
+      setIsCalling(false);
     }
   }
 
@@ -203,12 +230,16 @@ export default function DoctorAppointmentsPage() {
                       )}
 
                       {/* Video Call Entry Point */}
-                      {(apt.status === AppointmentStatus.SCHEDULED || apt.status === AppointmentStatus.INPROGRESS) && apt.videoCallingId && (
-                        <Button size="sm" variant="outline" className="border-blue-200 text-blue-600 bg-blue-50 hover:bg-blue-100" asChild>
-                           <Link href={`/video-call/${apt.videoCallingId}`}>
-                             <Video className="h-4 w-4 mr-2" />
-                             Join Video
-                           </Link>
+                      {(apt.status === AppointmentStatus.SCHEDULED || apt.status === AppointmentStatus.INPROGRESS) && (
+                        <Button 
+                           size="sm" 
+                           variant="outline" 
+                           className="border-blue-200 text-blue-600 bg-blue-50 hover:bg-blue-100" 
+                           onClick={() => handleStartCall(apt)}
+                           disabled={isCalling}
+                        >
+                           <Video className="h-4 w-4 mr-2" />
+                           {isCalling ? "Calling..." : "Call Patient"}
                         </Button>
                       )}
                       

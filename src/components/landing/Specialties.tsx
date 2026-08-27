@@ -1,7 +1,7 @@
 import { HeartPulse, Brain, Baby, Stethoscope, Eye, Bone, Ear, Salad, Activity, Dna, Syringe, Pill } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-const getSpecialties = (t: any) => [
+const getSpecialties = (t: (key: string) => string) => [
   { name: t("generalMedicine"), icon: Stethoscope, color: "text-blue-500", bg: "bg-blue-50" },
   { name: t("cardiology"), icon: HeartPulse, color: "text-red-500", bg: "bg-red-50" },
   { name: t("pediatrics"), icon: Baby, color: "text-orange-500", bg: "bg-orange-50" },

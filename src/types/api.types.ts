@@ -128,6 +128,7 @@ export interface Patient {
     profilePhoto?: string | null;
     contactNumber?: string | null;
     address?: string | null;
+    bloodGroup?: string | null;
     isDeleted: boolean;
     deletedAt?: string | null;
     createdAt: string;

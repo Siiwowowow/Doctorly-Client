@@ -11,7 +11,7 @@ export type ToastProps = {
 };
 
 export function useToast() {
-  function toast({ title, description, variant, action, duration }: ToastProps) {
+  function toast({ title, description, variant, duration }: ToastProps) {
     const options = {
       description,
       duration,

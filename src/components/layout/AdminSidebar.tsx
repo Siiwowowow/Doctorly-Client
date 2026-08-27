@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import * as React from "react"
@@ -34,6 +35,7 @@ import {
 import { useAuth } from "@/providers/AuthProvider"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useTranslations } from "next-intl"
 
 const adminItems = [
   {
@@ -106,6 +108,15 @@ const adminItems = [
 export function AdminSidebar() {
   const { user, logout } = useAuth()
   const pathname = usePathname()
+  const t = useTranslations("dashboardHeaders")
+  const tCommon = useTranslations("common")
+
+  const isActiveRoute = (url: string) => {
+    if (url === "/") {
+      return pathname === "/";
+    }
+    return pathname === url || pathname.startsWith(`${url}/`);
+  }
 
   return (
     <Sidebar>
@@ -114,7 +125,7 @@ export function AdminSidebar() {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <ShieldAlert size={20} />
           </div>
-          <span className="truncate">Admin Panel</span>
+          <span className="truncate">{t("adminDashboard")}</span>
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -122,16 +133,21 @@ export function AdminSidebar() {
           <SidebarGroupLabel>Administrative</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {adminItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={pathname.startsWith(item.url)} tooltip={item.title}>
-                    <Link href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {adminItems.map((item) => {
+                const translationKey = item.title.charAt(0).toLowerCase() + item.title.slice(1).replace(/ /g, '')
+                const translatedTitle = t(translationKey as any) || tCommon(translationKey as any) || item.title
+
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={isActiveRoute(item.url)} tooltip={translatedTitle}>
+                      <Link href={item.url}>
+                        <item.icon />
+                        <span>{translatedTitle}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -150,7 +166,7 @@ export function AdminSidebar() {
             </div>
             <SidebarMenuButton onClick={logout} className="text-destructive hover:text-destructive hover:bg-destructive/10">
               <LogOut />
-              <span>Log out</span>
+              <span>{tCommon("logout")}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

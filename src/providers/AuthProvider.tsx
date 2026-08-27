@@ -3,7 +3,6 @@
 
 import { createContext, useContext, useState } from "react";
 import { logoutUser } from "@/services/auth.services";
-import { useRouter } from "next/navigation";
 import { ICurrentUser } from "@/types/user.types";
 
 interface AuthContextType {
@@ -23,7 +22,6 @@ export function AuthProvider({
     initialUser: ICurrentUser | null; // ✅ type fixed
 }) {
     const [user, setUser] = useState<ICurrentUser | null>(initialUser);
-    const router = useRouter();
 
     const logout = async () => {
         setUser(null);

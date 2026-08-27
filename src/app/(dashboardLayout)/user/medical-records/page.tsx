@@ -3,8 +3,7 @@ import { getMyMedicalRecords } from "@/services/medicalRecord.services";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileText, Download, Calendar, Activity, Search } from "lucide-react";
-import Link from "next/link";
-
+import { MedicalRecord } from "@/types/api.types";
 export const metadata = {
   title: "Medical Records | Doctorly",
 };
@@ -42,7 +41,7 @@ export default async function MedicalRecordsPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {records.map((record: any) => (
+          {records.map((record: MedicalRecord) => (
             <Card key={record.id} className="overflow-hidden shadow-sm transition-all hover:shadow-md border-border/50 flex flex-col h-full">
               <CardHeader className="bg-muted/30 border-b border-border/50 pb-4">
                 <div className="flex justify-between items-start">

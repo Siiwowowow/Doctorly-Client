@@ -12,11 +12,10 @@ export const metadata = {
   description: "Search and book appointments with top healthcare professionals",
 };
 
-export default async function DoctorsPage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
+export default async function DoctorsPage(props: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  const searchParams = await props.searchParams;
   const query = typeof searchParams.query === 'string' ? searchParams.query : '';
   const specialty = typeof searchParams.specialty === 'string' ? searchParams.specialty : '';
 

@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
   CalendarCheck,
-  CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Clock3,

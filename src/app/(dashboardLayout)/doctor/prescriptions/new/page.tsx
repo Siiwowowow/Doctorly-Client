@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -67,7 +67,7 @@ export default function NewPrescriptionPage() {
         medicines: validMedicines
       }
       
-      await createPrescription(payload)
+      await createPrescription(payload as any)
       
       toast({
         title: "Success",

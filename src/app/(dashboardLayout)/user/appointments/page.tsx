@@ -2,19 +2,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import { getMyAppointments } from "@/services/appointment.services";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, Clock, Video, MapPin, Search } from "lucide-react";
+import { CalendarDays, Video, MapPin, Search } from "lucide-react";
 import Link from "next/link";
-import { AppointmentStatus, PaymentStatus } from "@/types/api.types";
+import { Appointment, AppointmentStatus, PaymentStatus } from "@/types/api.types";
 import { Badge } from "@/components/ui/badge";
+import { JoinCallButton } from "./_components/JoinCallButton";
 
 export const metadata = {
   title: "My Appointments | Doctorly",
 };
 
 export default async function AppointmentsPage() {
-  let appointments: any[] = [];
+  let appointments: Appointment[] = [];
   try {
     const res = await getMyAppointments();
     appointments = res.data || [];
@@ -131,13 +132,8 @@ export default async function AppointmentsPage() {
                         </Link>
                       </Button>
                       
-                      {(apt.status === AppointmentStatus.SCHEDULED || apt.status === AppointmentStatus.INPROGRESS) && apt.videoCallingId && (
-                        <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm" asChild>
-                          <Link href={`/video-call/${apt.videoCallingId}`}>
-                            <Video className="mr-2 size-4" />
-                            Join Call
-                          </Link>
-                        </Button>
+                      {(apt.status === AppointmentStatus.SCHEDULED || apt.status === AppointmentStatus.INPROGRESS) && (
+                        <JoinCallButton appointment={apt} />
                       )}
                     </div>
                   </div>

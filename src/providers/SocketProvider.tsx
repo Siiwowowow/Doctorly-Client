@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "./AuthProvider";
+import { GlobalListeners } from "./GlobalListeners";
 
 interface SocketContextType {
   socket: Socket | null;
@@ -62,6 +63,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <SocketContext.Provider value={{ socket, isConnected }}>
       {children}
+      <GlobalListeners />
     </SocketContext.Provider>
   );
 };

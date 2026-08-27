@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import { getMyAppointments } from "@/services/appointment.services";
+import { getMyPrescriptions } from "@/services/prescription.services";
+import { getMyMedicalRecords } from "@/services/medicalRecord.services";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarDays, Clock, Activity, FileText } from "lucide-react";
 import Link from "next/link";
@@ -12,11 +14,21 @@ export const metadata = {
 
 export default async function PatientDashboardOverview() {
   let appointments: any[] = [];
+  let prescriptionsCount = 0;
+  let recordsCount = 0;
+
   try {
-    const res = await getMyAppointments();
-    appointments = res.data || [];
+    const [appointmentsRes, prescriptionsRes, recordsRes] = await Promise.all([
+      getMyAppointments().catch(() => ({ data: [] })),
+      getMyPrescriptions().catch(() => ({ data: [] })),
+      getMyMedicalRecords().catch(() => ({ data: [] }))
+    ]);
+    
+    appointments = appointmentsRes?.data || [];
+    prescriptionsCount = prescriptionsRes?.data?.length || 0;
+    recordsCount = recordsRes?.data?.length || 0;
   } catch (error) {
-    console.error("Failed to load appointments:", error);
+    console.error("Failed to load dashboard data:", error);
   }
 
   const upcomingAppointments = appointments.filter((a: any) => a.status === "SCHEDULED");
@@ -69,7 +81,7 @@ export default async function PatientDashboardOverview() {
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Prescriptions</p>
-              <p className="text-2xl font-bold">0</p>
+              <p className="text-2xl font-bold">{prescriptionsCount}</p>
             </div>
           </CardContent>
         </Card>
@@ -80,7 +92,7 @@ export default async function PatientDashboardOverview() {
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Records</p>
-              <p className="text-2xl font-bold">0</p>
+              <p className="text-2xl font-bold">{recordsCount}</p>
             </div>
           </CardContent>
         </Card>
@@ -107,11 +119,13 @@ export default async function PatientDashboardOverview() {
                   <div key={apt.id} className="p-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4 hover:bg-muted/30 transition-colors">
                     <div>
                       <p className="font-semibold">{apt.doctor?.name || "Unknown Doctor"}</p>
-                      <p className="text-sm text-doctorly-primary">{apt.doctor?.designation}</p>
+                      <p className="text-sm text-doctorly-primary">{apt.doctor?.designation || apt.doctor?.specialty?.name}</p>
                       <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
                         <Clock className="size-3" /> 
-                        {/* Assuming schedule is populated, format it nicely. For now placeholder: */}
-                        <span>{new Date(apt.createdAt).toLocaleDateString()} (Placeholder Date)</span>
+                        <span>
+                            {apt.schedule?.date ? new Date(apt.schedule.date).toLocaleDateString() : new Date(apt.createdAt).toLocaleDateString()} 
+                            {apt.schedule?.startTime && ` at ${apt.schedule.startTime}`}
+                        </span>
                       </div>
                     </div>
                     <div>

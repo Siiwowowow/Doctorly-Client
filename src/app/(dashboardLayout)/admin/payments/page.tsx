@@ -3,7 +3,7 @@
 import React from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getAllPaymentsAdmin } from '@/services/payment.services'
-import { PaymentStatus } from '@/types/api.types'
+import { Payment, PaymentStatus } from '@/types/api.types'
 import {
   Table,
   TableBody,
@@ -71,7 +71,7 @@ export default function PaymentsManagementPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              payments.map((payment: any) => (
+              payments.map((payment: Payment) => (
                 <TableRow key={payment.id}>
                   <TableCell className="font-medium whitespace-nowrap">
                     {format(new Date(payment.createdAt), "MMM dd, yyyy hh:mm a")}

@@ -42,7 +42,7 @@ export default function DoctorNotificationsPage() {
     try {
       await markNotificationAsRead(id)
       setNotifications(notifications.map(n => n.id === id ? { ...n, isRead: true } : n))
-    } catch (error: any) {
+    } catch {
       toast({
         variant: "destructive",
         title: "Error",
@@ -59,7 +59,7 @@ export default function DoctorNotificationsPage() {
         title: "Success",
         description: "All notifications marked as read.",
       })
-    } catch (error: any) {
+    } catch {
       toast({
         variant: "destructive",
         title: "Error",

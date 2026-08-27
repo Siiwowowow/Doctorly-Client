@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import React from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getAllMedicalRecords } from '@/services/medicalRecord.services'
+import { MedicalRecord } from '@/types/api.types'
 import {
   Table,
   TableBody,
@@ -68,7 +70,7 @@ export default function MedicalRecordsManagementPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              records.map((record: any) => (
+              records.map((record: MedicalRecord) => (
                 <TableRow key={record.id}>
                   <TableCell className="font-medium whitespace-nowrap">
                     {format(new Date(record.createdAt), "MMM dd, yyyy")}
@@ -79,7 +81,7 @@ export default function MedicalRecordsManagementPage() {
                   </TableCell>
                   <TableCell>
                      {/* Assume there's a type or title field, or we can just show record type if exists */}
-                     {record.recordType || "General"}
+                     {(record as any).recordType || "General"}
                   </TableCell>
                   <TableCell>
                     <div className="max-w-[300px] truncate" title={record.description}>

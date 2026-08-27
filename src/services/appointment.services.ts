@@ -89,6 +89,7 @@ export async function createAppointment(data: { doctorId: string; scheduleId: st
 
     if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
+        console.error("Appointment creation failed with errorData:", JSON.stringify(errorData, null, 2));
         throw new Error(errorData.message || "Failed to create appointment");
     }
 

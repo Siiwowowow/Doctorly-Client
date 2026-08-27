@@ -67,3 +67,24 @@ export async function endCall(callId: string): Promise<ApiResponse<any>> {
     return res.json();
 }
 
+export async function rejectCall(callId: string, reason?: string): Promise<ApiResponse<any>> {
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get("accessToken")?.value;
+
+    const res = await fetch(`${BASE_API_URL}/calls/${callId}/reject`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+            Cookie: `accessToken=${accessToken}; better-auth.session_token=${cookieStore.get("better-auth.session_token")?.value}`
+        },
+        body: JSON.stringify({ reason })
+    });
+
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to reject call");
+    }
+
+    return res.json();
+}
+

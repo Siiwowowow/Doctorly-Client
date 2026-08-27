@@ -1,28 +1,30 @@
 import React from "react";
 import { getDoctorById } from "@/services/doctor.services";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, Star, MapPin, Building2, GraduationCap, Stethoscope, Clock, ShieldCheck, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-export async function generateMetadata({ params }: { params: { id: string } }) {
+export async function generateMetadata(props: { params: Promise<{ id: string }> }) {
   try {
+    const params = await props.params;
     const res = await getDoctorById(params.id);
     const doctor = res.data;
     return {
       title: `${doctor.name} | Doctorly`,
       description: doctor.designation,
     };
-  } catch (error) {
+  } catch {
     return { title: "Doctor Not Found | Doctorly" };
   }
 }
 
-export default async function DoctorDetailsPage({ params }: { params: { id: string } }) {
+export default async function DoctorDetailsPage(props: { params: Promise<{ id: string }> }) {
   let doctor = null;
   try {
+    const params = await props.params;
     const res = await getDoctorById(params.id);
     doctor = res.data;
   } catch (error) {

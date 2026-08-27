@@ -74,6 +74,10 @@ export async function getPatientById(id: string): Promise<ApiResponse<Patient>> 
 
 import { httpClient } from "@/lib/axios/httpClient";
 
+export const updatePatientProfile = async (id: string, data: Partial<Patient>): Promise<ApiResponse<Patient>> => {
+    return await httpClient.patch<Patient>(`/patients/${id}`, data);
+};
+
 export const updatePatientStatus = async (id: string, data: Partial<Patient>): Promise<ApiResponse<Patient>> => {
     return await httpClient.patch<Patient>(`/patients/${id}`, data);
 };
