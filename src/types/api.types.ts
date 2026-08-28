@@ -137,6 +137,20 @@ export interface Patient {
     user?: User;
 }
 
+export interface Admin {
+    id: string;
+    name: string;
+    email: string;
+    profilePhoto?: string | null;
+    contactNumber?: string | null;
+    isDeleted: boolean;
+    deletedAt?: string | null;
+    createdAt: string;
+    updatedAt: string;
+    userId: string;
+    user?: User;
+}
+
 export interface Appointment {
     id: string;
     videoCallingId: string;

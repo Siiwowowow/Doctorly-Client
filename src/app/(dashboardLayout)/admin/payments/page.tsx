@@ -15,6 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { format } from "date-fns"
+import { InvoiceDownloadButton } from "@/components/shared/InvoiceDownloadButton"
 
 export default function PaymentsManagementPage() {
   const { data: paymentsData, isLoading, isError } = useQuery({
@@ -61,12 +62,13 @@ export default function PaymentsManagementPage() {
               <TableHead>Appointment ID</TableHead>
               <TableHead>Amount</TableHead>
               <TableHead className="text-right">Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {payments.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
+                <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
                   No payments found.
                 </TableCell>
               </TableRow>
@@ -92,6 +94,14 @@ export default function PaymentsManagementPage() {
                     >
                       {payment.status}
                     </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <InvoiceDownloadButton 
+                      paymentId={payment.id} 
+                      disabled={payment.status !== PaymentStatus.PAID} 
+                      variant="outline" 
+                      size="sm"
+                    />
                   </TableCell>
                 </TableRow>
               ))

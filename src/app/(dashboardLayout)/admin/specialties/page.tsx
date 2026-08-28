@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getAllSpecialties, createSpecialty, updateSpecialty, deleteSpecialty } from '@/services/specialty.services'
+import { getAllSpecialties, createSpecialty, deleteSpecialty } from '@/services/specialty.services'
 import { Specialty } from '@/types/api.types'
 import {
   Table,
@@ -32,14 +32,13 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { MoreHorizontal, Plus, Edit, Trash2 } from "lucide-react"
+import { MoreHorizontal, Plus, Trash2 } from "lucide-react"
 
 export default function SpecialtiesManagementPage() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
   
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [editingSpecialty, setEditingSpecialty] = useState<Specialty | null>(null)
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   
@@ -49,17 +48,11 @@ export default function SpecialtiesManagementPage() {
   })
 
   const saveMutation = useMutation({
-    mutationFn: (data: Partial<Specialty>) => {
-      if (editingSpecialty) {
-        return updateSpecialty(editingSpecialty.id, data)
-      }
-      return createSpecialty(data)
-    },
+    mutationFn: (data: Partial<Specialty>) => createSpecialty(data),
     onSuccess: () => {
-      toast({ title: `Specialty ${editingSpecialty ? "updated" : "created"} successfully` })
+      toast({ title: "Specialty created successfully" })
       queryClient.invalidateQueries({ queryKey: ['admin-specialties'] })
       setIsDialogOpen(false)
-      setEditingSpecialty(null)
       setTitle("")
       setDescription("")
     },
@@ -79,16 +72,9 @@ export default function SpecialtiesManagementPage() {
     }
   })
 
-  const handleOpenDialog = (specialty?: Specialty) => {
-    if (specialty) {
-      setEditingSpecialty(specialty)
-      setTitle(specialty.title)
-      setDescription(specialty.description || "")
-    } else {
-      setEditingSpecialty(null)
-      setTitle("")
-      setDescription("")
-    }
+  const handleOpenDialog = () => {
+    setTitle("")
+    setDescription("")
     setIsDialogOpen(true)
   }
 
@@ -163,12 +149,6 @@ export default function SpecialtiesManagementPage() {
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         
-                        <DropdownMenuItem onClick={() => handleOpenDialog(specialty)}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        
-                        <DropdownMenuSeparator />
                         <DropdownMenuItem 
                           className="text-destructive focus:text-destructive"
                           onClick={() => {
@@ -193,7 +173,7 @@ export default function SpecialtiesManagementPage() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingSpecialty ? "Edit Specialty" : "Add New Specialty"}</DialogTitle>
+            <DialogTitle>Add New Specialty</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">

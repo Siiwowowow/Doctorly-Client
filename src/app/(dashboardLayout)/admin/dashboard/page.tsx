@@ -2,7 +2,11 @@
 
 import React from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { getAdminDashboardStats } from '@/services/admin.services'
+import { getAllAdmins } from '@/services/admin.services'
+import { getAllPatients } from '@/services/patient.services'
+import { getAllDoctorsAdmin } from '@/services/doctor.services'
+import { getAllAppointmentsAdmin } from '@/services/appointment.services'
+import { getAllPaymentsAdmin } from '@/services/payment.services'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { 
@@ -11,21 +15,44 @@ import {
   UserRound, 
   CalendarDays, 
   CreditCard, 
-  CheckCircle, 
-  Clock, 
-  XCircle 
 } from 'lucide-react'
 
 export default function AdminDashboardPage() {
-  const { data: statsData, isLoading, isError } = useQuery({
+  const { data: dashboardData, isLoading, isError } = useQuery({
     queryKey: ['admin-dashboard-stats'],
-    queryFn: getAdminDashboardStats,
+    queryFn: async () => {
+      // Fetch concurrently to minimize load time, using limit=1 to save bandwidth
+      const params = { limit: 1 };
+      
+      const [adminsRes, patientsRes, doctorsRes, appointmentsRes, paymentsRes] = await Promise.all([
+        getAllAdmins(params),
+        getAllPatients(params),
+        getAllDoctorsAdmin(params),
+        getAllAppointmentsAdmin(params),
+        getAllPaymentsAdmin(params)
+      ]);
+
+      // Calculate totals using meta.total from paginated responses if available, or data.length
+      const totalAdmins = adminsRes.meta?.total || adminsRes.data?.length || 0;
+      const totalPatients = patientsRes.meta?.total || patientsRes.data?.length || 0;
+      const totalDoctors = doctorsRes.meta?.total || doctorsRes.data?.length || 0;
+      const totalAppointments = appointmentsRes.meta?.total || appointmentsRes.data?.length || 0;
+      const totalPaymentsCount = paymentsRes.meta?.total || paymentsRes.data?.length || 0;
+      
+      return {
+        totalUsers: totalAdmins + totalPatients + totalDoctors,
+        totalDoctors,
+        totalPatients,
+        totalAppointments,
+        totalPaymentsCount
+      };
+    },
   })
 
   if (isLoading) {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+        {[1, 2, 3, 4, 5].map((i) => (
           <Skeleton key={i} className="h-[120px] rounded-xl" />
         ))}
       </div>
@@ -40,14 +67,14 @@ export default function AdminDashboardPage() {
     )
   }
 
-  const stats = statsData?.data
+  const stats = dashboardData
 
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold tracking-tight">Overview</h2>
         <p className="text-muted-foreground">
-          Platform statistics and current status.
+          Platform statistics derived from operational records.
         </p>
       </div>
 
@@ -65,14 +92,11 @@ export default function AdminDashboardPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Doctors</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Doctors</CardTitle>
             <Stethoscope className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.activeDoctors || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              Out of {stats?.totalDoctors || 0} registered
-            </p>
+            <div className="text-2xl font-bold">{stats?.totalDoctors || 0}</div>
           </CardContent>
         </Card>
 
@@ -93,7 +117,7 @@ export default function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${stats?.totalPayments?.toLocaleString() || 0}
+              {stats?.totalPaymentsCount?.toLocaleString() || 0}
             </div>
           </CardContent>
         </Card>
@@ -104,41 +128,11 @@ export default function AdminDashboardPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Appointments</CardTitle>
               <CalendarDays className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats?.totalAppointments || 0}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending</CardTitle>
-              <Clock className="h-4 w-4 text-amber-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.pendingAppointments || 0}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Completed</CardTitle>
-              <CheckCircle className="h-4 w-4 text-green-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.completedAppointments || 0}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Cancelled</CardTitle>
-              <XCircle className="h-4 w-4 text-red-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.cancelledAppointments || 0}</div>
             </CardContent>
           </Card>
         </div>

@@ -2,53 +2,35 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/services/payment.services.ts
 import { ApiResponse } from "@/types/api.types";
-import { cookies } from "next/headers";
+import { serverFetch } from "@/lib/serverFetch";
 
-const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-export async function getMyPayments(): Promise<ApiResponse<any[]>> {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("accessToken")?.value;
-
-    const res = await fetch(`${BASE_API_URL}/payments/my-payments`, {
-        headers: {
-            "Content-Type": "application/json",
-            Cookie: `accessToken=${accessToken}; better-auth.session_token=${cookieStore.get("better-auth.session_token")?.value}`
-        },
-        cache: "no-store"
-    });
-
-    if (!res.ok) {
-        throw new Error("Failed to fetch payments");
-    }
-
-    return res.json();
-}
-
-export async function createCheckoutSession(appointmentId: string): Promise<ApiResponse<any>> {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("accessToken")?.value;
-
-    const res = await fetch(`${BASE_API_URL}/payments/create-checkout-session`, {
+export async function createCheckoutSession(appointmentId: string): Promise<ApiResponse<{ paymentUrl: string; sessionId: string }>> {
+    return await serverFetch<{ paymentUrl: string; sessionId: string }>("/payments/create-checkout-session", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Cookie: `accessToken=${accessToken}; better-auth.session_token=${cookieStore.get("better-auth.session_token")?.value}`
-        },
-        body: JSON.stringify({ appointmentId })
+        body: JSON.stringify({ appointmentId }),
     });
-
-    if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || "Failed to create checkout session");
-    }
-
-    return res.json();
 }
 
-import { httpClient } from "@/lib/axios/httpClient";
+export async function initiatePayment(appointmentId: string): Promise<ApiResponse<{ paymentUrl: string; sessionId: string }>> {
+    return await createCheckoutSession(appointmentId);
+}
 
-export const getAllPaymentsAdmin = async (params?: Record<string, unknown>): Promise<ApiResponse<any[]>> => {
-    return await httpClient.get<any[]>("/payments", { params });
-};
+export async function verifyPaymentSession(sessionId: string): Promise<ApiResponse<{ isPaid: boolean; appointment: any; payment: any }>> {
+    return await serverFetch<{ isPaid: boolean; appointment: any; payment: any }>(`/payments/verify-session/${sessionId}`);
+}
 
+export async function getMyPayments(queryParams?: Record<string, any>): Promise<ApiResponse<any[]>> {
+    return await serverFetch<any[]>("/payments/my-payments", { params: queryParams });
+}
+
+export async function getAllPayments(queryParams?: Record<string, any>): Promise<ApiResponse<any[]>> {
+    return await serverFetch<any[]>("/payments/my-payments", { params: queryParams });
+}
+
+export async function getAllPaymentsAdmin(params?: Record<string, unknown>): Promise<ApiResponse<any[]>> {
+    return await serverFetch<any[]>("/payments/my-payments", { params });
+}
+
+export async function getPaymentInvoice(paymentId: string): Promise<ApiResponse<any>> {
+    return await serverFetch<any>(`/payments/invoice/${paymentId}`);
+}

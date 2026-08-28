@@ -14,12 +14,15 @@ import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { useTranslations } from "next-intl"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { useState } from "react"
 
 export default function DoctorAppointmentDetailsPage() {
   const { appointmentId } = useParams()
   const { toast } = useToast()
   const t = useTranslations("doctorAppointments")
   const queryClient = useQueryClient()
+  const [isCompletionDialogOpen, setIsCompletionDialogOpen] = useState(false)
 
   const { data: appointmentRes, isLoading, isError } = useQuery({
     queryKey: ["doctor-appointments", appointmentId],
@@ -97,13 +100,42 @@ export default function DoctorAppointmentDetailsPage() {
             </Button>
           )}
           {appointment.status === AppointmentStatus.INPROGRESS && (
-            <Button 
-               className="bg-green-600 hover:bg-green-700" 
-               onClick={() => statusMutation.mutate(AppointmentStatus.COMPLETED)}
-               disabled={statusMutation.isPending}
-            >
-              {t("details.markCompleted")}
-            </Button>
+            <Dialog open={isCompletionDialogOpen} onOpenChange={setIsCompletionDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-green-600 hover:bg-green-700">
+                  {t("details.markCompleted")}
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{t("details.completeConsultation")}</DialogTitle>
+                  <DialogDescription>
+                    {t("details.completeConfirmMsg")}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="py-4 space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Pill className="h-4 w-4" /> {t("details.prescription")}
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <FileText className="h-4 w-4" /> {t("details.medicalRecords")}
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsCompletionDialogOpen(false)}>{t("details.cancel")}</Button>
+                  <Button 
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                    onClick={() => {
+                      setIsCompletionDialogOpen(false)
+                      statusMutation.mutate(AppointmentStatus.COMPLETED)
+                    }}
+                    disabled={statusMutation.isPending}
+                  >
+                    {t("details.confirmCompletion")}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           )}
           {(appointment.status === AppointmentStatus.SCHEDULED || appointment.status === AppointmentStatus.INPROGRESS) && (
             <Button 
@@ -146,6 +178,17 @@ export default function DoctorAppointmentDetailsPage() {
                   <div>
                     <h3 className="text-xl font-bold">{appointment.patient?.name || t("table.unknownPatient")}</h3>
                     <p className="text-sm text-muted-foreground">{appointment.patient?.email}</p>
+                    <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                      <span className="bg-muted px-2 py-1 rounded-md font-medium text-muted-foreground">
+                        Blood: <span className="text-foreground">{appointment.patient?.bloodGroup || t("table.na")}</span>
+                      </span>
+                      <span className="bg-muted px-2 py-1 rounded-md font-medium text-muted-foreground">
+                        Gender: <span className="text-foreground">{t("table.na")}</span>
+                      </span>
+                      <span className="bg-muted px-2 py-1 rounded-md font-medium text-muted-foreground">
+                        DOB: <span className="text-foreground">{t("table.na")}</span>
+                      </span>
+                    </div>
                   </div>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 text-sm">

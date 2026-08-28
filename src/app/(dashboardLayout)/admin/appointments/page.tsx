@@ -15,6 +15,9 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { format } from "date-fns"
+import { Eye } from "lucide-react"
+import Link from 'next/link'
+import { Button } from "@/components/ui/button"
 
 export default function AppointmentsManagementPage() {
   const { data: appointmentsData, isLoading, isError } = useQuery({
@@ -61,12 +64,13 @@ export default function AppointmentsManagementPage() {
               <TableHead>Patient</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Payment</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {appointments.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
+                <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
                   No appointments found.
                 </TableCell>
               </TableRow>
@@ -110,6 +114,13 @@ export default function AppointmentsManagementPage() {
                     >
                       {appointment.paymentStatus}
                     </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="icon" asChild>
+                      <Link href={`/admin/appointments/${appointment.id}`}>
+                        <Eye className="h-4 w-4" />
+                      </Link>
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))

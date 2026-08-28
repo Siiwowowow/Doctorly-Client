@@ -1,10 +1,10 @@
-import { DoctorSidebar } from "@/components/layout/DoctorSidebar"
+import { DoctorSidebar } from "@/components/layout/DoctorSidebar";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar"
-import { Separator } from "@/components/ui/separator"
+} from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -12,19 +12,21 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { getUserInfo } from "@/services/auth.services"
-import { redirect } from "next/navigation"
+} from "@/components/ui/breadcrumb";
+import { getUserInfo } from "@/services/auth.services";
+import { redirect } from "next/navigation";
+
 export default async function DoctorLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   const user = await getUserInfo();
 
   if (!user || user.role !== "DOCTOR") {
-    redirect("/login");
+    redirect("/login?redirect=/doctor/dashboard");
   }
+
   return (
     <SidebarProvider>
       <DoctorSidebar />
@@ -51,5 +53,5 @@ export default async function DoctorLayout({
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }

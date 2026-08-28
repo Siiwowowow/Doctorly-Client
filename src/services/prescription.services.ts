@@ -1,72 +1,33 @@
 "use server";
 // src/services/prescription.services.ts
 import { ApiResponse, Prescription } from "@/types/api.types";
-import { cookies } from "next/headers";
-
-const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+import { serverFetch } from "@/lib/serverFetch";
 
 export async function getMyPrescriptions(): Promise<ApiResponse<Prescription[]>> {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("accessToken")?.value;
+    return await serverFetch<Prescription[]>("/prescriptions/my-prescriptions");
+}
 
-    const res = await fetch(`${BASE_API_URL}/prescriptions/my-prescriptions`, {
-        headers: {
-            "Content-Type": "application/json",
-            Cookie: `accessToken=${accessToken}; better-auth.session_token=${cookieStore.get("better-auth.session_token")?.value}`
-        },
-        cache: "no-store"
-    });
-
-    if (!res.ok) {
-        throw new Error("Failed to fetch prescriptions");
-    }
-
-    return res.json();
+export async function getAllPrescriptions(queryParams?: Record<string, unknown>): Promise<ApiResponse<Prescription[]>> {
+    return await serverFetch<Prescription[]>("/prescriptions", { params: queryParams });
 }
 
 export async function getPrescriptionById(id: string): Promise<ApiResponse<Prescription>> {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("accessToken")?.value;
-
-    const res = await fetch(`${BASE_API_URL}/prescriptions/${id}`, {
-        headers: {
-            "Content-Type": "application/json",
-            Cookie: `accessToken=${accessToken}; better-auth.session_token=${cookieStore.get("better-auth.session_token")?.value}`
-        },
-        cache: "no-store"
-    });
-
-    if (!res.ok) {
-        throw new Error("Failed to fetch prescription details");
-    }
-
-    return res.json();
+    return await serverFetch<Prescription>(`/prescriptions/${id}`);
 }
 
 export async function createPrescription(data: Partial<Prescription>): Promise<ApiResponse<Prescription>> {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("accessToken")?.value;
-
-    const res = await fetch(`${BASE_API_URL}/prescriptions`, {
+    return await serverFetch<Prescription>("/prescriptions", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Cookie: `accessToken=${accessToken}; better-auth.session_token=${cookieStore.get("better-auth.session_token")?.value}`
-        },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
     });
-
-    if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || "Failed to create prescription");
-    }
-
-    return res.json();
 }
 
-import { httpClient } from "@/lib/axios/httpClient";
+export async function deletePrescription(id: string): Promise<ApiResponse<Prescription>> {
+    return await serverFetch<Prescription>(`/prescriptions/${id}`, {
+        method: "DELETE",
+    });
+}
 
-export const getAllPrescriptionsAdmin = async (params?: Record<string, unknown>): Promise<ApiResponse<Prescription[]>> => {
-    return await httpClient.get<Prescription[]>("/prescriptions", { params });
-};
-
+export async function getAllPrescriptionsAdmin(params?: Record<string, unknown>): Promise<ApiResponse<Prescription[]>> {
+    return await serverFetch<Prescription[]>("/prescriptions", { params });
+}

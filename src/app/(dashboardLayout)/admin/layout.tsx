@@ -1,10 +1,10 @@
-import { AdminSidebar } from "@/components/layout/AdminSidebar"
+import { AdminSidebar } from "@/components/layout/AdminSidebar";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar"
-import { Separator } from "@/components/ui/separator"
+} from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -12,23 +12,19 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { getUserInfo } from "@/services/auth.services"
-import { redirect } from "next/navigation"
+} from "@/components/ui/breadcrumb";
+import { getUserInfo } from "@/services/auth.services";
+import { redirect } from "next/navigation";
 
 export default async function AdminLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   const user = await getUserInfo();
-  
-  if (!user) {
-    redirect("/login");
-  }
 
-  if (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN") {
-    redirect("/"); // Redirect unauthorized users to home or user dashboard
+  if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
+    redirect("/login?redirect=/admin/dashboard");
   }
 
   return (
@@ -57,5 +53,5 @@ export default async function AdminLayout({
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }

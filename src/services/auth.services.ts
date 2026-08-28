@@ -1,14 +1,10 @@
-//src/services/auth.services.ts
+// src/services/auth.services.ts
 "use server";
 
 import { setTokenInCookies } from "@/lib/tokenUtils";
 import { cookies } from "next/headers";
 
-const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-if (!BASE_API_URL) {
-    throw new Error("NEXT_PUBLIC_API_BASE_URL is not defined");
-}
+const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api/v1";
 
 export interface IRefreshTokenData {
     accessToken: string;
@@ -16,58 +12,19 @@ export interface IRefreshTokenData {
     token: string;
 }
 
-export async function getNewTokensWithRefreshToken(refreshToken: string): Promise<IRefreshTokenData | null> {
-    try {
-        const res = await fetch(`${BASE_API_URL}/auth/refresh-token`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Cookie: `refreshToken=${refreshToken}; better-auth.session_token=${(await cookies()).get("better-auth.session_token")?.value}`
-            }
-        });
-
-        if (!res.ok) {
-            return null;
-        }
-
-        const { data } = await res.json();
-        const { accessToken, refreshToken: newRefreshToken, token } = data;
-
-        // Still persist to cookies for the next server-side request (non-middleware)
-        if (accessToken) await setTokenInCookies("accessToken", accessToken);
-        if (newRefreshToken) await setTokenInCookies("refreshToken", newRefreshToken);
-        if (token) await setTokenInCookies("better-auth.session_token", token, 24 * 60 * 60);
-
-        return { accessToken, refreshToken: newRefreshToken, token };
-    } catch (error) {
-        console.error("Error refreshing token:", error);
-        return null;
-    }
-}
-
-
-/**
- * Refreshes tokens AND returns the NEW token values directly.
- *
- * WHY: Next.js `cookies()` is request-scoped. When you call
- * `cookieStore.set(...)` inside a server action, the new value is sent
- * as a Set-Cookie response header but the in-memory `cookieStore` object
- * still reflects the ORIGINAL request cookies. Calling `cookieStore.get()`
- * again after a `set` returns the old value, not the new one.
- *
- * Solution: return the token strings we just received from the API
- * and use them directly, bypassing the stale cookie store.
- */
-async function refreshAndGetTokens(
+export async function getNewTokensWithRefreshToken(
     refreshToken: string
-): Promise<{ accessToken: string; sessionToken: string } | null> {
+): Promise<{ accessToken: string; refreshToken: string; token: string } | null> {
     try {
+        const cookieStore = await cookies();
+        const sessionToken = cookieStore.get("better-auth.session_token")?.value;
+
         const res = await fetch(`${BASE_API_URL}/auth/refresh-token`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                Cookie: `refreshToken=${refreshToken}; better-auth.session_token=${(await cookies()).get("better-auth.session_token")?.value}`
-            }
+                Cookie: `refreshToken=${refreshToken}; better-auth.session_token=${sessionToken || ""}`,
+            },
         });
 
         if (!res.ok) return null;
@@ -77,14 +34,13 @@ async function refreshAndGetTokens(
 
         if (!accessToken) return null;
 
-        // Persist to cookies so the NEXT request will have them
-        await setTokenInCookies("accessToken", accessToken);
-        if (newRefreshToken) await setTokenInCookies("refreshToken", newRefreshToken);
+        await setTokenInCookies("accessToken", accessToken, 24 * 60 * 60);
+        if (newRefreshToken) await setTokenInCookies("refreshToken", newRefreshToken, 7 * 24 * 60 * 60);
         if (token) await setTokenInCookies("better-auth.session_token", token, 24 * 60 * 60);
 
-        return { accessToken, sessionToken: token ?? "" };
+        return { accessToken, refreshToken: newRefreshToken || refreshToken, token: token || sessionToken || "" };
     } catch (error) {
-        console.error("Error in refreshAndGetTokens:", error);
+        console.error("Error in getNewTokensWithRefreshToken:", error);
         return null;
     }
 }
@@ -94,15 +50,13 @@ export async function getUserInfo() {
         const cookieStore = await cookies();
         let accessToken = cookieStore.get("accessToken")?.value;
         const refreshToken = cookieStore.get("refreshToken")?.value;
+        let sessionToken = cookieStore.get("better-auth.session_token")?.value;
 
-        // If no accessToken but we have a refreshToken, get new tokens.
-        // Use the RETURNED values directly — do NOT re-read cookieStore,
-        // because cookieStore.get() still returns the old request cookies
-        // after a set() call within the same request.
         if (!accessToken && refreshToken) {
-            const newTokens = await refreshAndGetTokens(refreshToken);
+            const newTokens = await getNewTokensWithRefreshToken(refreshToken);
             if (newTokens) {
                 accessToken = newTokens.accessToken;
+                sessionToken = newTokens.token;
             }
         }
 
@@ -110,35 +64,30 @@ export async function getUserInfo() {
             return null;
         }
 
-        // Send ONLY the accessToken — this forces the backend checkAuth
-        // middleware to use the JWT verification path, which is reliable.
-        // Sending better-auth.session_token would trigger auth.api.getSession()
-        // which can fail if the session has expired in the DB, causing 401
-        // even when the JWT is perfectly valid.
         let res = await fetch(`${BASE_API_URL}/auth/me`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
-                Cookie: `accessToken=${accessToken}; better-auth.session_token=${(await cookies()).get("better-auth.session_token")?.value}`
-            }
+                Cookie: `accessToken=${accessToken}; better-auth.session_token=${sessionToken || ""}`,
+            },
+            cache: "no-store",
         });
 
-        // 401 fallback: accessToken might be expired, try refreshing
         if (res.status === 401 && refreshToken) {
-            const newTokens = await refreshAndGetTokens(refreshToken);
+            const newTokens = await getNewTokensWithRefreshToken(refreshToken);
             if (newTokens) {
                 res = await fetch(`${BASE_API_URL}/auth/me`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
-                        Cookie: `accessToken=${newTokens.accessToken}; better-auth.session_token=${(await cookies()).get("better-auth.session_token")?.value}`
-                    }
+                        Cookie: `accessToken=${newTokens.accessToken}; better-auth.session_token=${newTokens.token}`,
+                    },
+                    cache: "no-store",
                 });
             }
         }
 
         if (!res.ok) {
-            console.error("Failed to fetch user info:", res.status, res.statusText);
             return null;
         }
 
@@ -153,14 +102,26 @@ export async function getUserInfo() {
 export async function logoutUser() {
     try {
         const cookieStore = await cookies();
-        cookieStore.delete("accessToken");
-        cookieStore.delete("refreshToken");
-        cookieStore.delete("better-auth.session_token");
+        const sessionToken = cookieStore.get("better-auth.session_token")?.value;
+        const accessToken = cookieStore.get("accessToken")?.value;
+
+        // Try backend logout
+        if (sessionToken || accessToken) {
+            await fetch(`${BASE_API_URL}/auth/logout`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Cookie: `accessToken=${accessToken || ""}; better-auth.session_token=${sessionToken || ""}`,
+                },
+            }).catch(() => {});
+        }
+
+        cookieStore.delete({ name: "accessToken", path: "/" });
+        cookieStore.delete({ name: "refreshToken", path: "/" });
+        cookieStore.delete({ name: "better-auth.session_token", path: "/" });
         return true;
     } catch (error) {
         console.error("Logout failed", error);
         return false;
     }
 }
-
-

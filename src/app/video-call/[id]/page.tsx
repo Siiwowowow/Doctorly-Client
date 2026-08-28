@@ -67,7 +67,6 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
 
     const handleCallAccepted = async (payload: any) => {
       if (payload.callId !== callId) return;
-      if (payload.callId !== callId) return;
       setIsCallConnected(true);
       
       // The caller creates the offer

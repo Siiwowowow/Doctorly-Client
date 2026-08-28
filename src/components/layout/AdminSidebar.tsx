@@ -14,7 +14,6 @@ import {
   Pill,
   CreditCard,
   Bell,
-  Settings,
   LogOut,
   ShieldAlert,
   Home
@@ -97,11 +96,6 @@ const adminItems = [
     title: "Notifications",
     url: "/admin/notifications",
     icon: Bell,
-  },
-  {
-    title: "Settings",
-    url: "/admin/settings",
-    icon: Settings,
   },
 ]
 

@@ -182,7 +182,7 @@ export default function ChatPage() {
     <div className="h-[calc(100vh-140px)] flex bg-background border rounded-2xl overflow-hidden shadow-sm">
       
       {/* Sidebar: Conversations List */}
-      <div className="w-full md:w-80 lg:w-96 border-r flex flex-col h-full bg-muted/20 shrink-0">
+      <div className={`w-full md:w-80 lg:w-96 border-r flex-col h-full bg-muted/20 shrink-0 ${activeConversationId ? 'hidden md:flex' : 'flex'}`}>
         <div className="p-4 border-b bg-background">
           <h2 className="text-xl font-bold mb-4">Messages</h2>
           <div className="relative">

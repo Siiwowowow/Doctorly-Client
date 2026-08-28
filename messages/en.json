@@ -490,7 +490,10 @@
       "time": "Time",
       "appointmentStatus": "Appointment Status",
       "paymentStatus": "Payment Status",
-      "confirmCancel": "Are you sure you want to cancel this appointment?"
+      "confirmCancel": "Are you sure you want to cancel this appointment?",
+      "completeConsultation": "Complete Consultation",
+      "completeConfirmMsg": "Are you sure you want to complete this consultation? Please ensure you have finalized the following:",
+      "confirmCompletion": "Confirm Completion"
     },
     "messages": {
       "statusUpdated": "Status Updated",
@@ -589,5 +592,47 @@
       "createFailed": "Failed to create availability",
       "loadFailed": "Error fetching schedules"
     }
+  },
+  "payments": {
+    "title": "Payments & Invoices",
+    "subtitle": "View your transaction history and download official consultation receipts.",
+    "payNow": "Pay Now",
+    "processing": "Processing payment...",
+    "verifying": "Verifying your payment with Stripe...",
+    "verifyingDetails": "Confirming transaction details. Please wait a moment...",
+    "verificationInProgress": "Payment Verification in Progress",
+    "verificationDescription": "Your transaction was received and is currently being synchronized with our healthcare system.",
+    "checkStatusAgain": "Check Status Again",
+    "paymentSuccessful": "Payment Successful!",
+    "paymentConfirmed": "Your payment has been confirmed and your consultation is booked.",
+    "paymentCancelled": "Payment Cancelled",
+    "cancelDescription": "Your payment process was interrupted or cancelled. No charges were made to your account.",
+    "retryPayment": "Retry Payment Now",
+    "downloadInvoice": "Download Official Invoice",
+    "downloadingInvoice": "Generating invoice...",
+    "invoiceSuccess": "Invoice downloaded successfully!",
+    "invoiceError": "Failed to download invoice. Please try again.",
+    "alreadyPaid": "This appointment has already been paid.",
+    "appointmentRef": "Appointment Reference",
+    "transactionId": "Transaction ID",
+    "amount": "Amount",
+    "date": "Date",
+    "status": "Status"
+  },
+  "dashboardHeaders": {
+    "adminDashboard": "Admin Dashboard",
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "doctors": "Doctors",
+    "patients": "Patients",
+    "appointments": "Appointments",
+    "specialties": "Specialties",
+    "schedules": "Schedules",
+    "medicalRecords": "Medical Records",
+    "prescriptions": "Prescriptions",
+    "payments": "Payments",
+    "notifications": "Notifications",
+    "settings": "Settings"
   }
 }

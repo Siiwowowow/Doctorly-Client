@@ -6,7 +6,6 @@ import {
   UserRole,
 } from "@/lib/authUtils";
 
-import { httpClient } from "@/lib/axios/httpClient";
 import { setTokenInCookies } from "@/lib/tokenUtils";
 import { ApiErrorResponse } from "@/types/api.types";
 import { ILoginResponse } from "@/zod/auth.types";
@@ -16,6 +15,8 @@ import {
 } from "@/zod/auth.validation";
 
 import { redirect } from "next/navigation";
+
+const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api/v1";
 
 export const loginAction = async (
   payload: ILoginPayload,
@@ -34,32 +35,42 @@ export const loginAction = async (
   }
 
   try {
-    const response = await httpClient.post<ILoginResponse>(
-      "/auth/login",
-      parsedPayload.data
-    );
+    const response = await fetch(`${BASE_API_URL}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(parsedPayload.data),
+    });
 
-    const { accessToken, refreshToken, token, user } = response.data;
+    const resData = await response.json();
 
-    const { role, needPasswordChange, email } = user;
-
-    // ✅ set cookies - 3 days auto logout
-    const threeDays = 3 * 24 * 60 * 60;
-    await setTokenInCookies("accessToken", accessToken, 24 * 60 * 60, threeDays);
-    await setTokenInCookies("refreshToken", refreshToken, 24 * 60 * 60, threeDays);
-    await setTokenInCookies(
-      "better-auth.session_token",
-      token,
-      24 * 60 * 60,
-      threeDays
-    );
-
-    // ✅ password change flow
-    if (needPasswordChange) {
-      redirect(`/reset-password?email=${email}`);
+    if (!response.ok || !resData.success) {
+      if (resData.message === "Email not verified") {
+        redirect(`/verify-email?email=${encodeURIComponent(payload.email)}`);
+      }
+      return {
+        success: false,
+        message: resData.message || "Invalid email or password.",
+      };
     }
 
-    // ✅ Role অনুযায়ী redirect logic
+    const { accessToken, refreshToken, token, user } = resData.data;
+    const { role, needPasswordChange, email } = user;
+
+    // Set secure cookies: access token (1d), refresh token (7d), session token (1d)
+    await setTokenInCookies("accessToken", accessToken, 24 * 60 * 60);
+    await setTokenInCookies("refreshToken", refreshToken, 7 * 24 * 60 * 60);
+    if (token) {
+      await setTokenInCookies("better-auth.session_token", token, 24 * 60 * 60);
+    }
+
+    // Password change flow
+    if (needPasswordChange) {
+      redirect(`/reset-password?email=${encodeURIComponent(email)}`);
+    }
+
+    // Role-based sanitized redirect
     const finalRedirect = getRedirectAfterLogin(
       role as UserRole,
       redirectPath
@@ -68,24 +79,17 @@ export const loginAction = async (
     return {
       success: true,
       redirectUrl: finalRedirect,
-      user
+      user,
     } as any;
   } catch (error: any) {
-    console.error("Login action error:", error);
-
-    // ✅ handle email not verified
-    if (
-      error?.response?.data?.message === "Email not verified"
-    ) {
-      redirect(`/verify-email?email=${payload.email}`);
+    if (error?.digest?.startsWith("NEXT_REDIRECT")) {
+      throw error;
     }
+    console.error("Login action error:", error);
 
     return {
       success: false,
-      message:
-        error?.response?.data?.message ||
-        error.message ||
-        "Login failed",
+      message: error?.message || "Invalid email or password.",
     };
   }
 };

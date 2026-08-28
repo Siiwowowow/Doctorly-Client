@@ -15,7 +15,7 @@ import {
 import { ILoginPayload, loginZodSchema } from "@/zod/auth.validation";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Info } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import AppField from "../shared/form/AppField";
@@ -28,7 +28,7 @@ import { UserRole } from "@/lib/authUtils";
 
 interface LoginFormProps {
   redirectPath?: string;
-  defaultEmail?: string;      // 👈 যোগ করা হয়েছে (Register থেকে email pass করার জন্য)
+  defaultEmail?: string;
   reason?: string;
 }
 
@@ -41,7 +41,7 @@ const LoginForm = ({ redirectPath, defaultEmail = "", reason = "" }: LoginFormPr
 
   useEffect(() => {
     if (reason === "expired" && !hasShownToast) {
-      toast.error("Your session has expired. Please log in again.");
+      toast.info("Your session has expired. Please log in again.");
       setUser(null);
       setHasShownToast(true);
     }
@@ -53,7 +53,7 @@ const LoginForm = ({ redirectPath, defaultEmail = "", reason = "" }: LoginFormPr
 
   const form = useForm({
     defaultValues: {
-      email: defaultEmail,    // 👈 যোগ করা হয়েছে (URL থেকে email pre-fill হবে)
+      email: defaultEmail,
       password: "",
     },
 
@@ -75,27 +75,25 @@ const LoginForm = ({ redirectPath, defaultEmail = "", reason = "" }: LoginFormPr
         if (result.redirectUrl) {
           router.push(result.redirectUrl);
         } else {
-          // 👈 Fallback: Role based redirect
           const userRole = result.user?.role as UserRole;
           const roleBasedRedirect = getRoleBasedRedirect(userRole);
           router.push(roleBasedRedirect);
         }
       } catch (error: any) {
-        setServerError(`Login failed: ${error.message}`);
+        setServerError(error.message || "Invalid email or password.");
       }
     },
   });
 
-  // 👈 Fallback function for role based redirect
   const getRoleBasedRedirect = (role: UserRole): string => {
     switch (role) {
       case "SUPER_ADMIN":
       case "ADMIN":
         return "/admin/dashboard";
-      case "SELLER":
-        return "/seller/dashboard";
-      case "CUSTOMER":
-        return "/dashboard";
+      case "DOCTOR":
+        return "/doctor/dashboard";
+      case "PATIENT":
+        return "/user/dashboard";
       default:
         return "/";
     }
@@ -109,6 +107,15 @@ const LoginForm = ({ redirectPath, defaultEmail = "", reason = "" }: LoginFormPr
       </CardHeader>
 
       <CardContent>
+        {reason === "expired" && (
+          <Alert className="mb-4 bg-amber-50 text-amber-900 border-amber-200 dark:bg-amber-950 dark:text-amber-100 dark:border-amber-800">
+            <Info className="h-4 w-4 text-amber-600" />
+            <AlertDescription>
+              Your session has expired. Please log in again.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <form
           method="POST"
           action="#"
@@ -197,7 +204,7 @@ const LoginForm = ({ redirectPath, defaultEmail = "", reason = "" }: LoginFormPr
             <div className="w-full border-t border-gray-300"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">Or continue with</span>
+            <span className="px-2 bg-white dark:bg-slate-900 text-gray-500">Or continue with</span>
           </div>
         </div>
 
