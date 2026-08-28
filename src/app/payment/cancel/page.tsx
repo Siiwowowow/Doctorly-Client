@@ -18,7 +18,7 @@ export default function PaymentCancelPage() {
         
         <h1 className="text-3xl font-bold text-gray-900 mb-3 tracking-tight">Payment Cancelled</h1>
         <p className="text-gray-500 mb-8 leading-relaxed">
-          Your payment process was interrupted or cancelled. Don't worry, no charges were made to your account.
+          Your payment process was interrupted or cancelled. Don&apos;t worry, no charges were made to your account.
         </p>
 
         <div className="flex flex-col gap-3">

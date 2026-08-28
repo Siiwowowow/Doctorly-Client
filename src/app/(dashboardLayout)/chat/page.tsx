@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useAuth } from "@/providers/AuthProvider"
 import { useSocket } from "@/providers/SocketProvider"
-import { getMyConversations, getConversationMessages, sendChatMessage, markConversationAsRead } from "@/services/chat.services"
+import { getMyConversations, getConversationMessages } from "@/services/chat.services"
 import { Loader2, Search, MessageSquare, CheckCircle2, Send } from "lucide-react"
 import { format } from "date-fns"
 import { toast } from "sonner"
@@ -62,7 +62,7 @@ export default function ChatPage() {
       }
     }
     fetchMsgs()
-  }, [activeConversationId])
+  }, [activeConversationId, isConnected, socket])
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -77,7 +77,11 @@ export default function ChatPage() {
 
     const handleMessage = (msg: any) => {
       if (msg.conversationId === activeConversationId && activeConversationId) {
-        setMessages(prev => [...prev, msg])
+        setMessages(prev => {
+          // Prevent duplicates (especially in React StrictMode)
+          if (prev.some(m => m.id === msg.id)) return prev;
+          return [...prev, msg];
+        });
         if (socket && isConnected) {
             (socket as any).emit("chat:read", { conversationId: activeConversationId });
         }

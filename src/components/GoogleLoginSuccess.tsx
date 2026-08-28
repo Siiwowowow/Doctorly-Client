@@ -31,7 +31,7 @@ export function GoogleLoginSuccess() {
           setUser(data.data); // 🔥 THIS FIXES EVERYTHING
         }
       } catch (err) {
-        console.log(err);
+        console.error("Failed to fetch user:", err);
       }
     };
 

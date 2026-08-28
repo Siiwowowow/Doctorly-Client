@@ -16,7 +16,7 @@ async function refreshTokenMiddleware(refreshToken: string): Promise<boolean> {
   }
 }
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   try {
     const { pathname } = request.nextUrl;
     const pathWithQuery = `${pathname}${request.nextUrl.search}`;
@@ -136,6 +136,10 @@ export async function proxy(request: NextRequest) {
 
     // ✅ Rule 6: Common protected route -> allow (Profile, Change Password etc.)
     if (routeOwner === "COMMON") {
+      // Prevent ADMIN from accessing chat and video-call
+      if ((pathname === "/chat" || pathname.startsWith("/video-call")) && (userRole === "ADMIN" || userRole === "SUPER_ADMIN")) {
+        return NextResponse.redirect(new URL(getDefaultDashboardRoute(userRole as UserRole), request.url));
+      }
       return NextResponse.next();
     }
 

@@ -1,47 +1,54 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable react/no-unescaped-entities */
+
 "use client"
 
-import { useEffect, useState } from "react"
+import { useMemo } from "react"
 import { useParams } from "next/navigation"
-import { Patient } from "@/types/api.types"
-import { getPatientById } from "@/services/patient.services"
+import { Appointment, AppointmentStatus, PaymentStatus } from "@/types/api.types"
+import { getMyAppointments } from "@/services/appointment.services"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { User, Phone, MapPin, Mail, Calendar, FileText, Pill} from "lucide-react"
+import { User, Phone, MapPin, Mail, Calendar, FileText, Pill, CalendarDays, Clock, Video, MessageSquare, Droplet } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { useToast } from "@/hooks/use-toast"
+import { useTranslations } from "next-intl"
+import { useQuery } from "@tanstack/react-query"
+import { format } from "date-fns"
 
 export default function DoctorPatientDetailsPage() {
   const { patientId } = useParams()
-  const { toast } = useToast()
+  const t = useTranslations("doctorPatients")
   
-  const [patient, setPatient] = useState<Patient | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { data: appointmentsRes, isLoading, isError } = useQuery({
+    queryKey: ["doctor-appointments"],
+    queryFn: () => getMyAppointments(),
+    staleTime: 1000 * 60 * 5, // 5 mins
+  })
 
-  useEffect(() => {
-    const fetchPatient = async () => {
-      try {
-        const res = await getPatientById(patientId as string)
-        setPatient(res.data)
-      } catch (error: any) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: error.message || "Failed to load patient details.",
-        })
-      } finally {
-        setLoading(false)
-      }
-    }
+  // Extract patient and specific appointments
+  const { patient, patientAppointments, activeAppointment } = useMemo(() => {
+    if (!appointmentsRes?.data || !patientId) return { patient: null, patientAppointments: [], activeAppointment: undefined }
+
+    const allApts: Appointment[] = appointmentsRes.data
+    const pApts = allApts.filter(apt => apt.patientId === patientId)
     
-    if (patientId) {
-      fetchPatient()
-    }
-  }, [patientId,toast])
+    // Sort descending by date
+    pApts.sort((a, b) => {
+       const dateA = a.schedule?.startDateTime ? new Date(a.schedule.startDateTime).getTime() : 0
+       const dateB = b.schedule?.startDateTime ? new Date(b.schedule.startDateTime).getTime() : 0
+       return dateB - dateA
+    })
 
-  if (loading) {
+    // The patient payload is the same across appointments for this patientId, just take the first one
+    const p = pApts.length > 0 ? pApts[0].patient : null
+
+    const activeApt = pApts.find(a => a.status === AppointmentStatus.INPROGRESS) || 
+                      pApts.slice().reverse().find(a => a.status === AppointmentStatus.SCHEDULED && new Date(a.schedule?.startDateTime || "") >= new Date(new Date().setHours(0,0,0,0)))
+
+    return { patient: p, patientAppointments: pApts, activeAppointment: activeApt }
+  }, [appointmentsRes, patientId])
+
+  if (isLoading) {
     return (
       <div className="space-y-6 max-w-5xl mx-auto">
         <Skeleton className="h-37.5 w-full rounded-xl" />
@@ -50,16 +57,26 @@ export default function DoctorPatientDetailsPage() {
     )
   }
 
-  if (!patient) {
+  if (isError || !patient) {
     return (
       <div className="p-12 text-center">
-        <h2 className="text-2xl font-bold mb-2">Patient Not Found</h2>
-        <p className="text-muted-foreground mb-6">You may not have permission to view this patient's details.</p>
+        <h2 className="text-2xl font-bold mb-2">{t("emptyStates.notFound")}</h2>
+        <p className="text-muted-foreground mb-6">{t("emptyStates.notFoundDesc")}</p>
         <Button asChild>
-          <Link href="/doctor/patients">Back to Patient List</Link>
+          <Link href="/doctor/patients">{t("actions.backToPatients")}</Link>
         </Button>
       </div>
     )
+  }
+
+  const getStatusBadge = (status: AppointmentStatus) => {
+    switch(status) {
+      case AppointmentStatus.SCHEDULED: return <Badge variant="secondary">Scheduled</Badge>
+      case AppointmentStatus.INPROGRESS: return <Badge className="bg-blue-500 hover:bg-blue-600">In Progress</Badge>
+      case AppointmentStatus.COMPLETED: return <Badge className="bg-green-500 hover:bg-green-600">Completed</Badge>
+      case AppointmentStatus.CANCELED: return <Badge variant="destructive">Canceled</Badge>
+      default: return <Badge>{status}</Badge>
+    }
   }
 
   return (
@@ -71,8 +88,8 @@ export default function DoctorPatientDetailsPage() {
             <Link href="/doctor/patients">← Back</Link>
           </Button>
           <div>
-            <h1 className="font-bold text-lg">Patient Profile</h1>
-            <p className="text-xs text-muted-foreground">ID: {patient.id}</p>
+            <h1 className="font-bold text-lg">{t("details.title")}</h1>
+            <p className="text-xs text-muted-foreground">{t("details.id")}: {patient.id}</p>
           </div>
         </div>
       </div>
@@ -86,23 +103,29 @@ export default function DoctorPatientDetailsPage() {
                 <User className="h-16 w-16 text-primary" />
               </div>
               <h2 className="text-2xl font-bold">{patient.name}</h2>
-              <p className="text-muted-foreground text-sm mb-4">Patient</p>
+              <p className="text-muted-foreground text-sm mb-4">{t("details.patient")}</p>
               
               <div className="w-full space-y-3 mt-4 text-sm text-left">
                 <div className="flex items-center gap-3 p-2 bg-muted/30 rounded-md">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
                   <span className="truncate">{patient.email}</span>
                 </div>
                 {patient.contactNumber && (
                   <div className="flex items-center gap-3 p-2 bg-muted/30 rounded-md">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
                     <span>{patient.contactNumber}</span>
                   </div>
                 )}
                 {patient.address && (
                   <div className="flex items-center gap-3 p-2 bg-muted/30 rounded-md">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
                     <span>{patient.address}</span>
+                  </div>
+                )}
+                {patient.bloodGroup && (
+                  <div className="flex items-center gap-3 p-2 bg-red-50 text-red-800 rounded-md">
+                    <Droplet className="h-4 w-4 shrink-0" />
+                    <span className="font-semibold">{t("details.bloodGroup")}: {patient.bloodGroup}</span>
                   </div>
                 )}
               </div>
@@ -112,10 +135,42 @@ export default function DoctorPatientDetailsPage() {
 
         {/* Right Column: Clinical Data Access */}
         <div className="md:col-span-2 space-y-6">
+          
+          {/* Active Consultation Module */}
+          {activeAppointment && (
+            <Card className="border-blue-200 bg-blue-50/50 shadow-sm">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+                  <CardTitle className="text-blue-700">{t("details.activeConsultation")}</CardTitle>
+                </div>
+                <CardDescription>
+                  {activeAppointment.schedule?.startDateTime ? format(new Date(activeAppointment.schedule.startDateTime), "MMM dd, yyyy - hh:mm a") : ""}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-3">
+                  <Button className="bg-blue-600 hover:bg-blue-700 text-white" asChild>
+                    <Link href={`/video-call/${activeAppointment.videoCallingId}`}>
+                      <Video className="mr-2 h-4 w-4" />
+                      {t("details.startVideo")}
+                    </Link>
+                  </Button>
+                  <Button variant="outline" className="border-blue-200 text-blue-700 hover:bg-blue-100" asChild>
+                    <Link href={`/chat?userId=${patient.userId}`}>
+                      <MessageSquare className="mr-2 h-4 w-4" />
+                      {t("details.messagePatient")}
+                    </Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <Card>
             <CardHeader>
-              <CardTitle>Clinical Overview</CardTitle>
-              <CardDescription>Access patient's medical history and records.</CardDescription>
+              <CardTitle>{t("details.clinicalOverview")}</CardTitle>
+              <CardDescription>{t("details.clinicalOverviewDesc")}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid sm:grid-cols-2 gap-4">
@@ -124,10 +179,10 @@ export default function DoctorPatientDetailsPage() {
                   <div className="bg-teal-100 text-teal-600 p-3 rounded-full mb-3">
                     <FileText className="h-6 w-6" />
                   </div>
-                  <h3 className="font-semibold text-lg">Medical Records</h3>
-                  <p className="text-sm text-muted-foreground mb-4 mt-1">View previous diagnoses, notes, and uploaded documents.</p>
-                  <Button variant="outline" className="w-full mt-auto text-teal-600 border-teal-200" asChild>
-                    <Link href={`/doctor/medical-records?patientId=${patient.id}`}>View Records</Link>
+                  <h3 className="font-semibold text-lg">{t("details.medicalRecords")}</h3>
+                  <p className="text-sm text-muted-foreground mb-4 mt-1">{t("details.medicalRecordsDesc")}</p>
+                  <Button variant="outline" className="w-full mt-auto text-teal-600 border-teal-200 bg-background" asChild>
+                    <Link href={`/doctor/medical-records?patientId=${patient.id}`}>{t("details.viewRecords")}</Link>
                   </Button>
                 </div>
 
@@ -136,27 +191,74 @@ export default function DoctorPatientDetailsPage() {
                   <div className="bg-blue-100 text-blue-600 p-3 rounded-full mb-3">
                     <Pill className="h-6 w-6" />
                   </div>
-                  <h3 className="font-semibold text-lg">Prescriptions</h3>
-                  <p className="text-sm text-muted-foreground mb-4 mt-1">View past prescriptions and medication history.</p>
-                  <Button variant="outline" className="w-full mt-auto text-blue-600 border-blue-200" asChild>
-                    <Link href={`/doctor/prescriptions?patientId=${patient.id}`}>View Prescriptions</Link>
+                  <h3 className="font-semibold text-lg">{t("details.prescriptions")}</h3>
+                  <p className="text-sm text-muted-foreground mb-4 mt-1">{t("details.prescriptionsDesc")}</p>
+                  <Button variant="outline" className="w-full mt-auto text-blue-600 border-blue-200 bg-background" asChild>
+                    <Link href={`/doctor/prescriptions?patientId=${patient.id}`}>{t("details.viewPrescriptions")}</Link>
                   </Button>
                 </div>
 
-                {/* Appointment History */}
+                {/* Appointment Jump Link */}
                 <div className="border rounded-xl p-5 hover:bg-muted/30 transition-colors flex flex-col items-center text-center sm:col-span-2">
                   <div className="bg-purple-100 text-purple-600 p-3 rounded-full mb-3">
                     <Calendar className="h-6 w-6" />
                   </div>
-                  <h3 className="font-semibold text-lg">Appointment History</h3>
-                  <p className="text-sm text-muted-foreground mb-4 mt-1">View past and upcoming consultations with this patient.</p>
-                  <Button variant="outline" className="w-full max-w-xs mt-auto text-purple-600 border-purple-200" asChild>
-                    <Link href={`/doctor/appointments?search=${patient.name}`}>View Appointments</Link>
+                  <h3 className="font-semibold text-lg">{t("details.appointmentHistory")}</h3>
+                  <p className="text-sm text-muted-foreground mb-4 mt-1">{t("details.appointmentHistoryDesc")}</p>
+                  <Button variant="outline" className="w-full max-w-xs mt-auto text-purple-600 border-purple-200 bg-background" asChild>
+                    <Link href={`/doctor/appointments?search=${patient.name}`}>{t("details.viewAppointments")}</Link>
                   </Button>
                 </div>
               </div>
             </CardContent>
           </Card>
+          
+          {/* History List */}
+          <Card>
+             <CardHeader>
+                <CardTitle>{t("details.historyTitle")}</CardTitle>
+                <CardDescription>{t("details.historyDesc")}</CardDescription>
+             </CardHeader>
+             <CardContent>
+                {patientAppointments.length === 0 ? (
+                   <p className="text-muted-foreground text-sm text-center py-8">{t("emptyStates.noHistory")}</p>
+                ) : (
+                   <div className="space-y-4">
+                      {patientAppointments.map((apt) => (
+                         <div key={apt.id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 border rounded-xl hover:border-primary/50 transition-colors gap-4">
+                            <div className="flex gap-4 items-center">
+                               <div className="bg-muted p-2 rounded-lg">
+                                  <CalendarDays className="h-5 w-5 text-primary" />
+                               </div>
+                               <div>
+                                  <p className="font-semibold">
+                                     {apt.schedule?.startDateTime ? format(new Date(apt.schedule.startDateTime), "MMM dd, yyyy") : "N/A"}
+                                  </p>
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                     <Clock className="h-3 w-3" />
+                                     <span>{apt.schedule?.startDateTime ? format(new Date(apt.schedule.startDateTime), "hh:mm a") : "N/A"}</span>
+                                  </div>
+                               </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-3">
+                               <div className="flex flex-col items-end mr-2">
+                                  {getStatusBadge(apt.status)}
+                                  <span className={`text-[10px] font-semibold mt-1 ${apt.paymentStatus === PaymentStatus.PAID ? 'text-green-600' : 'text-orange-600'}`}>
+                                    {apt.paymentStatus}
+                                  </span>
+                               </div>
+                               <Button variant="outline" size="sm" asChild>
+                                  <Link href={`/doctor/appointments/${apt.id}`}>{t("details.viewAppointments")}</Link>
+                               </Button>
+                            </div>
+                         </div>
+                      ))}
+                   </div>
+                )}
+             </CardContent>
+          </Card>
+
         </div>
       </div>
     </div>

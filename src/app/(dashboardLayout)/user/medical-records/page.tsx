@@ -9,12 +9,14 @@ export const metadata = {
 };
 
 export default async function MedicalRecordsPage() {
-  let records = [];
+  let records: MedicalRecord[] = [];
+  let errorMsg: string | null = null;
   try {
     const res = await getMyMedicalRecords();
     records = res.data || [];
   } catch (error) {
     console.error("Failed to load medical records:", error);
+    errorMsg = "Failed to load medical records. Please try again later.";
   }
 
   return (
@@ -27,7 +29,14 @@ export default async function MedicalRecordsPage() {
         </div>
       </div>
 
-      {records.length === 0 ? (
+      {errorMsg ? (
+        <Card className="border-dashed border-2 border-red-500/50 bg-red-500/10">
+          <CardContent className="flex flex-col items-center justify-center py-10 text-center">
+            <h3 className="text-xl font-semibold text-red-500">Error Loading Medical Records</h3>
+            <p className="mt-2 text-muted-foreground">{errorMsg}</p>
+          </CardContent>
+        </Card>
+      ) : records.length === 0 ? (
         <Card className="border-dashed border-2 bg-muted/10">
           <CardContent className="flex flex-col items-center justify-center py-20 text-center">
             <div className="rounded-full bg-muted p-6">

@@ -12,9 +12,18 @@ import AnnouncementBar from "@/components/landing/AnnouncementBar";
 import { Toaster } from "sonner";
 import { getUserInfo } from "@/services/auth.services";
 import HeaderWrapper from "@/components/shared/Layout/HeaderWrapper";
+import { Hind_Siliguri, Outfit } from "next/font/google";
 
+const hindSiliguri = Hind_Siliguri({
+  subsets: ["bengali", "latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-hind",
+});
 
-
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-outfit",
+});
 export const metadata: Metadata = {
   title: "Doctorly | Smart Healthcare Management Platform",
   description: "Book appointments, consult doctors, and manage health records all in one place.",
@@ -31,14 +40,9 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning translate="no">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Outfit:wght@100..900&display=swap" rel="stylesheet" />
-      </head>
       <body
         suppressHydrationWarning
-        className={`flex flex-col min-h-screen antialiased bg-doctorly-bg text-doctorly-text ${
+        className={`flex flex-col min-h-screen antialiased bg-doctorly-bg text-doctorly-text ${hindSiliguri.variable} ${outfit.variable} ${
           locale === "bn" ? "font-hind" : "font-outfit"
         }`}
       >

@@ -24,7 +24,10 @@ instance.interceptors.response.use(
         if (error.response && error.response.status === 401) {
             console.warn("Session expired or invalid, redirecting to login...");
             if (typeof window !== 'undefined') {
-                window.location.href = '/login'; // লগইন পেজে পাঠিয়ে দিচ্ছে
+                const currentPath = window.location.pathname;
+                if (currentPath !== '/login') {
+                    window.location.href = `/login?reason=expired&redirect=${encodeURIComponent(currentPath)}`;
+                }
             }
         }
         return Promise.reject(error);

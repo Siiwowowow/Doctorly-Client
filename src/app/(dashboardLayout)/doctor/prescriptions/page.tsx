@@ -123,10 +123,10 @@ function PrescriptionList() {
                   </div>
                   
                   <div className="flex w-full sm:w-auto mt-2 sm:mt-0 gap-2">
-                    <Button variant="outline" className="w-full sm:w-auto" onClick={() => {
-                        toast({ title: "Feature coming soon", description: "Prescription details view is under development." })
-                    }}>
-                      View PDF
+                    <Button variant="outline" className="w-full sm:w-auto" asChild>
+                      <Link href={`/doctor/prescriptions/${prescription.id}`}>
+                        View Details
+                      </Link>
                     </Button>
                   </div>
                 </div>

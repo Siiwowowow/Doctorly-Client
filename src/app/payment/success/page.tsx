@@ -4,12 +4,54 @@ import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { MedicalLoader } from "@/components/ui/medical-loader";
+import { getAppointmentById } from "@/services/appointment.services";
+import { PaymentStatus } from "@/types/api.types";
 
 function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const appointmentId = searchParams.get("appointmentId");
+  const [loading, setLoading] = useState(true);
+  const [verified, setVerified] = useState(false);
+
+  useEffect(() => {
+    async function verifyPayment() {
+      if (!appointmentId) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const res = await getAppointmentById(appointmentId);
+        if (res.data && res.data.paymentStatus === PaymentStatus.PAID) {
+          setVerified(true);
+        }
+      } catch (error) {
+        console.error("Verification error:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    verifyPayment();
+  }, [appointmentId]);
+
+  if (loading) {
+    return <MedicalLoader text="Verifying payment status..." fullScreen={false} />;
+  }
+
+  if (!verified) {
+    return (
+      <div className="max-w-md w-full bg-white rounded-3xl shadow-xl shadow-red-500/5 border p-10 text-center animate-in fade-in zoom-in duration-500">
+        <h1 className="text-2xl font-bold text-gray-900 mb-3">Payment Unverified</h1>
+        <p className="text-gray-500 mb-8">We could not confirm your payment. It might still be processing.</p>
+        <div className="flex flex-col gap-3">
+          <Button asChild size="lg" className="w-full">
+            <Link href="/user/appointments">View Appointments</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-md w-full bg-white rounded-3xl shadow-xl shadow-primary/5 border p-10 text-center animate-in fade-in zoom-in duration-500 slide-in-from-bottom-4">

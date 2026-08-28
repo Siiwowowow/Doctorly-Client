@@ -4,7 +4,7 @@ import React from "react";
 import { getMyAppointments } from "@/services/appointment.services";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, Video, MapPin, Search } from "lucide-react";
+import { CalendarDays, MapPin, Search } from "lucide-react";
 import Link from "next/link";
 import { Appointment, AppointmentStatus, PaymentStatus } from "@/types/api.types";
 import { Badge } from "@/components/ui/badge";
@@ -16,11 +16,13 @@ export const metadata = {
 
 export default async function AppointmentsPage() {
   let appointments: Appointment[] = [];
+  let errorMsg: string | null = null;
   try {
     const res = await getMyAppointments();
     appointments = res.data || [];
   } catch (error) {
     console.error("Failed to load appointments:", error);
+    errorMsg = "Failed to load your appointments. Please try again later.";
   }
 
   const getStatusColor = (status: AppointmentStatus) => {
@@ -54,7 +56,14 @@ export default async function AppointmentsPage() {
         </Button>
       </div>
 
-      {appointments.length === 0 ? (
+      {errorMsg ? (
+        <Card className="border-dashed border-2 border-red-500/50 bg-red-500/10">
+          <CardContent className="flex flex-col items-center justify-center py-10 text-center">
+            <h3 className="text-xl font-semibold text-red-500">Error Loading Appointments</h3>
+            <p className="mt-2 text-muted-foreground">{errorMsg}</p>
+          </CardContent>
+        </Card>
+      ) : appointments.length === 0 ? (
         <Card className="border-dashed border-2 bg-muted/10">
           <CardContent className="flex flex-col items-center justify-center py-20 text-center">
             <div className="rounded-full bg-muted p-6">

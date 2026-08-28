@@ -385,5 +385,209 @@
     "dashboard": "ড্যাশবোর্ড",
     "profile": "প্রোফাইল",
     "settings": "সেটিংস"
+  },
+  "doctorDashboard": {
+    "greeting": "শুভ সকাল, ডা. {name}",
+    "todaysSchedule": "আজকের সময়সূচী",
+    "appointmentsForToday": "আজ আপনার জন্য {count} টি অ্যাপয়েন্টমেন্ট নির্ধারিত আছে।",
+    "stats": {
+      "todaysAppointments": "আজকের অ্যাপয়েন্টমেন্ট",
+      "todaysAppointmentsDesc": "আজকের জন্য নির্ধারিত রোগী",
+      "upcomingAppointments": "আসন্ন",
+      "upcomingAppointmentsDesc": "মোট নির্ধারিত অ্যাপয়েন্টমেন্ট",
+      "completedAppointments": "সম্পন্ন",
+      "completedAppointmentsDesc": "সফলভাবে সম্পন্ন",
+      "totalEarnings": "মোট আয়",
+      "totalEarningsDesc": "সম্পন্ন অ্যাপয়েন্টমেন্ট থেকে আয়",
+      "totalPatients": "মোট রোগী",
+      "totalPatientsDesc": "মোট চিকিৎসাকৃত রোগী"
+    },
+    "todaysAppointmentsTitle": "আজকের অ্যাপয়েন্টমেন্ট",
+    "upcomingAppointmentsTitle": "আসন্ন অ্যাপয়েন্টমেন্ট",
+    "actionRequiredTitle": "পদক্ষেপ প্রয়োজন",
+    "actionRequiredDesc": "অ্যাপয়েন্টমেন্ট বর্তমানে চলছে",
+    "recentPatientsTitle": "সাম্প্রতিক রোগী",
+    "recentPaymentsTitle": "সাম্প্রতিক পেমেন্ট",
+    "notificationsTitle": "বিজ্ঞপ্তি",
+    "quickActionsTitle": "দ্রুত পদক্ষেপ",
+    "quickActionsDesc": "সাধারণত ব্যবহৃত বৈশিষ্ট্য",
+    "manageSchedule": "সময়সূচী পরিচালনা করুন",
+    "viewPatientsList": "রোগীর তালিকা দেখুন",
+    "writePrescription": "প্রেসক্রিপশন লিখুন",
+    "viewMedicalRecords": "মেডিকেল রেকর্ড দেখুন",
+    "viewAll": "সব দেখুন",
+    "details": "বিস্তারিত",
+    "amount": "পরিমাণ",
+    "transactionId": "লেনদেন আইডি",
+    "patientName": "রোগীর নাম",
+    "lastAppointment": "শেষ অ্যাপয়েন্টমেন্ট",
+    "emptyStates": {
+      "noTodaysAppointments": "আজকের জন্য কোন অ্যাপয়েন্টমেন্ট নির্ধারিত নেই।",
+      "noUpcomingAppointments": "কোন আসন্ন অ্যাপয়েন্টমেন্ট নেই।",
+      "noActionRequired": "বর্তমানে কোন অ্যাপয়েন্টমেন্টের পদক্ষেপ প্রয়োজন নেই।",
+      "noRecentPatients": "আপনার অ্যাপয়েন্টমেন্টের পরে রোগীরা এখানে উপস্থিত হবে।",
+      "noRecentPayments": "কোন পেমেন্ট রেকর্ড উপলব্ধ নেই।",
+      "noNotifications": "আপনার কোন নতুন বিজ্ঞপ্তি নেই।"
+    },
+    "errors": {
+      "loadAppointments": "অ্যাপয়েন্টমেন্ট লোড করতে অক্ষম।",
+      "loadPayments": "পেমেন্ট তথ্য লোড করতে অক্ষম।",
+      "loadNotifications": "বিজ্ঞপ্তি লোড করতে অক্ষম।"
+    }
+  },
+  "doctorAppointments": {
+    "title": "অ্যাপয়েন্টমেন্ট",
+    "subtitle": "আপনার রোগীর অ্যাপয়েন্টমেন্ট এবং পরামর্শ পরিচালনা করুন।",
+    "filters": {
+      "searchPlaceholder": "রোগীর নাম বা আইডি খুঁজুন...",
+      "allStatuses": "সব স্ট্যাটাস",
+      "scheduled": "নির্ধারিত",
+      "inProgress": "চলমান",
+      "completed": "সম্পন্ন",
+      "canceled": "বাতিল"
+    },
+    "table": {
+      "unknownPatient": "অজানা রোগী",
+      "id": "আইডি",
+      "na": "উপলব্ধ নয়"
+    },
+    "actions": {
+      "startConsult": "পরামর্শ শুরু করুন",
+      "complete": "সম্পন্ন করুন",
+      "callPatient": "রোগীকে কল করুন",
+      "calling": "কল করা হচ্ছে...",
+      "viewDetails": "বিস্তারিত দেখুন",
+      "back": "ফিরে যান"
+    },
+    "emptyStates": {
+      "noAppointments": "কোন অ্যাপয়েন্টমেন্ট পাওয়া যায়নি।",
+      "notFound": "অ্যাপয়েন্টমেন্ট পাওয়া যায়নি",
+      "notFoundDesc": "আপনি যে অ্যাপয়েন্টমেন্টটি খুঁজছেন তা বিদ্যমান নেই বা এটি দেখার অনুমতি আপনার নেই।",
+      "backToAppointments": "অ্যাপয়েন্টমেন্টে ফিরে যান"
+    },
+    "details": {
+      "title": "অ্যাপয়েন্টমেন্ট বিস্তারিত",
+      "id": "আইডি",
+      "markCompleted": "সম্পন্ন হিসাবে চিহ্নিত করুন",
+      "cancel": "বাতিল করুন",
+      "joinVideo": "ভিডিও কলে যোগ দিন",
+      "patientInfo": "রোগীর তথ্য",
+      "viewMedicalHistory": "সম্পূর্ণ চিকিৎসা ইতিহাস দেখুন",
+      "clinicalActions": "ক্লিনিকাল পদক্ষেপ",
+      "prescription": "প্রেসক্রিপশন",
+      "prescriptionDesc": "এই পরামর্শের জন্য প্রেসক্রিপশন লিখুন বা দেখুন।",
+      "writePrescription": "প্রেসক্রিপশন লিখুন",
+      "medicalRecords": "মেডিকেল রেকর্ডস",
+      "medicalRecordsDesc": "ক্লিনিকাল নোট এবং পরীক্ষার রিপোর্ট পর্যালোচনা করুন।",
+      "viewRecords": "রেকর্ড দেখুন",
+      "view": "দেখুন",
+      "create": "তৈরি করুন",
+      "openChat": "চ্যাট খুলুন",
+      "openChatDesc": "আপনার রোগীকে নিরাপদে মেসেজ করুন।",
+      "goToChat": "চ্যাটে যান",
+      "scheduleDetails": "সময়সূচী বিস্তারিত",
+      "date": "তারিখ",
+      "time": "সময়",
+      "appointmentStatus": "অ্যাপয়েন্টমেন্ট স্ট্যাটাস",
+      "paymentStatus": "পেমেন্ট স্ট্যাটাস",
+      "confirmCancel": "আপনি কি নিশ্চিত যে আপনি এই অ্যাপয়েন্টমেন্টটি বাতিল করতে চান?"
+    },
+    "messages": {
+      "statusUpdated": "স্ট্যাটাস আপডেট করা হয়েছে",
+      "statusUpdatedDesc": "অ্যাপয়েন্টমেন্ট {status} হিসাবে চিহ্নিত করা হয়েছে।",
+      "updateFailed": "আপডেট ব্যর্থ হয়েছে",
+      "callFailed": "কল শুরু করতে ব্যর্থ হয়েছে",
+      "loadFailed": "অ্যাপয়েন্টমেন্ট বিস্তারিত লোড করতে ব্যর্থ হয়েছে।"
+    }
+  },
+  "doctorPatients": {
+    "title": "আমার রোগীরা",
+    "subtitle": "যে রোগীদের সাথে আপনি পরামর্শ করেছেন বা আগামীতে অ্যাপয়েন্টমেন্ট আছে।",
+    "filters": {
+      "searchPlaceholder": "নাম বা ফোন দিয়ে খুঁজুন..."
+    },
+    "stats": {
+      "totalAppointments": "মোট অ্যাপয়েন্টমেন্ট",
+      "latestStatus": "সর্বশেষ স্ট্যাটাস",
+      "lastConsultation": "সর্বশেষ পরামর্শ",
+      "na": "উপলব্ধ নয়"
+    },
+    "actions": {
+      "profile": "প্রোফাইল",
+      "records": "রেকর্ডস",
+      "backToPatients": "রোগীর তালিকায় ফিরে যান"
+    },
+    "emptyStates": {
+      "noPatients": "কোন রোগী পাওয়া যায়নি।",
+      "notFound": "রোগী পাওয়া যায়নি",
+      "notFoundDesc": "এই রোগীর বিবরণ দেখার অনুমতি আপনার নেই।",
+      "noHistory": "কোন অ্যাপয়েন্টমেন্ট ইতিহাস পাওয়া যায়নি।"
+    },
+    "details": {
+      "title": "রোগীর প্রোফাইল",
+      "id": "আইডি",
+      "patient": "রোগী",
+      "clinicalOverview": "ক্লিনিকাল ওভারভিউ",
+      "clinicalOverviewDesc": "রোগীর চিকিৎসা ইতিহাস এবং রেকর্ড অ্যাক্সেস করুন।",
+      "medicalRecords": "মেডিকেল রেকর্ডস",
+      "medicalRecordsDesc": "পূর্ববর্তী রোগ নির্ণয়, নোট এবং আপলোড করা নথি দেখুন।",
+      "viewRecords": "রেকর্ড দেখুন",
+      "prescriptions": "প্রেসক্রিপশন",
+      "prescriptionsDesc": "অতীতের প্রেসক্রিপশন এবং ওষুধের ইতিহাস দেখুন।",
+      "viewPrescriptions": "প্রেসক্রিপশন দেখুন",
+      "appointmentHistory": "অ্যাপয়েন্টমেন্ট ইতিহাস",
+      "appointmentHistoryDesc": "এই রোগীর সাথে অতীত এবং আগামী পরামর্শ দেখুন।",
+      "viewAppointments": "অ্যাপয়েন্টমেন্ট দেখুন",
+      "historyTitle": "পরামর্শের ইতিহাস",
+      "historyDesc": "এই রোগীর সাথে সম্পর্কিত সমস্ত অ্যাপয়েন্টমেন্ট।",
+      "date": "তারিখ",
+      "time": "সময়",
+      "status": "স্ট্যাটাস",
+      "payment": "পেমেন্ট",
+      "bloodGroup": "রক্তের গ্রুপ",
+      "gender": "লিঙ্গ",
+      "activeConsultation": "সক্রিয় পরামর্শ",
+      "startVideo": "ভিডিও কল শুরু করুন",
+      "messagePatient": "রোগীকে মেসেজ করুন"
+    }
+  },
+  "doctorSchedule": {
+    "title": "আমার সময়সূচী",
+    "subtitle": "রোগীদের পরামর্শের জন্য আপনার উপলব্ধতা পরিচালনা করুন।",
+    "tabs": {
+      "upcoming": "আগামী সময়সূচী",
+      "all": "সমস্ত সময়সূচী"
+    },
+    "actions": {
+      "addAvailability": "উপলব্ধতা যোগ করুন",
+      "addSelected": "{count} টি স্লট যোগ করুন",
+      "adding": "যোগ করা হচ্ছে...",
+      "remove": "স্লট সরান",
+      "cannotRemove": "বুক করা স্লট সরানো যাবে না",
+      "cancel": "বাতিল"
+    },
+    "dialog": {
+      "title": "উপলব্ধতার স্লট যোগ করুন",
+      "description": "পরামর্শের জন্য আপনি যে সময় স্লটগুলিতে উপলব্ধ থাকতে চান তা নির্বাচন করুন।",
+      "noSlots": "কোন সিস্টেম সময় স্লট উপলব্ধ নেই।"
+    },
+    "emptyStates": {
+      "noAdded": "আপনি এখনও কোনো উপলব্ধতার স্লট যোগ করেননি।",
+      "addNow": "এখনই স্লট যোগ করুন"
+    },
+    "badges": {
+      "booked": "বুক করা",
+      "available": "উপলব্ধ"
+    },
+    "messages": {
+      "confirmRemove": "আপনি কি নিশ্চিত যে আপনি এই স্লটটি মুছে ফেলতে চান?",
+      "removed": "স্লট সরানো হয়েছে",
+      "removedDesc": "আপনার উপলব্ধতার স্লটটি সরানো হয়েছে।",
+      "removeFailed": "স্লট সরাতে ব্যর্থ হয়েছে",
+      "created": "উপলব্ধতা তৈরি হয়েছে",
+      "createdDesc": "সফলভাবে নতুন উপলব্ধতার স্লট যোগ করা হয়েছে।",
+      "createFailed": "উপলব্ধতা তৈরি করতে ব্যর্থ হয়েছে",
+      "loadFailed": "সময়সূচী লোড করতে ত্রুটি"
+    }
   }
 }

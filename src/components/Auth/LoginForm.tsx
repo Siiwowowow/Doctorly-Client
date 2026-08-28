@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 import { loginAction } from "@/app/(authRouteGroup)/(auth)/login/_action";
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -16,7 +17,7 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AppField from "../shared/form/AppField";
 import AppSubmitButton from "../shared/form/AppSubmitButton";
 import { useRouter } from "next/navigation";
@@ -28,13 +29,23 @@ import { UserRole } from "@/lib/authUtils";
 interface LoginFormProps {
   redirectPath?: string;
   defaultEmail?: string;      // 👈 যোগ করা হয়েছে (Register থেকে email pass করার জন্য)
+  reason?: string;
 }
 
-const LoginForm = ({ redirectPath, defaultEmail = "" }: LoginFormProps) => {
+const LoginForm = ({ redirectPath, defaultEmail = "", reason = "" }: LoginFormProps) => {
   const [serverError, setServerError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const { setUser } = useUser();
+  const [hasShownToast, setHasShownToast] = useState(false);
+
+  useEffect(() => {
+    if (reason === "expired" && !hasShownToast) {
+      toast.error("Your session has expired. Please log in again.");
+      setUser(null);
+      setHasShownToast(true);
+    }
+  }, [reason, hasShownToast, setUser]);
 
   const { mutateAsync, isPending } = useMutation({
     mutationFn: (payload: ILoginPayload) => loginAction(payload, redirectPath),
@@ -70,7 +81,6 @@ const LoginForm = ({ redirectPath, defaultEmail = "" }: LoginFormProps) => {
           router.push(roleBasedRedirect);
         }
       } catch (error: any) {
-        console.log(`Login failed: ${error.message}`);
         setServerError(`Login failed: ${error.message}`);
       }
     },

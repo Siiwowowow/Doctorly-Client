@@ -9,9 +9,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { createPrescription } from "@/services/prescription.services"
-import { Plus, Trash2, ArrowLeft, Pill, FileText } from "lucide-react"
+import { getAppointmentById } from "@/services/appointment.services"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { Plus, Trash2, ArrowLeft, Pill, FileText, User } from "lucide-react"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function NewPrescriptionPage() {
   const searchParams = useSearchParams()
@@ -26,6 +29,17 @@ export default function NewPrescriptionPage() {
     { medicineName: "", dosage: "", frequency: "", duration: "", instructions: "" }
   ])
   const [submitting, setSubmitting] = useState(false)
+  
+  const queryClient = useQueryClient()
+
+  const { data: appointmentRes, isLoading: loadingAppointment } = useQuery({
+    queryKey: ["doctor-appointments", appointmentId],
+    queryFn: () => getAppointmentById(appointmentId),
+    enabled: !!appointmentId && appointmentId.length > 5,
+    staleTime: 1000 * 60 * 5,
+  })
+  
+  const appointment = appointmentRes?.data
 
   const handleAddMedicine = () => {
     setMedicines([...medicines, { medicineName: "", dosage: "", frequency: "", duration: "", instructions: "" }])
@@ -69,10 +83,14 @@ export default function NewPrescriptionPage() {
       
       await createPrescription(payload as any)
       
+      
       toast({
         title: "Success",
         description: "Prescription created successfully.",
       })
+      
+      queryClient.invalidateQueries({ queryKey: ["doctor-prescriptions"] })
+      queryClient.invalidateQueries({ queryKey: ["doctor-appointments"] })
       
       router.push("/doctor/prescriptions")
     } catch (error: any) {
@@ -120,7 +138,26 @@ export default function NewPrescriptionPage() {
               <p className="text-xs text-muted-foreground">The prescription must be tied to a specific appointment.</p>
             </div>
             
-            <div className="space-y-2">
+            {loadingAppointment ? (
+              <div className="space-y-2 mt-4">
+                <Skeleton className="h-16 w-full max-w-sm rounded-lg" />
+              </div>
+            ) : appointment ? (
+              <div className="bg-primary/5 p-4 rounded-lg flex items-start gap-3 mt-4 max-w-sm border border-primary/20">
+                <div className="bg-primary/10 p-2 rounded-full shrink-0 mt-1">
+                   <User className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                   <h4 className="font-semibold text-sm">{appointment.patient?.name}</h4>
+                   <p className="text-xs text-muted-foreground">{appointment.patient?.email}</p>
+                   {appointment.patient?.bloodGroup && <p className="text-xs text-red-600 mt-1 font-medium">{appointment.patient.bloodGroup}</p>}
+                </div>
+              </div>
+            ) : appointmentId.length > 5 ? (
+              <p className="text-sm text-destructive mt-2">Invalid or unauthorized appointment ID.</p>
+            ) : null}
+            
+            <div className="space-y-2 pt-2">
               <Label htmlFor="instructions">General Instructions / Advice</Label>
               <Textarea 
                 id="instructions" 
@@ -227,7 +264,7 @@ export default function NewPrescriptionPage() {
             <Button type="button" variant="outline" asChild>
               <Link href="/doctor/prescriptions">Cancel</Link>
             </Button>
-            <Button type="submit" disabled={submitting}>
+            <Button type="submit" disabled={submitting || !appointment}>
               {submitting ? "Saving..." : "Save Prescription"}
             </Button>
           </CardFooter>

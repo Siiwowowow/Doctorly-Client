@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { Star, MapPin, Building2, Stethoscope, Search } from "lucide-react";
+import DoctorFilters from "@/components/doctors/DoctorFilters";
 
 export const metadata = {
   title: "Find Doctors | Doctorly",
@@ -40,6 +41,9 @@ export default async function DoctorsPage(props: {
             Search from our extensive network of trusted healthcare professionals.
           </p>
         </div>
+
+        {/* Filters */}
+        <DoctorFilters />
 
         {/* Doctor Grid */}
         {doctors.length === 0 ? (

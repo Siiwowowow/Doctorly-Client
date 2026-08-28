@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
 import {
   Search,
   CalendarDays,
@@ -18,6 +21,17 @@ import DOCTORS from "@/json/doctors.json";
 
 export default function DoctorSearch() {
   const t = useTranslations("doctorSearch");
+  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [specialty, setSpecialty] = useState("");
+
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    if (searchTerm) params.set("query", searchTerm);
+    if (specialty && specialty !== t("allSpecialties")) params.set("specialty", specialty);
+    
+    router.push(`/doctors?${params.toString()}`);
+  };
   
   return (
     <section className="relative overflow-hidden bg-doctorly-bg py-20 md:py-24">
@@ -78,6 +92,9 @@ export default function DoctorSearch() {
 
                   <input
                     type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                     placeholder={t("searchPlaceholder")}
                     className="w-full bg-transparent text-sm font-medium text-gray-700 outline-none placeholder:text-gray-400"
                   />
@@ -97,12 +114,16 @@ export default function DoctorSearch() {
                     {t("specialtyLabel")}
                   </label>
 
-                  <select className="w-full cursor-pointer appearance-none bg-transparent text-sm font-semibold text-gray-700 outline-none">
-                    <option>{t("allSpecialties")}</option>
-                    <option>Cardiology</option>
-                    <option>Dermatology</option>
-                    <option>Pediatrics</option>
-                    <option>Neurology</option>
+                  <select 
+                    value={specialty}
+                    onChange={(e) => setSpecialty(e.target.value)}
+                    className="w-full cursor-pointer appearance-none bg-transparent text-sm font-semibold text-gray-700 outline-none"
+                  >
+                    <option value="">{t("allSpecialties")}</option>
+                    <option value="Cardiology">Cardiology</option>
+                    <option value="Dermatology">Dermatology</option>
+                    <option value="Pediatrics">Pediatrics</option>
+                    <option value="Neurology">Neurology</option>
                   </select>
                 </div>
               </div>
@@ -130,6 +151,7 @@ export default function DoctorSearch() {
 
               {/* Search button */}
               <Button
+                onClick={handleSearch}
                 className="
                   min-h-[58px] rounded-xl bg-doctorly-primary px-7
                   font-semibold text-white shadow-lg
@@ -338,6 +360,7 @@ export default function DoctorSearch() {
           className="mt-9 text-center"
         >
           <Button
+            onClick={() => router.push("/doctors")}
             variant="outline"
             className="
               group h-10 rounded-xl border-gray-200

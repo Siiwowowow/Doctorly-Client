@@ -65,7 +65,7 @@ export function GlobalListeners() {
     try {
       await rejectCall(incomingCall.callId);
       setIncomingCall(null);
-    } catch (error: unknown) {
+    } catch {
       setIncomingCall(null);
     }
   };

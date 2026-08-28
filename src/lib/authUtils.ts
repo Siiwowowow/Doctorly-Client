@@ -45,8 +45,8 @@ export const adminRoutes: RouteConfig = {
 
 // Common Protected Routes
 export const commonProtectedRoutes: RouteConfig = {
-  exact: ["/change-password"],
-  pattern: [],
+  exact: ["/change-password", "/chat"],
+  pattern: [/^\/video-call\/.*/, /^\/payment\/.*/],
 };
 
 export const isRouteMatches = (pathname: string, routes: RouteConfig): boolean => {

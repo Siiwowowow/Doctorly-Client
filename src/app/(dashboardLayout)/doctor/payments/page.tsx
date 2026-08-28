@@ -12,8 +12,13 @@ import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
-
-
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 export default function DoctorPaymentsPage() {
   const { toast } = useToast()
@@ -21,6 +26,7 @@ export default function DoctorPaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState<string>("ALL")
+  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null)
 
   useEffect(() => {
     const fetchPayments = async () => {
@@ -136,7 +142,11 @@ export default function DoctorPaymentsPage() {
                 </thead>
                 <tbody className="divide-y">
                   {filteredPayments.map((payment) => (
-                    <tr key={payment.id} className="hover:bg-muted/10 transition-colors">
+                    <tr 
+                      key={payment.id} 
+                      className="hover:bg-muted/10 transition-colors cursor-pointer"
+                      onClick={() => setSelectedPayment(payment)}
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
                         {format(new Date(payment.createdAt), "MMM dd, yyyy")}
                       </td>
@@ -157,8 +167,10 @@ export default function DoctorPaymentsPage() {
                       <td className="px-6 py-4 text-right font-bold">
                         ৳{Number(payment.amount).toLocaleString()}
                       </td>
-                      <td className="px-6 py-4 text-right">
-                        <Button variant="ghost" size="icon" title="Download Invoice" disabled={payment.status !== PaymentStatus.PAID}>
+                      <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                        <Button variant="ghost" size="icon" title="Download Invoice" disabled={payment.status !== PaymentStatus.PAID} onClick={() => {
+                          toast({ title: "Feature coming soon", description: "PDF generation is under development." })
+                        }}>
                           <Download className="h-4 w-4" />
                         </Button>
                       </td>
@@ -170,6 +182,65 @@ export default function DoctorPaymentsPage() {
           )}
         </CardContent>
       </Card>
+      <Dialog open={!!selectedPayment} onOpenChange={(open) => !open && setSelectedPayment(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Payment Details</DialogTitle>
+            <DialogDescription>
+              Transaction details for this consultation.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedPayment && (
+            <div className="space-y-4 py-4">
+              <div className="flex justify-between items-center border-b pb-4">
+                <span className="text-muted-foreground">Amount</span>
+                <span className="text-2xl font-bold">৳{Number(selectedPayment.amount).toLocaleString()}</span>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-muted-foreground block mb-1">Status</span>
+                  <Badge 
+                    variant={selectedPayment.status === PaymentStatus.PAID ? "default" : "outline"}
+                    className={selectedPayment.status === PaymentStatus.PAID ? "bg-green-500" : "text-orange-500 border-orange-500"}
+                  >
+                    {selectedPayment.status}
+                  </Badge>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block mb-1">Date</span>
+                  <span className="font-medium">{format(new Date(selectedPayment.createdAt), "MMM dd, yyyy h:mm a")}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block mb-1">Transaction ID</span>
+                  <span className="font-mono text-xs">{selectedPayment.transactionId}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block mb-1">Patient</span>
+                  <span className="font-medium">{selectedPayment.appointment?.patient?.name || "Unknown"}</span>
+                </div>
+                <div className="col-span-2 mt-2">
+                  <span className="text-muted-foreground block mb-1">Appointment Reference</span>
+                  <span className="font-mono text-xs">{selectedPayment.appointmentId}</span>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <div className="flex justify-end pt-4 border-t gap-2">
+            <Button variant="outline" onClick={() => setSelectedPayment(null)}>Close</Button>
+            {selectedPayment?.status === PaymentStatus.PAID && (
+              <Button onClick={() => {
+                toast({ title: "Feature coming soon", description: "PDF generation is under development." })
+              }}>
+                <Download className="h-4 w-4 mr-2" />
+                Invoice
+              </Button>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

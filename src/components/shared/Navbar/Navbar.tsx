@@ -38,7 +38,6 @@ import {
   ChevronDown,
   CircleUserRound,
   ClipboardList,
-  FileText,
   HeartPulse,
   LayoutDashboard,
   LogIn,

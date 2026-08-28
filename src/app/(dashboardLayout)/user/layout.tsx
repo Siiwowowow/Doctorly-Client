@@ -13,12 +13,18 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-
-export default function UserLayout({
+import { getUserInfo } from "@/services/auth.services"
+import { redirect } from "next/navigation"
+export default async function UserLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const user = await getUserInfo();
+
+  if (!user || user.role !== "PATIENT") {
+    redirect("/login");
+  }
   return (
     <SidebarProvider>
       <UserSidebar />

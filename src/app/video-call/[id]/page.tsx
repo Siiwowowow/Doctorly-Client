@@ -6,9 +6,9 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
 import { useSocket } from "@/providers/SocketProvider";
 import { Button } from "@/components/ui/button";
-import { Mic, MicOff, Video, VideoOff, PhoneOff, MessageSquare, Maximize } from "lucide-react";
+import { Mic, MicOff, Video, VideoOff, PhoneOff } from "lucide-react";
 import { toast } from "sonner";
-import { endCall, acceptCall } from "@/services/call.services";
+import { endCall } from "@/services/call.services";
 
 export default function VideoCallPage(props: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -22,7 +22,6 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
   const [isVideoOn, setIsVideoOn] = useState(true);
   const [isCallConnected, setIsCallConnected] = useState(false);
   const [isEnding, setIsEnding] = useState(false);
-  const [remoteParticipantId, setRemoteParticipantId] = useState<string | null>(null);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -49,7 +48,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
           }
         });
 
-      } catch (err) {
+      } catch {
         toast.error("Camera/Microphone permission denied");
       }
     };
@@ -68,8 +67,8 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
 
     const handleCallAccepted = async (payload: any) => {
       if (payload.callId !== callId) return;
+      if (payload.callId !== callId) return;
       setIsCallConnected(true);
-      setRemoteParticipantId(payload.calleeId);
       
       // The caller creates the offer
       if (user?.id !== payload.calleeId) {
@@ -79,7 +78,6 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
 
     const handleCallOffer = async (payload: any) => {
       if (payload.callId !== callId || payload.senderId === user?.id) return;
-      setRemoteParticipantId(payload.senderId);
       setIsCallConnected(true);
       await handleReceiveOffer(payload.offer);
     };
@@ -226,7 +224,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
       await endCall(callId);
       (socket as any)?.emit("call:end", { callId });
     } catch (error) {
-      console.log(error);
+      console.error("Failed to end call:", error);
     } finally {
       handleEndCallLocally();
     }

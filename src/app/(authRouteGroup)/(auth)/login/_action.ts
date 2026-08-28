@@ -65,15 +65,13 @@ export const loginAction = async (
       redirectPath
     );
 
-    console.log(`✅ User role: ${role}, redirecting to: ${finalRedirect}`);
-
     return {
       success: true,
       redirectUrl: finalRedirect,
       user
     } as any;
   } catch (error: any) {
-    console.log(error, "login error");
+    console.error("Login action error:", error);
 
     // ✅ handle email not verified
     if (

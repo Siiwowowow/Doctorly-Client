@@ -385,5 +385,209 @@
     "dashboard": "Dashboard",
     "profile": "Profile",
     "settings": "Settings"
+  },
+  "doctorDashboard": {
+    "greeting": "Good morning, Dr. {name}",
+    "todaysSchedule": "Today's Schedule",
+    "appointmentsForToday": "You have {count} appointments scheduled for today.",
+    "stats": {
+      "todaysAppointments": "Today's Appointments",
+      "todaysAppointmentsDesc": "Patients scheduled for today",
+      "upcomingAppointments": "Upcoming",
+      "upcomingAppointmentsDesc": "Total scheduled appointments",
+      "completedAppointments": "Completed",
+      "completedAppointmentsDesc": "Successfully completed",
+      "totalEarnings": "Total Earnings",
+      "totalEarningsDesc": "Revenue from completed appointments",
+      "totalPatients": "Total Patients",
+      "totalPatientsDesc": "Unique patients treated"
+    },
+    "todaysAppointmentsTitle": "Today's Appointments",
+    "upcomingAppointmentsTitle": "Upcoming Appointments",
+    "actionRequiredTitle": "Action Required",
+    "actionRequiredDesc": "Appointments currently in progress",
+    "recentPatientsTitle": "Recent Patients",
+    "recentPaymentsTitle": "Recent Payments",
+    "notificationsTitle": "Notifications",
+    "quickActionsTitle": "Quick Actions",
+    "quickActionsDesc": "Commonly used features",
+    "manageSchedule": "Manage Schedule",
+    "viewPatientsList": "View Patients List",
+    "writePrescription": "Write Prescription",
+    "viewMedicalRecords": "View Medical Records",
+    "viewAll": "View all",
+    "details": "Details",
+    "amount": "Amount",
+    "transactionId": "Transaction ID",
+    "patientName": "Patient Name",
+    "lastAppointment": "Last Appointment",
+    "emptyStates": {
+      "noTodaysAppointments": "No appointments scheduled for today.",
+      "noUpcomingAppointments": "No upcoming appointments.",
+      "noActionRequired": "No appointments currently require action.",
+      "noRecentPatients": "Patients will appear here after your appointments.",
+      "noRecentPayments": "No payment records available.",
+      "noNotifications": "You're all caught up."
+    },
+    "errors": {
+      "loadAppointments": "Unable to load appointments.",
+      "loadPayments": "Unable to load payment information.",
+      "loadNotifications": "Unable to load notifications."
+    }
+  },
+  "doctorAppointments": {
+    "title": "Appointments",
+    "subtitle": "Manage your patient appointments and consultations.",
+    "filters": {
+      "searchPlaceholder": "Search patient name or ID...",
+      "allStatuses": "All Statuses",
+      "scheduled": "Scheduled",
+      "inProgress": "In Progress",
+      "completed": "Completed",
+      "canceled": "Canceled"
+    },
+    "table": {
+      "unknownPatient": "Unknown Patient",
+      "id": "ID",
+      "na": "N/A"
+    },
+    "actions": {
+      "startConsult": "Start Consult",
+      "complete": "Complete",
+      "callPatient": "Call Patient",
+      "calling": "Calling...",
+      "viewDetails": "View Details",
+      "back": "Back"
+    },
+    "emptyStates": {
+      "noAppointments": "No appointments found.",
+      "notFound": "Appointment Not Found",
+      "notFoundDesc": "The appointment you are looking for does not exist or you do not have permission to view it.",
+      "backToAppointments": "Back to Appointments"
+    },
+    "details": {
+      "title": "Appointment Details",
+      "id": "ID",
+      "markCompleted": "Mark as Completed",
+      "cancel": "Cancel",
+      "joinVideo": "Join Video Call",
+      "patientInfo": "Patient Information",
+      "viewMedicalHistory": "View Full Medical History",
+      "clinicalActions": "Clinical Actions",
+      "prescription": "Prescription",
+      "prescriptionDesc": "Write or view prescription for this consultation.",
+      "writePrescription": "Write Prescription",
+      "medicalRecords": "Medical Records",
+      "medicalRecordsDesc": "Review clinical notes and test reports.",
+      "viewRecords": "View Records",
+      "view": "View",
+      "create": "Create",
+      "openChat": "Open Chat",
+      "openChatDesc": "Message your patient securely.",
+      "goToChat": "Go to Chat",
+      "scheduleDetails": "Schedule Details",
+      "date": "Date",
+      "time": "Time",
+      "appointmentStatus": "Appointment Status",
+      "paymentStatus": "Payment Status",
+      "confirmCancel": "Are you sure you want to cancel this appointment?"
+    },
+    "messages": {
+      "statusUpdated": "Status Updated",
+      "statusUpdatedDesc": "Appointment marked as {status}.",
+      "updateFailed": "Update Failed",
+      "callFailed": "Failed to initiate call",
+      "loadFailed": "Failed to load appointment details."
+    }
+  },
+  "doctorPatients": {
+    "title": "My Patients",
+    "subtitle": "Patients you have consulted or have upcoming appointments with.",
+    "filters": {
+      "searchPlaceholder": "Search by name or phone..."
+    },
+    "stats": {
+      "totalAppointments": "Total Appointments",
+      "latestStatus": "Latest Status",
+      "lastConsultation": "Last Consultation",
+      "na": "N/A"
+    },
+    "actions": {
+      "profile": "Profile",
+      "records": "Records",
+      "backToPatients": "Back to Patient List"
+    },
+    "emptyStates": {
+      "noPatients": "No patients found.",
+      "notFound": "Patient Not Found",
+      "notFoundDesc": "You may not have permission to view this patient's details.",
+      "noHistory": "No appointment history found."
+    },
+    "details": {
+      "title": "Patient Profile",
+      "id": "ID",
+      "patient": "Patient",
+      "clinicalOverview": "Clinical Overview",
+      "clinicalOverviewDesc": "Access patient's medical history and records.",
+      "medicalRecords": "Medical Records",
+      "medicalRecordsDesc": "View previous diagnoses, notes, and uploaded documents.",
+      "viewRecords": "View Records",
+      "prescriptions": "Prescriptions",
+      "prescriptionsDesc": "View past prescriptions and medication history.",
+      "viewPrescriptions": "View Prescriptions",
+      "appointmentHistory": "Appointment History",
+      "appointmentHistoryDesc": "View past and upcoming consultations with this patient.",
+      "viewAppointments": "View Appointments",
+      "historyTitle": "Consultation History",
+      "historyDesc": "All appointments associated with this patient.",
+      "date": "Date",
+      "time": "Time",
+      "status": "Status",
+      "payment": "Payment",
+      "bloodGroup": "Blood Group",
+      "gender": "Gender",
+      "activeConsultation": "Active Consultation",
+      "startVideo": "Start Video Call",
+      "messagePatient": "Message Patient"
+    }
+  },
+  "doctorSchedule": {
+    "title": "My Schedule",
+    "subtitle": "Manage your availability for patient consultations.",
+    "tabs": {
+      "upcoming": "Upcoming Schedule",
+      "all": "All Schedules"
+    },
+    "actions": {
+      "addAvailability": "Add Availability",
+      "addSelected": "Add {count} Slot(s)",
+      "adding": "Adding...",
+      "remove": "Remove slot",
+      "cannotRemove": "Cannot remove booked slot",
+      "cancel": "Cancel"
+    },
+    "dialog": {
+      "title": "Add Availability Slots",
+      "description": "Select the time slots you want to be available for consultations.",
+      "noSlots": "No available system time slots found."
+    },
+    "emptyStates": {
+      "noAdded": "You have not added any availability slots yet.",
+      "addNow": "Add slots now"
+    },
+    "badges": {
+      "booked": "Booked",
+      "available": "Available"
+    },
+    "messages": {
+      "confirmRemove": "Are you sure you want to remove this availability slot?",
+      "removed": "Slot Removed",
+      "removedDesc": "Your availability slot has been removed.",
+      "removeFailed": "Failed to remove slot",
+      "created": "Availability Created",
+      "createdDesc": "Successfully added new availability slots.",
+      "createFailed": "Failed to create availability",
+      "loadFailed": "Error fetching schedules"
+    }
   }
 }
