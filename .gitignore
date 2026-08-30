@@ -44,3 +44,8 @@ next-env.d.ts
 backend-audit/
 
 PHASE_*.md
+
+# Ignore all markdown and cjs files
+*.md
+!README.md
+*.cjs

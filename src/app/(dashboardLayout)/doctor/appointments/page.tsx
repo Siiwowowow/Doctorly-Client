@@ -30,6 +30,7 @@ function DoctorAppointmentsContent() {
   const initialStatus = searchParams.get("status") || "ALL"
   const [statusFilter, setStatusFilter] = useState<string>(initialStatus)
   const [searchQuery, setSearchQuery] = useState("")
+  const [dateFilter, setDateFilter] = useState<string>("")
   const [isCalling, setIsCalling] = useState(false)
 
   // React Query for data fetching
@@ -99,7 +100,8 @@ function DoctorAppointmentsContent() {
     const matchesStatus = statusFilter === "ALL" || apt.status === statusFilter
     const matchesSearch = apt.patient?.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           apt.id.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesStatus && matchesSearch
+    const matchesDate = !dateFilter || (apt.schedule?.startDateTime && apt.schedule.startDateTime.startsWith(dateFilter))
+    return matchesStatus && matchesSearch && matchesDate
   })
 
   // Sort logic
@@ -165,10 +167,10 @@ function DoctorAppointmentsContent() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               <Filter className="h-4 w-4 text-muted-foreground hidden sm:block" />
               <Select value={statusFilter} onValueChange={handleStatusChangeFilter}>
-                <SelectTrigger className="w-full sm:w-45">
+                <SelectTrigger className="w-full sm:w-40">
                   <SelectValue placeholder={t("filters.allStatuses")} />
                 </SelectTrigger>
                 <SelectContent>
@@ -179,6 +181,19 @@ function DoctorAppointmentsContent() {
                   <SelectItem value={AppointmentStatus.CANCELED}>{t("filters.canceled")}</SelectItem>
                 </SelectContent>
               </Select>
+              
+              <Input
+                type="date"
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                className="w-full sm:w-38 text-xs"
+                title="Filter by consultation date"
+              />
+              {dateFilter && (
+                <Button variant="ghost" size="sm" onClick={() => setDateFilter("")} className="text-xs h-9">
+                  Reset
+                </Button>
+              )}
             </div>
           </div>
         </CardHeader>
@@ -272,7 +287,7 @@ function DoctorAppointmentsContent() {
                       {/* Chat Entry Point */}
                       {(apt.status === AppointmentStatus.SCHEDULED || apt.status === AppointmentStatus.INPROGRESS) && (
                         <Button size="sm" variant="outline" asChild>
-                           <Link href={`/chat`}>
+                           <Link href={`/chat?patientId=${apt.patientId || apt.patient?.id}`}>
                              <MessageSquare className="h-4 w-4 text-muted-foreground" />
                            </Link>
                         </Button>

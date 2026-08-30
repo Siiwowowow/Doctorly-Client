@@ -6,7 +6,7 @@ import { cookies } from "next/headers";
 
 const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-export async function initiateCall(data: { receiverId: string, appointmentId: string, isVideoCall?: boolean }): Promise<ApiResponse<any>> {
+export async function initiateCall(data: { receiverId?: string, appointmentId?: string, isVideoCall?: boolean, type?: string }): Promise<ApiResponse<any>> {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
 

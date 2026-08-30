@@ -62,6 +62,21 @@ export enum PaymentStatus {
     UNPAID = "UNPAID"
 }
 
+export enum DoctorApplicationStatus {
+    DRAFT = "DRAFT",
+    SUBMITTED = "SUBMITTED",
+    UNDER_REVIEW = "UNDER_REVIEW",
+    APPROVED = "APPROVED",
+    REJECTED = "REJECTED",
+    RESUBMISSION_REQUIRED = "RESUBMISSION_REQUIRED"
+}
+
+export enum DocumentVerificationStatus {
+    PENDING = "PENDING",
+    VERIFIED = "VERIFIED",
+    REJECTED = "REJECTED"
+}
+
 // ----------------------------------------------------------------------
 // INTERFACES
 // ----------------------------------------------------------------------
@@ -71,6 +86,8 @@ export interface User {
     email: string;
     role: Role;
     status: UserStatus;
+    name?: string;
+    image?: string | null;
     createdAt: string;
     updatedAt: string;
 }
@@ -100,6 +117,8 @@ export interface Doctor {
     userId: string;
     user?: User;
     specialties?: DoctorSpecialty[];
+    doctorSchedules?: DoctorSchedule[];
+    reviews?: Review[];
 }
 
 export interface Specialty {
@@ -121,6 +140,27 @@ export interface DoctorSpecialty {
     specialty?: Specialty;
 }
 
+export interface PatientHealthData {
+    id?: string;
+    gender?: Gender;
+    dateOfBirth?: string;
+    bloodGroup?: BloodGroup;
+    hasAllergies?: boolean;
+    hasDiabetes?: boolean;
+    height?: string;
+    weight?: string;
+    smokingStatus?: boolean;
+    dietaryPreferences?: string | null;
+    pregnancyStatus?: boolean;
+    mentalHealthHistory?: string | null;
+    immunizationStatus?: string | null;
+    hasPastSurgeries?: boolean;
+    recentAnxiety?: boolean;
+    recentDepression?: boolean;
+    maritalStatus?: string | null;
+    patientId?: string;
+}
+
 export interface Patient {
     id: string;
     name: string;
@@ -135,6 +175,7 @@ export interface Patient {
     updatedAt: string;
     userId: string;
     user?: User;
+    patientHealthData?: PatientHealthData | null;
 }
 
 export interface Admin {
@@ -256,6 +297,9 @@ export interface Notification {
     message: string;
     type: NotificationType;
     isRead: boolean;
+    data?: Record<string, any> | null;
+    isDeleted?: boolean;
+    readAt?: string | null;
     createdAt: string;
     updatedAt: string;
     recipientId: string;
@@ -271,4 +315,56 @@ export interface Payment {
     updatedAt: string;
     appointmentId: string;
     appointment?: Appointment;
-}
+}
+
+export interface DoctorApplicationDocument {
+    id: string;
+    applicationId: string;
+    documentType: string;
+    documentName: string;
+    fileUrl: string;
+    verificationStatus: DocumentVerificationStatus;
+    adminNote?: string | null;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface DoctorApplication {
+    id: string;
+    userId: string;
+    fullName: string;
+    email: string;
+    phone: string;
+    address?: string | null;
+    city?: string | null;
+    country?: string | null;
+    bmdcRegistrationNumber?: string | null;
+    registrationType?: string | null;
+    qualifications?: string | null;
+    experienceYears?: number | null;
+    currentWorkplace?: string | null;
+    designation?: string | null;
+    consultationFee?: number | null;
+    about?: string | null;
+    specialtyId?: string | null;
+    status: DoctorApplicationStatus;
+    rejectionReason?: string | null;
+    createdAt: string;
+    updatedAt: string;
+    documents?: DoctorApplicationDocument[];
+    specialty?: Specialty | null;
+    user?: User | null;
+}
+
+export interface Review {
+    id: string;
+    rating: number;
+    comment?: string | null;
+    createdAt: string;
+    updatedAt: string;
+    patientId: string;
+    doctorId: string;
+    appointmentId?: string;
+    patient?: Patient;
+    doctor?: Doctor;
+}

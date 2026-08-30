@@ -16,7 +16,8 @@ import {
   Bell,
   LogOut,
   ShieldAlert,
-  Home
+  Home,
+  UserCheck
 } from "lucide-react"
 
 import {
@@ -46,6 +47,11 @@ const adminItems = [
     title: "Dashboard",
     url: "/admin/dashboard",
     icon: LayoutDashboard,
+  },
+  {
+    title: "Doctor Applications",
+    url: "/admin/doctor-applications",
+    icon: UserCheck,
   },
   {
     title: "Users",
@@ -134,7 +140,7 @@ export function AdminSidebar() {
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={isActiveRoute(item.url)} tooltip={translatedTitle}>
-                      <Link href={item.url}>
+                      <Link href={item.url} prefetch={true}>
                         <item.icon />
                         <span>{translatedTitle}</span>
                       </Link>

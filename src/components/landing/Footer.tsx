@@ -67,7 +67,7 @@ export default function Footer() {
               <li><Link href="/about" className="hover:text-doctorly-secondary transition-colors">{t("about")}</Link></li>
               <li><Link href="/careers" className="hover:text-doctorly-secondary transition-colors">{t("careers")}</Link></li>
               <li><Link href="/contact" className="hover:text-doctorly-secondary transition-colors">{t("contact")}</Link></li>
-              <li><Link href="/for-doctors" className="text-doctorly-accent hover:text-doctorly-accent/80 font-medium transition-colors">{t("becomeDoctor")}</Link></li>
+              <li><Link href="/join-as-doctor" className="text-doctorly-accent hover:text-doctorly-accent/80 font-medium transition-colors">{t("becomeDoctor")}</Link></li>
             </ul>
           </div>
 

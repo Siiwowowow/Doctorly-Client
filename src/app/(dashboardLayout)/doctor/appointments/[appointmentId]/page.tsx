@@ -180,13 +180,13 @@ export default function DoctorAppointmentDetailsPage() {
                     <p className="text-sm text-muted-foreground">{appointment.patient?.email}</p>
                     <div className="mt-2 flex flex-wrap gap-2 text-xs">
                       <span className="bg-muted px-2 py-1 rounded-md font-medium text-muted-foreground">
-                        Blood: <span className="text-foreground">{appointment.patient?.bloodGroup || t("table.na")}</span>
+                        Blood: <span className="text-foreground font-semibold">{appointment.patient?.bloodGroup || appointment.patient?.patientHealthData?.bloodGroup || t("table.na")}</span>
                       </span>
                       <span className="bg-muted px-2 py-1 rounded-md font-medium text-muted-foreground">
-                        Gender: <span className="text-foreground">{t("table.na")}</span>
+                        Gender: <span className="text-foreground font-semibold">{appointment.patient?.patientHealthData?.gender || (appointment.patient as any)?.gender || t("table.na")}</span>
                       </span>
                       <span className="bg-muted px-2 py-1 rounded-md font-medium text-muted-foreground">
-                        DOB: <span className="text-foreground">{t("table.na")}</span>
+                        DOB: <span className="text-foreground font-semibold">{appointment.patient?.patientHealthData?.dateOfBirth ? format(new Date(appointment.patient.patientHealthData.dateOfBirth), "MMM d, yyyy") : t("table.na")}</span>
                       </span>
                     </div>
                   </div>
@@ -268,7 +268,7 @@ export default function DoctorAppointmentDetailsPage() {
                     <p className="text-xs text-muted-foreground mb-3">{t("details.openChatDesc")}</p>
                   </div>
                   <Button variant="outline" className="w-full text-purple-600 border-purple-200" asChild>
-                    <Link href={`/chat`}>
+                    <Link href={`/chat?patientId=${appointment.patientId || appointment.patient?.id}`}>
                       {t("details.goToChat")}
                     </Link>
                   </Button>

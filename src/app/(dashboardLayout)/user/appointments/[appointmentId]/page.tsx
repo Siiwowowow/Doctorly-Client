@@ -158,7 +158,7 @@ export default function UserAppointmentDetailsPage() {
                     <p className="text-xs text-muted-foreground mb-3">Follow up with messages</p>
                   </div>
                   <Button variant="outline" className="w-full text-purple-600 border-purple-200" asChild>
-                    <Link href={`/chat`}>
+                    <Link href={`/chat?doctorId=${appointment.doctorId || appointment.doctor?.id}`}>
                       Go to Chat
                     </Link>
                   </Button>

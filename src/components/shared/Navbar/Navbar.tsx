@@ -7,7 +7,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { motion, Variants } from "framer-motion";
 import { useAuth } from "@/providers/AuthProvider";
 import { useLocale, useTranslations } from "next-intl";
-import { useNotifications } from "@/providers/NotificationProvider";
+import { NavbarNotifications } from "./NavbarNotifications";
 import { getDefaultDashboardRoute, UserRole } from "@/lib/authUtils";
 import { Button } from "@/components/ui/button";
 import {
@@ -49,7 +49,7 @@ import {
   Stethoscope,
   User,
   X,
-  Bell,
+ 
 } from "lucide-react";
 
 // --------------------------------------------------
@@ -90,7 +90,6 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout, isAuthenticated } = useAuth();
-  const { notifications, unreadCount, markAsRead } = useNotifications();
   
   const locale = useLocale();
   const t = useTranslations("nav");
@@ -143,7 +142,7 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/75 backdrop-blur-xl">
       {/* Main Navbar */}
-      <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         
         {/* Logo */}
         <Link href="/" className="group flex shrink-0 items-center gap-2.5">
@@ -239,51 +238,7 @@ export default function Navbar() {
               </motion.div>
 
               {/* Notifications Dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="relative size-9 rounded-full text-muted-foreground hover:bg-muted hover:text-doctorly-primary">
-                    <Bell className="size-4" />
-                    {unreadCount > 0 && (
-                      <span className="absolute top-1.5 right-1.5 flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 border-2 border-background text-[8px] font-bold text-white items-center justify-center">
-                        </span>
-                      </span>
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-80 rounded-2xl border-border/60 shadow-2xl p-0 overflow-hidden">
-                  <div className="bg-muted/50 p-3 border-b flex items-center justify-between">
-                    <span className="font-semibold text-sm">Notifications</span>
-                    {unreadCount > 0 && (
-                      <span className="bg-doctorly-primary/10 text-doctorly-primary text-xs font-semibold px-2 py-0.5 rounded-full">
-                        {unreadCount} New
-                      </span>
-                    )}
-                  </div>
-                  <div className="max-h-80 overflow-y-auto">
-                    {notifications.length === 0 ? (
-                      <div className="p-8 text-center text-muted-foreground text-sm">
-                        No notifications yet.
-                      </div>
-                    ) : (
-                      notifications.map((n) => (
-                        <div 
-                          key={n.id} 
-                          className={`p-3 border-b last:border-0 hover:bg-muted/50 transition-colors cursor-pointer ${!n.isRead ? 'bg-primary/5' : ''}`}
-                          onClick={() => !n.isRead && markAsRead(n.id)}
-                        >
-                          <div className="flex justify-between items-start mb-1">
-                            <span className="font-semibold text-sm">{n.title}</span>
-                            {!n.isRead && <span className="h-2 w-2 rounded-full bg-doctorly-primary flex-shrink-0 mt-1" />}
-                          </div>
-                          <p className="text-xs text-muted-foreground line-clamp-2">{n.message}</p>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <NavbarNotifications />
 
               {/* User Dropdown */}
               <DropdownMenu>
@@ -300,7 +255,7 @@ export default function Navbar() {
                         {getInitials(user.name, user.email)}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="hidden max-w-[110px] text-left lg:block">
+                    <div className="hidden max-w-27.5 text-left lg:block">
                       <p className="truncate text-xs font-semibold text-foreground">
                         {user.name || user.email?.split("@")[0]}
                       </p>
@@ -418,16 +373,19 @@ export default function Navbar() {
             {locale === 'en' ? 'বাংলা' : 'EN'}
           </button>
           {isAuthenticated && user && (
-            <Link href={dashboardUrl}>
-              <Avatar className="size-9 border border-border">
-                {userImage && (
-                  <AvatarImage src={userImage} alt={user.name || "User"} />
-                )}
-                <AvatarFallback className="bg-doctorly-primary/10 text-xs font-bold text-doctorly-primary">
-                  {getInitials(user.name, user.email)}
-                </AvatarFallback>
-              </Avatar>
-            </Link>
+            <>
+              <NavbarNotifications />
+              <Link href={dashboardUrl}>
+                <Avatar className="size-9 border border-border">
+                  {userImage && (
+                    <AvatarImage src={userImage} alt={user.name || "User"} />
+                  )}
+                  <AvatarFallback className="bg-doctorly-primary/10 text-xs font-bold text-doctorly-primary">
+                    {getInitials(user.name, user.email)}
+                  </AvatarFallback>
+                </Avatar>
+              </Link>
+            </>
           )}
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>

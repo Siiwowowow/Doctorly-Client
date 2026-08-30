@@ -6,7 +6,7 @@ import { getMyAppointments } from "@/services/appointment.services";
 import { getMyPrescriptions } from "@/services/prescription.services";
 import { getMyMedicalRecords } from "@/services/medicalRecord.services";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarDays, Clock, Activity, FileText, AlertCircle, RefreshCw } from "lucide-react";
+import { CalendarDays, Clock, Activity, FileText, AlertCircle, RefreshCw, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -191,7 +191,7 @@ export default function PatientDashboardOverview() {
             <CardTitle className="text-lg font-semibold">Quick Actions</CardTitle>
           </CardHeader>
           <CardContent className="p-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <Link href="/doctors" className="flex flex-col items-center justify-center p-4 border rounded-xl hover:bg-doctorly-primary/5 hover:border-doctorly-primary/30 transition-all text-center group">
                 <div className="p-3 bg-muted rounded-full mb-3 group-hover:bg-doctorly-primary group-hover:text-white transition-colors">
                   <CalendarDays className="size-5" />
@@ -203,6 +203,12 @@ export default function PatientDashboardOverview() {
                   <FileText className="size-5" />
                 </div>
                 <span className="font-medium text-sm">View Records</span>
+              </Link>
+              <Link href="/chat" className="flex flex-col items-center justify-center p-4 border rounded-xl hover:bg-doctorly-primary/5 hover:border-doctorly-primary/30 transition-all text-center group">
+                <div className="p-3 bg-muted rounded-full mb-3 group-hover:bg-doctorly-primary group-hover:text-white transition-colors">
+                  <MessageSquare className="size-5" />
+                </div>
+                <span className="font-medium text-sm">Messages</span>
               </Link>
             </div>
           </CardContent>

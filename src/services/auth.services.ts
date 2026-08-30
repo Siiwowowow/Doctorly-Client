@@ -45,7 +45,9 @@ export async function getNewTokensWithRefreshToken(
     }
 }
 
-export async function getUserInfo() {
+import { cache } from "react";
+
+export const getUserInfo = cache(async () => {
     try {
         const cookieStore = await cookies();
         let accessToken = cookieStore.get("accessToken")?.value;
@@ -97,7 +99,7 @@ export async function getUserInfo() {
         console.error("Error fetching user info:", error);
         return null;
     }
-}
+});
 
 export async function logoutUser() {
     try {

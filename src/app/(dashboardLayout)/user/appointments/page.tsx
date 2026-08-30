@@ -188,7 +188,15 @@ export default function AppointmentsPage() {
 
                       {/* Pay Now Button logic */}
                       {apt.paymentStatus === PaymentStatus.UNPAID && apt.status !== AppointmentStatus.CANCELED && (
-                        <PayNowButton appointmentId={apt.id} />
+                        <div className="flex items-center gap-3">
+                          <div className="flex flex-col items-end mr-1">
+                            <span className="text-xs text-muted-foreground">Consultation Fee</span>
+                            <span className="text-sm font-bold text-foreground">
+                              ${apt.doctor?.appointmentFee || 0}
+                            </span>
+                          </div>
+                          <PayNowButton appointmentId={apt.id} />
+                        </div>
                       )}
 
                       {/* Paid Invoice Logic */}

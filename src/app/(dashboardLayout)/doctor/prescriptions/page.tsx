@@ -8,11 +8,12 @@ import { getMyPrescriptions } from "@/services/prescription.services"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Pill, Search, Calendar, FileText, Plus } from "lucide-react"
+import { Pill, Search, Calendar, FileText, Plus, Printer } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { format } from "date-fns"
 import { useToast } from "@/hooks/use-toast"
+import { PrescriptionViewModal } from "@/components/shared/PrescriptionViewModal"
 
 function PrescriptionList() {
   const { toast } = useToast()
@@ -22,6 +23,8 @@ function PrescriptionList() {
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
+  const [selectedPrescription, setSelectedPrescription] = useState<Prescription | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   useEffect(() => {
     const fetchPrescriptions = async () => {
@@ -48,22 +51,35 @@ function PrescriptionList() {
   }, [patientIdFilter, toast])
 
   const filteredPrescriptions = prescriptions.filter((p) => {
-    return p.patient?.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-           p.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-           p.instructions.toLowerCase().includes(searchQuery.toLowerCase())
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      (p.patient?.name && p.patient.name.toLowerCase().includes(q)) ||
+      (p.patient?.email && p.patient.email.toLowerCase().includes(q)) ||
+      (p.patient?.contactNumber && p.patient.contactNumber.toLowerCase().includes(q)) ||
+      (p.id && p.id.toLowerCase().includes(q)) ||
+      (p.appointmentId && p.appointmentId.toLowerCase().includes(q)) ||
+      (p.instructions && p.instructions.toLowerCase().includes(q)) ||
+      (p.medicines && p.medicines.some(m => m.medicineName && m.medicineName.toLowerCase().includes(q)))
+    )
   })
 
   // Sort by created date, newest first
   filteredPrescriptions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
+  const handleOpenModal = (prescription: Prescription) => {
+    setSelectedPrescription(prescription)
+    setIsModalOpen(true)
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Prescriptions</h1>
-          <p className="text-muted-foreground">Manage and view patient prescriptions.</p>
+          <h1 className="text-2xl font-bold">Patient Prescriptions</h1>
+          <p className="text-muted-foreground">Manage, view and print patient prescriptions.</p>
         </div>
-        <Button asChild>
+        <Button asChild className="bg-primary hover:bg-primary/90 text-white">
           <Link href="/doctor/prescriptions/new">
             <Plus className="mr-2 h-4 w-4" />
             Write Prescription
@@ -76,7 +92,7 @@ function PrescriptionList() {
           <div className="relative w-full max-w-sm">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input 
-              placeholder="Search by patient or ID..." 
+              placeholder="Search by patient, medicine or ID..." 
               className="pl-8" 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -101,32 +117,39 @@ function PrescriptionList() {
           ) : (
             <div className="space-y-4">
               {filteredPrescriptions.map((prescription) => (
-                <div key={prescription.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-xl hover:border-primary/50 transition-colors gap-4">
+                <div key={prescription.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-xl hover:border-primary/50 transition-colors gap-4 bg-card">
                   <div className="flex items-start gap-4">
-                    <div className="bg-primary/10 p-3 rounded-full shrink-0">
-                      <FileText className="h-6 w-6 text-primary" />
+                    <div className="bg-primary/10 p-3 rounded-full shrink-0 text-primary">
+                      <FileText className="h-6 w-6" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-lg">{prescription.patient?.name || "Unknown Patient"}</h3>
-                      <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mt-1">
+                      <h3 className="font-bold text-lg">{prescription.patient?.name || "Unknown Patient"}</h3>
+                      <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground mt-1">
                         <div className="flex items-center gap-1.5">
                           <Calendar className="h-3.5 w-3.5" />
-                          <span>{format(new Date(prescription.createdAt), "MMM dd, yyyy")}</span>
+                          <span>{format(new Date(prescription.createdAt), "MMM dd, yyyy, hh:mm a")}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <Pill className="h-3.5 w-3.5" />
-                          <span>{prescription.medicines?.length || 0} Medicines</span>
+                          <Pill className="h-3.5 w-3.5 text-primary" />
+                          <span className="font-semibold text-foreground">{prescription.medicines?.length || 0} Medicines</span>
                         </div>
                       </div>
-                      <p className="text-sm mt-2 text-muted-foreground line-clamp-1">{prescription.instructions}</p>
+                      {prescription.instructions && (
+                        <p className="text-xs mt-2 text-muted-foreground line-clamp-1 italic">
+                          &quot;{prescription.instructions}&quot;
+                        </p>
+                      )}
                     </div>
                   </div>
                   
                   <div className="flex w-full sm:w-auto mt-2 sm:mt-0 gap-2">
-                    <Button variant="outline" className="w-full sm:w-auto" asChild>
-                      <Link href={`/doctor/prescriptions/${prescription.id}`}>
-                        View Details
-                      </Link>
+                    <Button 
+                      onClick={() => handleOpenModal(prescription)} 
+                      variant="outline" 
+                      className="w-full sm:w-auto gap-2"
+                    >
+                      <Printer className="size-4" />
+                      View & Print / PDF
                     </Button>
                   </div>
                 </div>
@@ -135,6 +158,13 @@ function PrescriptionList() {
           )}
         </CardContent>
       </Card>
+
+      {/* Prescription View & Print Modal */}
+      <PrescriptionViewModal 
+        prescription={selectedPrescription}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   )
 }

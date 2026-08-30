@@ -1,363 +1,1486 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use client"
+"use client";
 
-import React, { useState, useEffect, useRef } from "react"
-// removed Card imports
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { useAuth } from "@/providers/AuthProvider"
-import { useSocket } from "@/providers/SocketProvider"
-import { getMyConversations, getConversationMessages } from "@/services/chat.services"
-import { Loader2, Search, MessageSquare, CheckCircle2, Send } from "lucide-react"
-import { format } from "date-fns"
-import { toast } from "sonner"
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useAuth } from "@/providers/AuthProvider";
+import { useSocket } from "@/providers/SocketProvider";
+import {
+  getMyConversations,
+  getOrCreateConversation,
+  getConversationMessages,
+  markConversationAsRead,
+  sendChatMessage,
+  sendChatMessageWithFile,
+  shareMedicalRecordInChat,
+  getConversationSharedDocuments,
+} from "@/services/chat.services";
+import { getMyMedicalRecords } from "@/services/medicalRecord.services";
+import { initiateCall } from "@/services/call.services";
+import { getAllDoctors } from "@/services/doctor.services";
+import { getAllPatients } from "@/services/patient.services";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Search,
+  Send,
+  Plus,
+  Paperclip,
+  Image as ImageIcon,
+  FileText,
+  Stethoscope,
+  Video,
+  Check,
+  CheckCheck,
+  X,
+  Download,
+  Eye,
+  Loader2,
+  FolderOpen,
+  Calendar,
+  AlertCircle,
+  ExternalLink,
+  ShieldCheck,
+  ZoomIn,
+  HeartPulse,
+  MessageSquarePlus,
+  UserPlus,
+  ArrowLeft,
+} from "lucide-react";
+import { format, isToday, isYesterday } from "date-fns";
+import { toast } from "sonner";
+import Link from "next/link";
 
-export default function ChatPage() {
-  const { user } = useAuth()
-  const { socket, isConnected } = useSocket()
-  
-  const [conversations, setConversations] = useState<any[]>([])
-  const [activeConversationId, setActiveConversationId] = useState<string | null>(null)
-  const [messages, setMessages] = useState<any[]>([])
-  const [newMessage, setNewMessage] = useState("")
-  const [loadingConv, setLoadingConv] = useState(true)
-  const [loadingMsgs, setLoadingMsgs] = useState(false)
-  const [searchQuery, setSearchQuery] = useState("")
+export default function AdvancedClinicalChatPage() {
+  const { user } = useAuth();
+  const { socket, isConnected } = useSocket();
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
-  const scrollRef = useRef<HTMLDivElement>(null)
+  const queryConvId = searchParams.get("conversationId");
+  const queryDoctorId = searchParams.get("doctorId");
+  const queryPatientId = searchParams.get("patientId");
 
-  // Fetch initial conversations
-  useEffect(() => {
-    const fetchConv = async () => {
-      try {
-        const res = await getMyConversations()
-        setConversations(res.data || [])
-      } catch {
-        toast.error("Failed to load conversations")
-      } finally {
-        setLoadingConv(false)
-      }
-    }
-    fetchConv()
-  }, [])
+  // Conversations & Active Selection
+  const [conversations, setConversations] = useState<any[]>([]);
+  const [activeConvId, setActiveConvId] = useState<string | null>(queryConvId || null);
+  const [loadingConvs, setLoadingConvs] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch messages when conversation changes
-  useEffect(() => {
-    if (!activeConversationId) return
+  // New Chat Modal State
+  const [isNewChatOpen, setIsNewChatOpen] = useState(false);
+  const [availableContacts, setAvailableContacts] = useState<any[]>([]);
+  const [loadingContacts, setLoadingContacts] = useState(false);
+  const [contactSearch, setContactSearch] = useState("");
+  const [startingChat, setStartingChat] = useState(false);
 
-    const fetchMsgs = async () => {
-      setLoadingMsgs(true)
-      try {
-        const res = await getConversationMessages(activeConversationId)
-        setMessages(Array.isArray(res.data) ? res.data : [])
-        if (socket && isConnected) {
-            (socket as any).emit("chat:read", { conversationId: activeConversationId });
-        }
-      } catch {
-        toast.error("Failed to load messages")
-      } finally {
-        setLoadingMsgs(false)
-      }
-    }
-    fetchMsgs()
-  }, [activeConversationId, isConnected, socket])
+  // Messages & Pagination
+  const [messages, setMessages] = useState<any[]>([]);
+  const [loadingMsgs, setLoadingMsgs] = useState(false);
+  const [msgInput, setMsgInput] = useState("");
+  const [sending, setSending] = useState(false);
 
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollIntoView({ behavior: "smooth" })
-    }
-  }, [messages])
+  // Online Presence & Typing
+  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
+  const [typingUsers, setTypingUsers] = useState<Record<string, boolean>>({});
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Listen for new incoming messages via socket
-  useEffect(() => {
-    if (!socket || !isConnected) return
+  // File Upload Staging
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
-    const handleMessage = (msg: any) => {
-      if (msg.conversationId === activeConversationId && activeConversationId) {
-        setMessages(prev => {
-          // Prevent duplicates (especially in React StrictMode)
-          if (prev.some(m => m.id === msg.id)) return prev;
-          return [...prev, msg];
-        });
-        if (socket && isConnected) {
-            (socket as any).emit("chat:read", { conversationId: activeConversationId });
-        }
-      }
-      
-      // Update conversation list to show latest message
-      setConversations(prev => {
-        const updated = prev.map(c => {
-          if (c.id === msg.conversationId) {
-             return { ...c, lastMessageAt: msg.createdAt, _count: { ...c._count, messages: (c._count?.messages || 0) + 1 } }
-          }
-          return c
-        })
-        // sort by newest
-        return updated.sort((a, b) => new Date(b.lastMessageAt || 0).getTime() - new Date(a.lastMessageAt || 0).getTime())
-      })
-    }
+  // Medical Record Sharing Modal
+  const [isShareRecordOpen, setIsShareRecordOpen] = useState(false);
+  const [patientRecords, setPatientRecords] = useState<any[]>([]);
+  const [loadingRecords, setLoadingRecords] = useState(false);
+  const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
+  const [recordNote, setRecordNote] = useState("");
+  const [sharingRecord, setSharingRecord] = useState(false);
 
-    const handleRead = (payload: { conversationId: string; readerId: string; readAt: string }) => {
-        if (payload.conversationId === activeConversationId && payload.readerId !== user?.id) {
-            setMessages(prev => prev.map(m => ({ ...m, isRead: true })));
-        }
-    }
+  // Shared Documents Drawer
+  const [isDocumentsDrawerOpen, setIsDocumentsDrawerOpen] = useState(false);
+  const [sharedDocsData, setSharedDocsData] = useState<any>(null);
+  const [loadingSharedDocs, setLoadingSharedDocs] = useState(false);
 
-    (socket as any)?.on("chat:message", handleMessage);
-    (socket as any)?.on("chat:read", handleRead);
+  // Image Lightbox
+  const [lightboxImageUrl, setLightboxImageUrl] = useState<string | null>(null);
 
-    return () => {
-      (socket as any)?.off("chat:message", handleMessage);
-      (socket as any)?.off("chat:read", handleRead);
-    }
-  }, [socket, isConnected, activeConversationId, user?.id])
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messageContainerRef = useRef<HTMLDivElement>(null);
 
-  // Join and leave conversation rooms
-  useEffect(() => {
-    if (!socket || !isConnected || !activeConversationId) return;
+  // Active Conversation Object
+  const activeConversation = useMemo(() => {
+    return conversations.find((c) => c.id === activeConvId) || null;
+  }, [conversations, activeConvId]);
 
-    (socket as any).emit("chat:join-conversation", { conversationId: activeConversationId });
+  // Recipient User ID & Details
+  const partnerDetails = useMemo(() => {
+    if (!activeConversation || !user) return null;
+    const isUserDoctor = user.role === "DOCTOR";
+    const partner = isUserDoctor ? activeConversation.patient : activeConversation.doctor;
+    const partnerUser = partner?.user;
+    const isOnline = partnerUser?.id ? onlineUsers.has(partnerUser.id) : false;
 
-    return () => {
-      (socket as any).emit("chat:leave-conversation", { conversationId: activeConversationId });
+    return {
+      partner,
+      partnerUser,
+      isOnline,
+      name: isUserDoctor ? partner?.name : `Dr. ${partner?.name?.replace(/^Dr\.?\s*/i, "")}`,
+      photo: partner?.profilePhoto || partnerUser?.image,
+      role: isUserDoctor ? "Patient" : "Doctor",
+      subtitle: isUserDoctor
+        ? partner?.contactNumber || partner?.email
+        : `${partner?.designation || "Specialist"} • ${partner?.qualification || "MBBS"}`,
+      workplace: partner?.currentWorkingPlace,
+      bloodGroup: (partner as any)?.patientHealthData?.bloodGroup,
     };
-  }, [socket, isConnected, activeConversationId]);
+  }, [activeConversation, user, onlineUsers]);
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!newMessage.trim() || !activeConversationId) return
+  // 1. Initial Conversations Fetch & Auto-create if doctorId/patientId in query
+  useEffect(() => {
+    let isMounted = true;
+    if (!user) return;
 
-    const conv = conversations.find(c => c.id === activeConversationId);
-    const otherUserId = conv?.participants?.find((p: any) => p.userId !== user?.id)?.userId;
+    const fetchConversations = async () => {
+      try {
+        setLoadingConvs(true);
+        const res = await getMyConversations();
+        let convList = res.data || [];
 
-    if (!otherUserId) return;
-
-    const tempId = `temp-${Date.now()}`
-    const tempMsg = {
-      id: tempId,
-      conversationId: activeConversationId,
-      senderId: user?.id,
-      content: newMessage,
-      createdAt: new Date().toISOString(),
-      isRead: false
-    }
-
-    setMessages(prev => [...prev, tempMsg])
-    setNewMessage("")
-
-    if (socket && isConnected) {
-        (socket as any).emit("chat:send", {
-            recipientId: otherUserId,
-            content: tempMsg.content,
-            conversationId: activeConversationId,
-            tempId: tempId
-        }, (status: { success: boolean; error?: string }) => {
-            if (!status.success) {
-                toast.error("Failed to send message");
-                setMessages(prev => prev.filter(m => m.id !== tempId));
-            } else {
-                // Update conversations list
-                setConversations(prev => {
-                    const updated = prev.map(c => c.id === activeConversationId ? { ...c, lastMessageAt: tempMsg.createdAt } : c)
-                    return updated.sort((a, b) => new Date(b.lastMessageAt || 0).getTime() - new Date(a.lastMessageAt || 0).getTime())
-                })
+        // If doctorId or patientId is in URL query parameters, get or create conversation
+        if (queryDoctorId || queryPatientId) {
+          try {
+            const createRes = await getOrCreateConversation({
+              doctorId: queryDoctorId || undefined,
+              patientId: queryPatientId || undefined,
+            });
+            if (createRes?.data) {
+              const targetConv = createRes.data;
+              const exists = convList.some((c: any) => c.id === targetConv.id);
+              if (!exists) {
+                convList = [targetConv, ...convList];
+              }
+              if (isMounted) {
+                setActiveConvId(targetConv.id);
+              }
             }
-        });
-    } else {
-        toast.error("Not connected to chat server");
-    }
-  }
+          } catch (createErr: any) {
+            console.error("Auto getOrCreateConversation error:", createErr);
+          }
+        } else if (queryConvId) {
+          if (isMounted) setActiveConvId(queryConvId);
+        } else if (convList.length > 0 && !activeConvId) {
+          if (isMounted) setActiveConvId(convList[0].id);
+        }
 
-  const filteredConversations = conversations.filter(c => {
-    // Determine the "other participant"
-    const other = c.participants?.find((p: any) => p.userId !== user?.id)?.user
-    if (!other) return false
-    return other.name?.toLowerCase().includes(searchQuery.toLowerCase())
-  })
+        if (isMounted) {
+          const uniqueConvs = Array.from(new Map(convList.map((c: any) => [c.id, c])).values());
+          setConversations(uniqueConvs);
+        }
+      } catch (err: any) {
+        if (isMounted && user) {
+          toast.error("Failed to load conversations");
+        }
+      } finally {
+        if (isMounted) {
+          setLoadingConvs(false);
+        }
+      }
+    };
+
+    fetchConversations();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [queryConvId, queryDoctorId, queryPatientId, user]);
+
+  // 2. Fetch Messages when active conversation changes
+  useEffect(() => {
+    let isMounted = true;
+    if (!activeConvId || !user) return;
+
+    const fetchMessages = async () => {
+      setLoadingMsgs(true);
+      try {
+        const res = await getConversationMessages(activeConvId, { limit: 50, sortOrder: "asc" });
+        if (!isMounted) return;
+        setMessages(res.data || []);
+
+        if (socket && isConnected) {
+          (socket as any).emit("chat:join-conversation", { conversationId: activeConvId });
+          (socket as any).emit("chat:read", { conversationId: activeConvId });
+        }
+        markConversationAsRead(activeConvId).catch(() => {});
+
+        // Reset unread count in local state
+        setConversations((prev) =>
+          prev.map((c) => (c.id === activeConvId ? { ...c, unreadCount: 0 } : c))
+        );
+      } catch {
+        if (isMounted && user) {
+          toast.error("Failed to load messages");
+        }
+      } finally {
+        if (isMounted) {
+          setLoadingMsgs(false);
+        }
+      }
+    };
+
+    fetchMessages();
+
+    return () => {
+      isMounted = false;
+      if (socket && isConnected) {
+        (socket as any).emit("chat:leave-conversation", { conversationId: activeConvId });
+      }
+    };
+  }, [activeConvId, socket, isConnected, user]);
+
+  // 3. Scroll to bottom on new messages
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, typingUsers]);
+
+  // Safe deduplicating message upsert helper
+  const upsertMessage = (prev: any[], newMsg: any) => {
+    if (!newMsg) return prev;
+    const index = prev.findIndex(
+      (m) =>
+        (newMsg.id && m.id === newMsg.id) ||
+        (newMsg.tempId && m.tempId === newMsg.tempId) ||
+        (m.tempId && newMsg.id === m.tempId)
+    );
+    if (index !== -1) {
+      const updated = [...prev];
+      updated[index] = { ...prev[index], ...newMsg };
+      return updated;
+    }
+    return [...prev, newMsg];
+  };
+
+  // 4. Socket Listeners for Real-time Messaging, Read Receipts, Typing & Presence
+  useEffect(() => {
+    if (!socket || !isConnected) return;
+
+    const handleIncomingMessage = (msg: any) => {
+      if (msg.conversationId === activeConvId) {
+        setMessages((prev) => upsertMessage(prev, msg));
+        if (msg.senderId !== user?.id && activeConvId) {
+          (socket as any).emit("chat:read", { conversationId: activeConvId });
+          markConversationAsRead(activeConvId).catch(() => {});
+        }
+      }
+
+      setConversations((prev) => {
+        const updated = prev.map((c) => {
+          if (c.id === msg.conversationId) {
+            const isCurrent = c.id === activeConvId;
+            return {
+              ...c,
+              lastMessageAt: msg.createdAt,
+              lastMessage: msg,
+              unreadCount: isCurrent ? 0 : (c.unreadCount || 0) + 1,
+            };
+          }
+          return c;
+        });
+        return updated.sort(
+          (a, b) => new Date(b.lastMessageAt || 0).getTime() - new Date(a.lastMessageAt || 0).getTime()
+        );
+      });
+    };
+
+    const handleChatRead = (payload: any) => {
+      if (payload.conversationId === activeConvId) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.senderId === user?.id ? { ...m, status: "READ" } : m
+          )
+        );
+      }
+    };
+
+    const handleTyping = (payload: any) => {
+      if (payload.conversationId === activeConvId && payload.senderId !== user?.id) {
+        setTypingUsers((prev) => ({ ...prev, [payload.senderId]: true }));
+      }
+    };
+
+    const handleStopTyping = (payload: any) => {
+      if (payload.conversationId === activeConvId) {
+        setTypingUsers((prev) => {
+          const updated = { ...prev };
+          delete updated[payload.senderId];
+          return updated;
+        });
+      }
+    };
+
+    const handlePresenceOnline = (payload: any) => {
+      setOnlineUsers((prev) => new Set(prev).add(payload.userId));
+    };
+
+    const handlePresenceOffline = (payload: any) => {
+      setOnlineUsers((prev) => {
+        const updated = new Set(prev);
+        updated.delete(payload.userId);
+        return updated;
+      });
+    };
+
+    (socket as any).on("chat:message", handleIncomingMessage);
+    (socket as any).on("chat:read", handleChatRead);
+    (socket as any).on("chat:typing", handleTyping);
+    (socket as any).on("chat:stop-typing", handleStopTyping);
+    (socket as any).on("presence:online", handlePresenceOnline);
+    (socket as any).on("presence:offline", handlePresenceOffline);
+
+    return () => {
+      (socket as any).off("chat:message", handleIncomingMessage);
+      (socket as any).off("chat:read", handleChatRead);
+      (socket as any).off("chat:typing", handleTyping);
+      (socket as any).off("chat:stop-typing", handleStopTyping);
+      (socket as any).off("presence:online", handlePresenceOnline);
+      (socket as any).off("presence:offline", handlePresenceOffline);
+    };
+  }, [socket, isConnected, activeConvId, user]);
+
+  // Handle Typing Debounce Trigger
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMsgInput(e.target.value);
+
+    if (!socket || !isConnected || !partnerDetails?.partnerUser?.id) return;
+
+    (socket as any).emit("chat:typing", {
+      recipientId: partnerDetails.partnerUser.id,
+      conversationId: activeConvId,
+    });
+
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+
+    typingTimeoutRef.current = setTimeout(() => {
+      (socket as any).emit("chat:stop-typing", {
+        recipientId: partnerDetails.partnerUser.id,
+        conversationId: activeConvId,
+      });
+    }, 2000);
+  };
+
+  // 5. Send Text or File Message with Instant Optimistic UI (WhatsApp/Messenger style)
+  const handleSendMessage = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!activeConvId || (!msgInput.trim() && !selectedFile)) return;
+
+    const tempId = "temp-" + Date.now() + "-" + Math.random().toString(36).slice(2, 7);
+    const content = msgInput.trim();
+    const currentFile = selectedFile;
+    const currentPreview = filePreviewUrl;
+
+    // 1. INSTANT: Clear input and file state immediately (0ms)
+    setMsgInput("");
+    setSelectedFile(null);
+    setFilePreviewUrl(null);
+
+    // Stop typing indicator immediately
+    if (socket && isConnected && partnerDetails?.partnerUser?.id) {
+      (socket as any).emit("chat:stop-typing", {
+        recipientId: partnerDetails.partnerUser.id,
+        conversationId: activeConvId,
+      });
+    }
+
+    // 2. INSTANT: Optimistic message appended directly to state
+    const optimisticMsg: any = {
+      id: tempId,
+      tempId,
+      conversationId: activeConvId,
+      senderId: user?.id,
+      sender: user,
+      content,
+      messageType: currentFile ? (currentFile.type.startsWith("image/") ? "IMAGE" : "DOCUMENT") : "TEXT",
+      status: "SENT",
+      createdAt: new Date().toISOString(),
+      attachments: currentFile
+        ? [
+            {
+              id: "att-" + tempId,
+              fileName: currentFile.name,
+              fileSize: currentFile.size,
+              fileType: currentFile.type,
+              fileUrl: currentPreview || "",
+            },
+          ]
+        : [],
+    };
+
+    // Update messages feed and left conversation preview immediately
+    setMessages((prev) => [...prev, optimisticMsg]);
+    setConversations((prev) => {
+      const updated = prev.map((c) =>
+        c.id === activeConvId
+          ? { ...c, lastMessageAt: optimisticMsg.createdAt, lastMessage: optimisticMsg }
+          : c
+      );
+      return updated.sort(
+        (a, b) => new Date(b.lastMessageAt || 0).getTime() - new Date(a.lastMessageAt || 0).getTime()
+      );
+    });
+
+    // 3. BACKGROUND: Fire network request asynchronously without blocking UI
+    try {
+      if (currentFile) {
+        const formData = new FormData();
+        formData.append("file", currentFile);
+        formData.append("content", content);
+        formData.append("tempId", tempId);
+
+        const res = await sendChatMessageWithFile(activeConvId, formData);
+        if (res.data) {
+          setMessages((prev) => upsertMessage(prev, res.data));
+        }
+      } else {
+        if (socket && isConnected && partnerDetails?.partnerUser?.id) {
+          const payload = {
+            recipientId: partnerDetails.partnerUser.id,
+            conversationId: activeConvId,
+            content,
+            tempId,
+          };
+          (socket as any).emit("chat:send", payload, (ack: any) => {
+            if (ack.success && ack.data) {
+              setMessages((prev) => upsertMessage(prev, ack.data));
+            } else {
+              toast.error(ack.error || "Failed to deliver message");
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.tempId === tempId ? { ...m, status: "FAILED" } : m
+                )
+              );
+            }
+          });
+        } else {
+          // Fallback to HTTP if socket is not available
+          const payload = {
+            content,
+            tempId,
+            messageType: "TEXT",
+          };
+          const res = await sendChatMessage(activeConvId, payload);
+          if (res.data) {
+            setMessages((prev) => upsertMessage(prev, { ...res.data, tempId }));
+          }
+        }
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to deliver message");
+    }
+  };
+
+  // Handle File Selection
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, isImage: boolean) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 25 * 1024 * 1024) {
+      toast.error("File size cannot exceed 25MB");
+      return;
+    }
+
+    setSelectedFile(file);
+    if (isImage) {
+      setFilePreviewUrl(URL.createObjectURL(file));
+    } else {
+      setFilePreviewUrl(null);
+    }
+  };
+
+  // 6. Share Medical Record in Chat
+  const handleOpenShareRecordModal = async () => {
+    setIsShareRecordOpen(true);
+    setLoadingRecords(true);
+    try {
+      const res = await getMyMedicalRecords();
+      setPatientRecords(res.data || []);
+    } catch {
+      toast.error("Failed to load medical records");
+    } finally {
+      setLoadingRecords(false);
+    }
+  };
+
+  const handleConfirmShareRecord = async () => {
+    if (!activeConvId || !selectedRecordId) {
+      toast.error("Please select a medical record to share");
+      return;
+    }
+
+    setSharingRecord(true);
+    try {
+      const res = await shareMedicalRecordInChat(activeConvId, {
+        medicalRecordId: selectedRecordId,
+        note: recordNote || "Shared a previous medical record",
+      });
+      if (res.data) {
+        setMessages((prev) => upsertMessage(prev, res.data));
+      }
+      setIsShareRecordOpen(false);
+      setSelectedRecordId(null);
+      setRecordNote("");
+      toast.success("Medical record shared with doctor");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to share medical record");
+    } finally {
+      setSharingRecord(false);
+    }
+  };
+
+  // 7. Open Shared Clinical Documents Drawer
+  const handleToggleDocumentsDrawer = async () => {
+    if (!isDocumentsDrawerOpen && activeConvId) {
+      setLoadingSharedDocs(true);
+      try {
+        const res = await getConversationSharedDocuments(activeConvId);
+        setSharedDocsData(res.data);
+      } catch {
+        toast.error("Failed to load shared clinical documents");
+      } finally {
+        setLoadingSharedDocs(false);
+      }
+    }
+    setIsDocumentsDrawerOpen(!isDocumentsDrawerOpen);
+  };
+
+  // 8. Initiate Video Call directly from chat
+  const handleStartVideoCall = async () => {
+    if (!partnerDetails?.partnerUser?.id) return;
+    try {
+      const res = await initiateCall({
+        receiverId: partnerDetails.partnerUser.id,
+        type: "VIDEO",
+      });
+      toast.success("Initiating video consultation...");
+      router.push(`/video-call/${res.data.id}`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to initiate video call");
+    }
+  };
+
+  // 9. Open New Chat modal and fetch directory
+  const handleOpenNewChat = async () => {
+    setIsNewChatOpen(true);
+    setLoadingContacts(true);
+    try {
+      if (user?.role === "PATIENT") {
+        const res = await getAllDoctors({ limit: 50 });
+        setAvailableContacts(res.data || []);
+      } else {
+        const res = await getAllPatients({ limit: 50 });
+        setAvailableContacts(res.data || []);
+      }
+    } catch (err: any) {
+      toast.error("Failed to load contacts");
+    } finally {
+      setLoadingContacts(false);
+    }
+  };
+
+  const handleStartChatWithContact = async (contact: any) => {
+    try {
+      setStartingChat(true);
+      const isDoc = user?.role === "DOCTOR";
+      const payload = isDoc
+        ? { patientId: contact.id }
+        : { doctorId: contact.id };
+
+      const res = await getOrCreateConversation(payload);
+      if (res.data) {
+        const conv = res.data;
+        setConversations((prev) => {
+          const exists = prev.some((c) => c.id === conv.id);
+          return exists ? prev : [conv, ...prev];
+        });
+        setActiveConvId(conv.id);
+        setIsNewChatOpen(false);
+        toast.success(`Chat opened with ${contact.name}`);
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to start conversation");
+    } finally {
+      setStartingChat(false);
+    }
+  };
+
+  // Filtered Contacts for Modal
+  const filteredContacts = useMemo(() => {
+    if (!contactSearch) return availableContacts;
+    const q = contactSearch.toLowerCase();
+    return availableContacts.filter((c) => {
+      const isDoc = user?.role === "DOCTOR";
+      const name = c.name?.toLowerCase() || "";
+      const email = c.email?.toLowerCase() || "";
+      const designation = c.designation?.toLowerCase() || "";
+      const specialties = (c.specialties || []).map((s: any) => s.specialty?.title?.toLowerCase()).join(" ");
+      return name.includes(q) || email.includes(q) || designation.includes(q) || specialties.includes(q);
+    });
+  }, [availableContacts, contactSearch, user]);
+
+  // Filtered Conversations List
+  const filteredConversations = useMemo(() => {
+    if (!searchQuery) return conversations;
+    const q = searchQuery.toLowerCase();
+    return conversations.filter((c) => {
+      const isDoc = user?.role === "DOCTOR";
+      const partner = isDoc ? c.patient : c.doctor;
+      return (
+        partner?.name?.toLowerCase().includes(q) ||
+        partner?.email?.toLowerCase().includes(q) ||
+        partner?.designation?.toLowerCase().includes(q)
+      );
+    });
+  }, [conversations, searchQuery, user]);
 
   return (
-    <div className="h-[calc(100vh-140px)] flex bg-background border rounded-2xl overflow-hidden shadow-sm">
-      
-      {/* Sidebar: Conversations List */}
-      <div className={`w-full md:w-80 lg:w-96 border-r flex-col h-full bg-muted/20 shrink-0 ${activeConversationId ? 'hidden md:flex' : 'flex'}`}>
-        <div className="p-4 border-b bg-background">
-          <h2 className="text-xl font-bold mb-4">Messages</h2>
+    <div className="flex h-full max-h-[calc(100vh-6rem)] w-full max-w-full min-w-0 overflow-hidden rounded-2xl border border-border/70 bg-card shadow-xl relative">
+      {/* ================= LEFT SIDEBAR (CONVERSATION LIST) ================= */}
+      <div className={`w-full lg:w-72 xl:w-80 2xl:w-96 flex flex-col border-r border-border/60 bg-muted/20 shrink-0 ${activeConvId ? "hidden lg:flex" : "flex"}`}>
+        {/* Sidebar Header */}
+        <div className="p-3.5 sm:p-4 border-b border-border/60 flex items-center justify-between bg-card/60">
+          <div>
+            <h2 className="text-lg sm:text-xl font-bold tracking-tight flex items-center gap-2">
+              <HeartPulse className="size-5 text-primary" />
+              Clinical Chat
+            </h2>
+            <p className="text-xs text-muted-foreground">Doctor ↔ Patient Consultation</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary border-primary/30 text-xs font-semibold px-2.5 rounded-lg"
+              onClick={handleOpenNewChat}
+            >
+              <Plus className="size-3.5" />
+              <span>New</span>
+            </Button>
+          </div>
+        </div>
+
+        {/* Search Bar */}
+        <div className="p-2.5 sm:p-3 border-b border-border/40 bg-card/30">
           <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search conversations..." 
-              className="pl-9 bg-muted/50 border-none"
+            <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
+            <Input
+              placeholder="Search doctors or patients..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 h-9 bg-background/80 text-xs rounded-xl"
             />
           </div>
         </div>
 
-        <ScrollArea className="flex-1">
-          {loadingConv ? (
-            <div className="flex justify-center p-8">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        {/* Conversations List */}
+        <div className="flex-1 overflow-y-auto divide-y divide-border/30">
+          {loadingConvs ? (
+            <div className="p-4 space-y-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <Skeleton className="size-11 rounded-full shrink-0" />
+                  <div className="space-y-2 flex-1">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/2" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : filteredConversations.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground">
-              <MessageSquare className="h-10 w-10 mx-auto opacity-20 mb-3" />
-              <p className="text-sm">No conversations found.</p>
+            <div className="p-8 text-center text-muted-foreground flex flex-col items-center justify-center h-full">
+              <FolderOpen className="size-10 mb-2 opacity-30 text-primary" />
+              <p className="text-sm font-medium">No conversations found</p>
+              <p className="text-xs opacity-75 mt-1 mb-4 max-w-[200px]">
+                {user?.role === "DOCTOR"
+                  ? "Start a new conversation with one of your patients."
+                  : "Start a conversation or follow up with verified doctors."}
+              </p>
+              <Button size="sm" onClick={handleOpenNewChat} className="gap-2 text-xs shadow-xs">
+                <MessageSquarePlus className="size-4" />
+                {user?.role === "DOCTOR" ? "Message Patient" : "Message Doctor"}
+              </Button>
             </div>
           ) : (
-            <div className="divide-y divide-border/50">
-              {filteredConversations.map((conv) => {
-                const other = conv.participants?.find((p: any) => p.userId !== user?.id)?.user
-                const isActive = activeConversationId === conv.id
-                
-                return (
-                  <button 
-                    key={conv.id}
-                    onClick={() => setActiveConversationId(conv.id)}
-                    className={`w-full text-left p-4 flex items-center gap-3 hover:bg-muted/50 transition-colors ${isActive ? 'bg-primary/5 border-l-4 border-l-primary' : 'border-l-4 border-l-transparent'}`}
-                  >
-                    <div className="relative">
-                      <Avatar className="h-12 w-12 border">
-                        <AvatarImage src={other?.profilePhoto} />
-                        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                          {other?.name?.substring(0, 2).toUpperCase() || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      {/* Optional online indicator */}
-                    </div>
-                    <div className="flex-1 overflow-hidden">
-                      <div className="flex justify-between items-baseline mb-1">
-                        <h3 className="font-semibold text-sm truncate">{other?.name || 'Unknown User'}</h3>
-                        <span className="text-[10px] text-muted-foreground shrink-0 ml-2">
-                          {conv.lastMessageAt ? format(new Date(conv.lastMessageAt), 'MMM d, h:mm a') : ''}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <p className="text-xs text-muted-foreground truncate">
-                          {conv.type === 'GROUP' ? 'Group Chat' : 'Direct Message'}
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-                )
-              })}
-            </div>
-          )}
-        </ScrollArea>
-      </div>
+            filteredConversations.map((conv) => {
+              const isDoc = user?.role === "DOCTOR";
+              const partner = isDoc ? conv.patient : conv.doctor;
+              const partnerUser = partner?.user;
+              const isActive = conv.id === activeConvId;
+              const isOnline = partnerUser?.id ? onlineUsers.has(partnerUser.id) : false;
 
-      {/* Main Area: Chat Window */}
-      <div className={`flex-1 flex-col h-full ${!activeConversationId ? 'hidden md:flex' : 'flex'}`}>
-        {!activeConversationId ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground bg-muted/10 p-8 text-center">
-            <div className="h-24 w-24 bg-primary/10 rounded-full flex items-center justify-center mb-6">
-              <MessageSquare className="h-10 w-10 text-primary" />
-            </div>
-            <h3 className="text-2xl font-semibold text-foreground mb-2">Your Messages</h3>
-            <p className="max-w-md">Select a conversation from the sidebar to start chatting with your doctor or patient.</p>
-          </div>
-        ) : (
-          <>
-            {/* Chat Header */}
-            <div className="h-[72px] border-b p-4 flex items-center justify-between bg-background shrink-0">
-              {(() => {
-                const conv = conversations.find(c => c.id === activeConversationId)
-                const other = conv?.participants?.find((p: any) => p.userId !== user?.id)?.user
-                
-                return (
-                  <div className="flex items-center gap-3">
-                    <Button variant="ghost" size="icon" className="md:hidden mr-1" onClick={() => setActiveConversationId(null)}>
-                      <MessageSquare className="h-5 w-5" />
-                    </Button>
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={other?.profilePhoto} />
-                      <AvatarFallback className="bg-primary/10 text-primary">
-                        {other?.name?.substring(0, 2).toUpperCase() || 'U'}
+              const displayName = isDoc
+                ? partner?.name || "Patient"
+                : `Dr. ${partner?.name?.replace(/^Dr\.?\s*/i, "") || "Doctor"}`;
+
+              return (
+                <div
+                  key={conv.id}
+                  onClick={() => setActiveConvId(conv.id)}
+                  className={`flex items-center gap-3 p-3.5 cursor-pointer transition-all hover:bg-muted/50 ${
+                    isActive ? "bg-primary/10 border-l-4 border-primary" : ""
+                  }`}
+                >
+                  <div className="relative shrink-0">
+                    <Avatar className="size-11 border border-border/80 shadow-xs">
+                      <AvatarImage src={partner?.profilePhoto || partnerUser?.image || ""} />
+                      <AvatarFallback className="bg-primary/15 text-primary font-bold text-sm">
+                        {displayName.charAt(displayName.startsWith("Dr.") ? 4 : 0)}
                       </AvatarFallback>
                     </Avatar>
-                    <div>
-                      <h3 className="font-semibold">{other?.name || 'Unknown'}</h3>
-                      <p className="text-xs text-muted-foreground capitalize">{other?.role?.toLowerCase() || 'User'}</p>
+                    {isOnline && (
+                      <span className="absolute bottom-0 right-0 size-3 rounded-full bg-emerald-500 ring-2 ring-background" />
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-center mb-0.5">
+                      <h4 className="font-semibold text-sm truncate text-foreground">{displayName}</h4>
+                      {conv.lastMessageAt && (
+                        <span className="text-[10px] text-muted-foreground whitespace-nowrap ml-1">
+                          {format(new Date(conv.lastMessageAt), "hh:mm a")}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <p className="text-xs text-muted-foreground truncate max-w-[180px]">
+                        {conv.lastMessage?.messageType === "MEDICAL_RECORD"
+                          ? "🩺 [Medical Record]"
+                          : conv.lastMessage?.messageType === "IMAGE"
+                          ? "📷 [Image]"
+                          : conv.lastMessage?.messageType === "DOCUMENT"
+                          ? "📄 [Document]"
+                          : conv.lastMessage?.content || "Tap to chat"}
+                      </p>
+                      {conv.unreadCount > 0 && (
+                        <Badge className="h-5 min-w-5 px-1.5 flex items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
+                          {conv.unreadCount}
+                        </Badge>
+                      )}
                     </div>
                   </div>
-                )
-              })()}
-              
-              <div className="flex items-center gap-2">
-                {/* Actions like video call button if needed */}
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+
+      {/* ================= MAIN CHAT AREA ================= */}
+      {activeConversation && partnerDetails ? (
+        <div className={`flex-1 min-w-0 w-full max-w-full flex flex-col bg-background h-full overflow-hidden ${!activeConvId ? "hidden lg:flex" : "flex"}`}>
+          {/* Top Header */}
+          <div className="px-3 sm:px-4 py-2.5 sm:py-3 border-b border-border/60 flex items-center justify-between bg-card/70 shrink-0 gap-2">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+              <Button variant="ghost" size="icon" className="lg:hidden shrink-0 -ml-1.5 h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => setActiveConvId(null)}>
+                <ArrowLeft className="size-5" />
+              </Button>
+              <div className="relative shrink-0">
+                <Avatar className="size-9 sm:size-10 border border-primary/20 shadow-xs">
+                  <AvatarImage src={partnerDetails.photo || ""} />
+                  <AvatarFallback className="bg-primary/20 text-primary font-bold">
+                    {partnerDetails.name.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                {partnerDetails.isOnline && (
+                  <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-emerald-500 ring-2 ring-background" />
+                )}
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <h3 className="font-bold text-sm sm:text-base text-foreground truncate">{partnerDetails.name}</h3>
+                  <Badge variant="outline" className="text-[10px] py-0 px-1.5 font-semibold bg-primary/5 text-primary shrink-0">
+                    {partnerDetails.role}
+                  </Badge>
+                </div>
+                <p className="text-[11px] sm:text-xs text-muted-foreground truncate">
+                  {partnerDetails.isOnline ? (
+                    <span className="text-emerald-600 dark:text-emerald-400 font-medium">● Online</span>
+                  ) : (
+                    partnerDetails.subtitle
+                  )}
+                </p>
               </div>
             </div>
 
-            {/* Chat Messages */}
-            <ScrollArea className="flex-1 p-4 bg-muted/10">
-              {loadingMsgs ? (
-                <div className="flex justify-center p-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            {/* Action Buttons */}
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleToggleDocumentsDrawer}
+                className="gap-1 sm:gap-1.5 text-xs font-semibold h-8 px-2 sm:px-3 border-border/60 hover:bg-primary/10 hover:text-primary"
+              >
+                <FolderOpen className="size-3.5" />
+                <span className="hidden xl:inline">Clinical Docs</span>
+              </Button>
+
+              <Button
+                size="sm"
+                onClick={handleStartVideoCall}
+                className="gap-1 sm:gap-1.5 text-xs font-semibold h-8 px-2 sm:px-3 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+              >
+                <Video className="size-3.5" />
+                <span className="hidden sm:inline">Video Call</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* Messages Feed */}
+          <div ref={messageContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 space-y-4 bg-muted/10">
+            {loadingMsgs ? (
+              <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground">
+                <Loader2 className="size-6 animate-spin text-primary" />
+                <p className="text-xs">Loading consultation messages...</p>
+              </div>
+            ) : messages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-center p-6 text-muted-foreground">
+                <div className="size-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-3">
+                  <ShieldCheck className="size-6" />
                 </div>
-              ) : messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-20">
-                  <p className="text-sm bg-background px-4 py-2 rounded-full border shadow-sm">This is the beginning of your conversation.</p>
-                </div>
-              ) : (
-                <div className="space-y-4 pb-4">
-                  {messages.map((msg, i) => {
-                    const isMe = msg.senderId === user?.id
-                    return (
-                      <div key={msg.id || i} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[75%] sm:max-w-[65%] flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                          <div 
-                            className={`px-4 py-2.5 rounded-2xl ${
-                              isMe 
-                                ? 'bg-primary text-primary-foreground rounded-tr-sm' 
-                                : 'bg-background border shadow-sm rounded-tl-sm text-foreground'
+                <h4 className="font-semibold text-sm text-foreground">Secure Healthcare Channel</h4>
+                <p className="text-xs max-w-sm mt-1">
+                  Messages, clinical files, and shared medical records in this consultation are securely protected.
+                </p>
+              </div>
+            ) : (
+              messages.map((msg, index) => {
+                const isMe = msg.senderId === user?.id;
+                const prevMsg = messages[index - 1];
+                const showDateDivider =
+                  !prevMsg ||
+                  new Date(prevMsg.createdAt).toDateString() !== new Date(msg.createdAt).toDateString();
+
+                return (
+                  <React.Fragment key={msg.id || index}>
+                    {/* Date Divider */}
+                    {showDateDivider && (
+                      <div className="flex justify-center my-2">
+                        <span className="bg-muted/60 text-muted-foreground text-[10px] font-semibold px-2.5 py-0.5 rounded-full border border-border/40">
+                          {isToday(new Date(msg.createdAt))
+                            ? "Today"
+                            : isYesterday(new Date(msg.createdAt))
+                            ? "Yesterday"
+                            : format(new Date(msg.createdAt), "dd MMMM yyyy")}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Message Bubble */}
+                    <div className={`flex ${isMe ? "justify-end" : "justify-start"} items-end gap-2`}>
+                      {!isMe && (
+                        <Avatar className="size-7 border shrink-0 mb-1">
+                          <AvatarImage src={partnerDetails.photo || ""} />
+                          <AvatarFallback className="text-[10px] font-bold">
+                            {partnerDetails.name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
+
+                      <div
+                        className={`max-w-[85%] lg:max-w-[75%] rounded-2xl p-3.5 shadow-xs ${
+                          isMe
+                            ? "bg-primary text-primary-foreground rounded-br-none"
+                            : "bg-card text-card-foreground border border-border/60 rounded-bl-none"
+                        }`}
+                      >
+                        {/* 1. Image Attachments */}
+                        {msg.attachments &&
+                          msg.attachments.some((a: any) => a.fileType?.startsWith("image/")) && (
+                            <div className="mb-2 space-y-2">
+                              {msg.attachments
+                                .filter((a: any) => a.fileType?.startsWith("image/"))
+                                .map((att: any) => (
+                                  <div
+                                    key={att.id}
+                                    onClick={() => setLightboxImageUrl(att.fileUrl)}
+                                    className="relative rounded-xl overflow-hidden cursor-pointer group border border-border/40 max-h-60 bg-black/10"
+                                  >
+                                    <img
+                                      src={att.fileUrl}
+                                      alt={att.fileName}
+                                      className="object-cover w-full h-full group-hover:scale-105 transition-transform"
+                                    />
+                                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-semibold gap-1">
+                                      <ZoomIn className="size-4" /> Click to view
+                                    </div>
+                                  </div>
+                                ))}
+                            </div>
+                          )}
+
+                        {/* 2. Document Attachments */}
+                        {msg.attachments &&
+                          msg.attachments.some((a: any) => !a.fileType?.startsWith("image/")) && (
+                            <div className="mb-2 space-y-2">
+                              {msg.attachments
+                                .filter((a: any) => !a.fileType?.startsWith("image/"))
+                                .map((att: any) => (
+                                  <div
+                                    key={att.id}
+                                    className={`p-2.5 rounded-xl border flex items-center justify-between gap-3 ${
+                                      isMe
+                                        ? "bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground"
+                                        : "bg-muted/40 border-border/60 text-foreground"
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                                      <FileText className="size-5 shrink-0 text-red-500" />
+                                      <div className="min-w-0 flex-1">
+                                        <p className="text-xs font-bold truncate max-w-[140px] sm:max-w-[220px] md:max-w-xs">{att.fileName}</p>
+                                        <p className="text-[10px] opacity-75">
+                                          {(att.fileSize / 1024).toFixed(1)} KB
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      asChild
+                                      className="size-7 p-0 shrink-0 hover:bg-black/10"
+                                    >
+                                      <a href={att.fileUrl} target="_blank" rel="noopener noreferrer" download>
+                                        <Download className="size-3.5" />
+                                      </a>
+                                    </Button>
+                                  </div>
+                                ))}
+                            </div>
+                          )}
+
+                        {/* 3. Medical Record Card */}
+                        {msg.medicalRecord && (
+                          <div
+                            className={`mb-2 p-3 rounded-xl border space-y-1.5 ${
+                              isMe
+                                ? "bg-primary-foreground/15 border-primary-foreground/30 text-primary-foreground"
+                                : "bg-blue-50/80 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800 text-slate-900 dark:text-slate-100"
                             }`}
                           >
-                            <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
+                            <div className="flex items-center gap-2 border-b border-inherit pb-1.5">
+                              <Stethoscope className="size-4 text-blue-600 dark:text-blue-400" />
+                              <span className="text-xs font-bold uppercase tracking-wider">
+                                Shared Medical Record
+                              </span>
+                            </div>
+                            <div className="text-xs space-y-1">
+                              <p>
+                                <span className="font-semibold opacity-75">Diagnosis:</span>{" "}
+                                {msg.medicalRecord.diagnosis}
+                              </p>
+                              {msg.medicalRecord.symptoms && (
+                                <p>
+                                  <span className="font-semibold opacity-75">Symptoms:</span>{" "}
+                                  {msg.medicalRecord.symptoms}
+                                </p>
+                              )}
+                              {msg.medicalRecord.advice && (
+                                <p className="italic text-[11px] opacity-80">
+                                  Advice: {msg.medicalRecord.advice}
+                                </p>
+                              )}
+                              <p className="text-[10px] opacity-70">
+                                Recorded on {format(new Date(msg.medicalRecord.createdAt), "dd MMM yyyy")}
+                              </p>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-1 mt-1 px-1">
-                            <span className="text-[10px] text-muted-foreground">
-                              {format(new Date(msg.createdAt), 'h:mm a')}
+                        )}
+
+                        {/* Text Message Content */}
+                        {msg.content && (
+                          <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap break-words">
+                            {msg.content}
+                          </p>
+                        )}
+
+                        {/* Message Meta (Time & Status) */}
+                        <div
+                          className={`flex items-center justify-end gap-1.5 mt-1 text-[10px] select-none ${
+                            isMe ? "text-primary-foreground/80" : "text-muted-foreground"
+                          }`}
+                        >
+                          <span>{format(new Date(msg.createdAt || Date.now()), "hh:mm a")}</span>
+                          {isMe && (
+                            <span className="flex items-center gap-0.5 ml-0.5">
+                              {msg.status === "READ" ? (
+                                <>
+                                  <span className="font-semibold text-cyan-200">Seen</span>
+                                  <CheckCheck className="size-3.5 text-cyan-300 stroke-[2.5]" />
+                                </>
+                              ) : msg.status === "DELIVERED" ? (
+                                <>
+                                  <span className="opacity-90">Delivered</span>
+                                  <CheckCheck className="size-3.5 opacity-90 stroke-[2]" />
+                                </>
+                              ) : msg.status === "FAILED" ? (
+                                <>
+                                  <span className="text-red-300 font-semibold">Failed</span>
+                                  <AlertCircle className="size-3 text-red-300" />
+                                </>
+                              ) : (
+                                <>
+                                  <span className="opacity-80">Sent</span>
+                                  <Check className="size-3.5 opacity-80 stroke-[2]" />
+                                </>
+                              )}
                             </span>
-                            {isMe && msg.isRead && (
-                              <CheckCircle2 className="h-3 w-3 text-blue-500" />
-                            )}
-                          </div>
+                          )}
                         </div>
                       </div>
-                    )
-                  })}
-                  <div ref={scrollRef} />
-                </div>
-              )}
-            </ScrollArea>
+                    </div>
+                  </React.Fragment>
+                );
+              })
+            )}
 
-            {/* Chat Input */}
-            <div className="p-4 bg-background border-t shrink-0">
-              <form onSubmit={handleSendMessage} className="flex items-end gap-2">
-                <div className="relative flex-1">
-                  <Input 
-                    placeholder="Type your message..." 
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    className="pr-12 rounded-full bg-muted/50 border-transparent focus-visible:ring-primary/20 focus-visible:border-primary"
-                  />
+            {/* Typing Indicator */}
+            {Object.keys(typingUsers).length > 0 && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground p-2 animate-pulse">
+                <Avatar className="size-6 border">
+                  <AvatarImage src={partnerDetails.photo || ""} />
+                  <AvatarFallback className="text-[10px]">P</AvatarFallback>
+                </Avatar>
+                <div className="flex items-center gap-1 bg-muted px-3 py-1.5 rounded-full">
+                  <span className="size-1.5 bg-primary rounded-full animate-bounce"></span>
+                  <span className="size-1.5 bg-primary rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                  <span className="size-1.5 bg-primary rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                  <span className="text-[11px] font-medium ml-1.5">{partnerDetails.name} is typing...</span>
                 </div>
-                <Button 
-                  type="submit" 
-                  size="icon" 
-                  disabled={!newMessage.trim()}
-                  className="rounded-full shrink-0 h-10 w-10 shadow-sm"
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
-              </form>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Staged File Preview Bar */}
+          {selectedFile && (
+            <div className="p-3 bg-muted/40 border-t border-border/50 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {filePreviewUrl ? (
+                  <img src={filePreviewUrl} alt="Preview" className="size-12 rounded-lg object-cover border" />
+                ) : (
+                  <div className="size-12 bg-red-100 dark:bg-red-950 text-red-600 rounded-lg flex items-center justify-center">
+                    <FileText className="size-6" />
+                  </div>
+                )}
+                <div>
+                  <p className="text-xs font-bold truncate max-w-xs">{selectedFile.name}</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {(selectedFile.size / 1024).toFixed(1)} KB • Ready to send
+                  </p>
+                </div>
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  setSelectedFile(null);
+                  setFilePreviewUrl(null);
+                }}
+                className="size-8 p-0 rounded-full"
+              >
+                <X className="size-4" />
+              </Button>
             </div>
-          </>
+          )}
+
+          {/* Bottom Chat Input Bar */}
+          <form
+            onSubmit={handleSendMessage}
+            className="p-2.5 sm:p-4 border-t border-border/60 bg-card flex items-center gap-2 shrink-0 w-full min-w-0 max-w-full"
+          >
+            {/* Hidden File Inputs */}
+            <input
+              type="file"
+              ref={imageInputRef}
+              accept="image/jpeg,image/png,image/webp,image/jpg"
+              className="hidden"
+              onChange={(e) => handleFileSelect(e, true)}
+            />
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="application/pdf,.pdf,.doc,.docx"
+              className="hidden"
+              onChange={(e) => handleFileSelect(e, false)}
+            />
+
+            {/* Attachment Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="size-10 rounded-full shrink-0 border-border/60 hover:bg-primary/10 hover:text-primary"
+                >
+                  <Plus className="size-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" side="top" className="w-56 p-1.5 shadow-xl rounded-xl">
+                <DropdownMenuItem
+                  onClick={() => imageInputRef.current?.click()}
+                  className="gap-2.5 py-2 cursor-pointer text-xs font-medium"
+                >
+                  <ImageIcon className="size-4 text-blue-500" />
+                  <span>Send Photo / Image</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => fileInputRef.current?.click()}
+                  className="gap-2.5 py-2 cursor-pointer text-xs font-medium"
+                >
+                  <FileText className="size-4 text-red-500" />
+                  <span>Medical Document / PDF</span>
+                </DropdownMenuItem>
+                {user?.role === "PATIENT" && (
+                  <DropdownMenuItem
+                    onClick={handleOpenShareRecordModal}
+                    className="gap-2.5 py-2 cursor-pointer text-xs font-medium text-emerald-600"
+                  >
+                    <Stethoscope className="size-4 text-emerald-500" />
+                    <span>Share Medical Record</span>
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Input Field */}
+            <Input
+              placeholder="Type your clinical message or guidance..."
+              value={msgInput}
+              onChange={handleInputChange}
+              className="flex-1 h-10 rounded-full px-4 text-xs sm:text-sm bg-muted/20 border-border/60 focus-visible:ring-primary"
+            />
+
+            {/* Send Button */}
+            <Button
+              type="submit"
+              size="icon"
+              disabled={sending || (!msgInput.trim() && !selectedFile)}
+              className="size-10 rounded-full shrink-0 bg-primary hover:bg-primary/90 text-white shadow-sm"
+            >
+              {sending ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
+            </Button>
+          </form>
+        </div>
+      ) : (
+        <div className="hidden lg:flex flex-1 flex-col items-center justify-center p-8 text-center bg-muted/5 text-muted-foreground">
+          <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-4">
+            <HeartPulse className="size-8" />
+          </div>
+          <h3 className="text-lg font-bold text-foreground">Doctorly Clinical Communication</h3>
+          <p className="text-xs max-w-sm mt-1">
+            Select a doctor or patient from the left panel to review consultations, exchange clinical records, and message securely.
+          </p>
+        </div>
+      )}
+
+      {/* ================= MODAL: SHARED CLINICAL DOCUMENTS ================= */}
+      <Dialog open={isDocumentsDrawerOpen} onOpenChange={setIsDocumentsDrawerOpen}>
+        <DialogContent className="max-w-md md:max-w-2xl h-[85vh] flex flex-col p-0 overflow-hidden gap-0">
+          <DialogHeader className="p-4 border-b border-border/60 bg-muted/30 shrink-0">
+            <DialogTitle className="flex items-center gap-2 text-base font-bold">
+              <FolderOpen className="size-5 text-primary" />
+              Clinical Documents
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              Images, PDFs and medical records shared in this consultation.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto p-4 bg-muted/5">
+            {loadingSharedDocs ? (
+              <div className="flex items-center justify-center h-40">
+                <Loader2 className="size-6 animate-spin text-primary" />
+              </div>
+            ) : !sharedDocsData || sharedDocsData.totalCount === 0 ? (
+              <div className="p-6 text-center text-muted-foreground flex flex-col items-center justify-center h-full">
+                <FileText className="size-10 opacity-30 mx-auto mb-3 text-primary" />
+                <p className="text-sm font-semibold">No shared documents yet</p>
+                <p className="text-[11px] opacity-75 mt-1 max-w-[250px]">Images, PDFs and medical records shared in this chat will appear here.</p>
+              </div>
+            ) : (
+              <Tabs defaultValue="all" className="w-full flex flex-col h-full">
+                <TabsList className="grid grid-cols-3 w-full mb-3 h-9 text-xs shrink-0">
+                  <TabsTrigger value="all" className="text-xs">All ({sharedDocsData.totalCount})</TabsTrigger>
+                  <TabsTrigger value="patient" className="text-xs">Patient</TabsTrigger>
+                  <TabsTrigger value="doctor" className="text-xs">Doctor</TabsTrigger>
+                </TabsList>
+
+                <div className="flex-1 overflow-y-auto pr-1">
+                  <TabsContent value="all" className="space-y-2 mt-0">
+                    {[...sharedDocsData.patientDocuments, ...sharedDocsData.doctorDocuments]
+                      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                      .map((doc: any, i: number) => (
+                        <DocumentItemCard key={i} doc={doc} onImageClick={setLightboxImageUrl} />
+                      ))}
+                  </TabsContent>
+
+                  <TabsContent value="patient" className="space-y-2 mt-0">
+                    {sharedDocsData.patientDocuments.map((doc: any, i: number) => (
+                      <DocumentItemCard key={i} doc={doc} onImageClick={setLightboxImageUrl} />
+                    ))}
+                  </TabsContent>
+
+                  <TabsContent value="doctor" className="space-y-2 mt-0">
+                    {sharedDocsData.doctorDocuments.map((doc: any, i: number) => (
+                      <DocumentItemCard key={i} doc={doc} onImageClick={setLightboxImageUrl} />
+                    ))}
+                  </TabsContent>
+                </div>
+              </Tabs>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ================= MODAL: SHARE MEDICAL RECORD ================= */}
+      <Dialog open={isShareRecordOpen} onOpenChange={setIsShareRecordOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base font-bold">
+              <Stethoscope className="size-5 text-primary" />
+              Share Medical Record
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              Select one of your past medical records to securely share with this doctor.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-2 max-h-60 overflow-y-auto">
+            {loadingRecords ? (
+              <div className="py-8 flex justify-center">
+                <Loader2 className="size-5 animate-spin text-primary" />
+              </div>
+            ) : patientRecords.length === 0 ? (
+              <div className="py-6 text-center text-xs text-muted-foreground">
+                No previous medical records found on your account.
+              </div>
+            ) : (
+              patientRecords.map((rec) => (
+                <div
+                  key={rec.id}
+                  onClick={() => setSelectedRecordId(rec.id)}
+                  className={`p-3 rounded-xl border cursor-pointer transition-all text-xs ${
+                    selectedRecordId === rec.id
+                      ? "border-primary bg-primary/10 text-primary font-semibold ring-1 ring-primary"
+                      : "border-border/60 hover:bg-muted/40"
+                  }`}
+                >
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="font-bold">{rec.diagnosis}</span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {format(new Date(rec.createdAt), "dd MMM yyyy")}
+                    </span>
+                  </div>
+                  {rec.symptoms && (
+                    <p className="text-muted-foreground text-[11px] truncate">
+                      Symptoms: {rec.symptoms}
+                    </p>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="space-y-1.5 pt-2 border-t">
+            <label className="text-xs font-semibold text-foreground">Optional Clinical Note</label>
+            <Input
+              placeholder="e.g. Please review my previous blood test and diagnosis"
+              value={recordNote}
+              onChange={(e) => setRecordNote(e.target.value)}
+              className="text-xs h-9"
+            />
+          </div>
+
+          <DialogFooter className="pt-2">
+            <Button variant="outline" size="sm" onClick={() => setIsShareRecordOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleConfirmShareRecord}
+              disabled={sharingRecord || !selectedRecordId}
+              className="bg-primary text-white"
+            >
+              {sharingRecord ? <Loader2 className="size-4 animate-spin" /> : "Share Record"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ================= MODAL: IMAGE LIGHTBOX ================= */}
+      {lightboxImageUrl && (
+        <Dialog open={!!lightboxImageUrl} onOpenChange={() => setLightboxImageUrl(null)}>
+          <DialogContent className="max-w-3xl p-2 bg-black/95 border-none text-white flex flex-col items-center justify-center">
+            <div className="relative max-h-[80vh] w-full flex items-center justify-center">
+              <img src={lightboxImageUrl} alt="Clinical Image" className="max-h-[78vh] object-contain rounded-lg" />
+            </div>
+            <div className="mt-2 flex items-center gap-3">
+              <Button size="sm" variant="outline" asChild className="bg-white/10 hover:bg-white/20 text-white text-xs border-white/20">
+                <a href={lightboxImageUrl} target="_blank" rel="noopener noreferrer" download>
+                  <Download className="size-3.5 mr-1.5" /> Download Full Image
+                </a>
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* ================= MODAL: START NEW CHAT ================= */}
+      <Dialog open={isNewChatOpen} onOpenChange={setIsNewChatOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base font-bold">
+              <MessageSquarePlus className="size-5 text-primary" />
+              {user?.role === "DOCTOR" ? "Start Chat with Patient" : "Start Chat with Doctor"}
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              {user?.role === "DOCTOR"
+                ? "Select a patient to initiate clinical communication."
+                : "Select a verified doctor to ask questions or follow up on your consultation."}
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Search Box */}
+          <div className="relative my-2">
+            <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
+            <Input
+              placeholder={user?.role === "DOCTOR" ? "Search patient by name or email..." : "Search doctor by name or specialty..."}
+              value={contactSearch}
+              onChange={(e) => setContactSearch(e.target.value)}
+              className="pl-9 h-9 text-xs rounded-xl"
+            />
+          </div>
+
+          {/* Contact List */}
+          <div className="max-h-[340px] overflow-y-auto space-y-1.5 pr-1 divide-y divide-border/20">
+            {loadingContacts ? (
+              <div className="py-10 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                <Loader2 className="size-6 animate-spin text-primary" />
+                <span className="text-xs">Loading directory...</span>
+              </div>
+            ) : filteredContacts.length === 0 ? (
+              <div className="py-8 text-center text-xs text-muted-foreground">
+                No matching contacts found.
+              </div>
+            ) : (
+              filteredContacts.map((contact: any) => {
+                const isDoc = user?.role === "DOCTOR";
+                const displayName = isDoc ? contact.name : `Dr. ${contact.name?.replace(/^Dr\.?\s*/i, "")}`;
+                const subtitle = isDoc
+                  ? contact.contactNumber || contact.email
+                  : `${contact.designation || contact.specialties?.[0]?.specialty?.title || "Specialist"} • ${contact.qualification || "MBBS"}`;
+
+                return (
+                  <div
+                    key={contact.id}
+                    onClick={() => !startingChat && handleStartChatWithContact(contact)}
+                    className="flex items-center justify-between p-2.5 rounded-xl hover:bg-muted/60 transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Avatar className="size-10 shrink-0 border border-border/60">
+                        <AvatarImage src={contact.profilePhoto || contact.user?.image || ""} />
+                        <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">
+                          {displayName.charAt(displayName.startsWith("Dr.") ? 4 : 0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <h4 className="font-semibold text-xs text-foreground truncate">{displayName}</h4>
+                        <p className="text-[11px] text-muted-foreground truncate">{subtitle}</p>
+                      </div>
+                    </div>
+
+                    <Button size="sm" variant="outline" disabled={startingChat} className="text-primary hover:bg-primary/10 text-xs h-7 px-2.5 shrink-0 rounded-lg">
+                      {startingChat ? <Loader2 className="size-3.5 animate-spin" /> : "Chat"}
+                    </Button>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+// Helper Card for Shared Document Drawer
+function DocumentItemCard({ doc, onImageClick }: { doc: any; onImageClick: (url: string) => void }) {
+  const isImage = doc.fileType?.startsWith("image/");
+  const isRecord = doc.type === "MEDICAL_RECORD";
+
+  return (
+    <div className="p-2.5 rounded-xl border border-border/50 bg-muted/20 hover:bg-muted/40 transition-colors text-xs space-y-1">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 min-w-0">
+          {isRecord ? (
+            <Stethoscope className="size-4 text-emerald-500 shrink-0" />
+          ) : isImage ? (
+            <ImageIcon className="size-4 text-blue-500 shrink-0" />
+          ) : (
+            <FileText className="size-4 text-red-500 shrink-0" />
+          )}
+          <span className="font-bold truncate text-foreground">
+            {isRecord ? doc.diagnosis : doc.fileName}
+          </span>
+        </div>
+        <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+          {format(new Date(doc.createdAt), "dd MMM")}
+        </span>
+      </div>
+
+      <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1">
+        <span>By: {doc.senderName}</span>
+        {isImage ? (
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => onImageClick(doc.fileUrl)}
+            className="h-6 px-2 text-[11px] text-primary"
+          >
+            <Eye className="size-3 mr-1" /> View
+          </Button>
+        ) : isRecord ? (
+          <Badge variant="outline" className="text-[9px] py-0 px-1 font-semibold">
+            Record
+          </Badge>
+        ) : (
+          <Button size="sm" variant="ghost" asChild className="h-6 px-2 text-[11px] text-primary">
+            <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" download>
+              <Download className="size-3 mr-1" /> Download
+            </a>
+          </Button>
         )}
       </div>
-      
     </div>
-  )
+  );
 }

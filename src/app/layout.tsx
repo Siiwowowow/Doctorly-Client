@@ -56,7 +56,7 @@ export default async function RootLayout({
                       <AnnouncementBar />
                       <Navbar />
                     </HeaderWrapper>
-                    <main className="flex-1 shrink-0">{children}</main>
+                    <main className="flex-1 min-w-0 w-full">{children}</main>
                     <Toaster richColors position="top-right" />
                   </TooltipProvider>
                 </NextIntlClientProvider>

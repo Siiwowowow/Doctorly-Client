@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Clock, Users, Pill, FileText } from "lucide-react"
+import { Clock, Users, Pill, FileText, MessageSquare } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
@@ -36,6 +36,12 @@ export function QuickActions() {
           <Link href="/doctor/medical-records">
              <FileText className="mr-2 h-4 w-4" />
              {t("viewMedicalRecords")}
+          </Link>
+        </Button>
+        <Button className="w-full justify-start bg-primary/5 hover:bg-primary/10 border-primary/20 text-primary" variant="outline" asChild>
+          <Link href="/chat">
+             <MessageSquare className="mr-2 h-4 w-4" />
+             Messages
           </Link>
         </Button>
       </CardContent>

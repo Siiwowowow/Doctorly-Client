@@ -35,7 +35,8 @@ export default function NewPrescriptionPage() {
   const { data: appointmentRes, isLoading: loadingAppointment } = useQuery({
     queryKey: ["doctor-appointments", appointmentId],
     queryFn: () => getAppointmentById(appointmentId),
-    enabled: !!appointmentId && appointmentId.length > 5,
+    enabled: !!appointmentId && appointmentId.trim().length >= 3,
+    retry: false,
     staleTime: 1000 * 60 * 5,
   })
   
@@ -76,10 +77,10 @@ export default function NewPrescriptionPage() {
     setSubmitting(true)
     try {
       const payload = {
-        appointmentId,
-        instructions,
-        medicines: validMedicines
-      }
+          appointmentId: appointment?.id || appointmentId,
+          instructions,
+          medicines: validMedicines
+        }
       
       await createPrescription(payload as any)
       
@@ -127,34 +128,49 @@ export default function NewPrescriptionPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2 max-w-sm">
-              <Label htmlFor="appointmentId">Appointment ID <span className="text-destructive">*</span></Label>
+              <Label htmlFor="appointmentId">Search Patient / Appointment <span className="text-destructive">*</span></Label>
               <Input 
                 id="appointmentId" 
                 value={appointmentId} 
                 onChange={(e) => setAppointmentId(e.target.value)} 
-                placeholder="Enter appointment ID"
+                placeholder="Search by Patient Name, Email, Phone, Patient ID or Appointment ID"
                 required
               />
-              <p className="text-xs text-muted-foreground">The prescription must be tied to a specific appointment.</p>
+              <p className="text-xs text-muted-foreground">Search by patient name, email, phone number, patient ID or appointment ID to link prescription.</p>
             </div>
             
             {loadingAppointment ? (
               <div className="space-y-2 mt-4">
-                <Skeleton className="h-16 w-full max-w-sm rounded-lg" />
+                <Skeleton className="h-20 w-full rounded-lg" />
               </div>
             ) : appointment ? (
-              <div className="bg-primary/5 p-4 rounded-lg flex items-start gap-3 mt-4 max-w-sm border border-primary/20">
-                <div className="bg-primary/10 p-2 rounded-full shrink-0 mt-1">
-                   <User className="h-4 w-4 text-primary" />
+              <div className="bg-emerald-50 dark:bg-emerald-950/20 p-4 rounded-lg flex items-start justify-between gap-3 mt-4 border border-emerald-200 dark:border-emerald-800">
+                <div className="flex items-start gap-3">
+                  <div className="bg-emerald-100 dark:bg-emerald-900/50 p-2 rounded-full shrink-0 mt-1">
+                     <User className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <div className="space-y-1">
+                     <div className="flex items-center gap-2">
+                       <h4 className="font-semibold text-base text-emerald-950 dark:text-emerald-100">{appointment.patient?.name || appointment.patient?.user?.name || "Patient Found"}</h4>
+                       {(appointment.patient?.patientHealthData?.bloodGroup || (appointment.patient as any)?.bloodGroup) && (
+                         <span className="text-xs bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300 font-semibold px-2 py-0.5 rounded-full">
+                           {appointment.patient?.patientHealthData?.bloodGroup || (appointment.patient as any)?.bloodGroup}
+                         </span>
+                       )}
+                     </div>
+                     <p className="text-xs text-muted-foreground">Email: {appointment.patient?.email || appointment.patient?.user?.email || "N/A"}</p>
+                     {appointment.patient?.contactNumber && (
+                       <p className="text-xs text-muted-foreground">Phone: {appointment.patient.contactNumber}</p>
+                     )}
+                     <p className="text-xs font-mono text-muted-foreground/80 mt-1">Appt ID: {appointment.id}</p>
+                  </div>
                 </div>
-                <div>
-                   <h4 className="font-semibold text-sm">{appointment.patient?.name}</h4>
-                   <p className="text-xs text-muted-foreground">{appointment.patient?.email}</p>
-                   {appointment.patient?.bloodGroup && <p className="text-xs text-red-600 mt-1 font-medium">{appointment.patient.bloodGroup}</p>}
-                </div>
+                <span className="text-xs font-medium px-2 py-1 rounded bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 uppercase">
+                  {appointment.status}
+                </span>
               </div>
-            ) : appointmentId.length > 5 ? (
-              <p className="text-sm text-destructive mt-2">Invalid or unauthorized appointment ID.</p>
+            ) : appointmentId.trim().length >= 3 ? (
+              <p className="text-sm text-destructive mt-2">No matching appointment or patient found.</p>
             ) : null}
             
             <div className="space-y-2 pt-2">

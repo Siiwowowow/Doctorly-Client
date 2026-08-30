@@ -109,7 +109,7 @@ export function UserSidebar() {
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={isActiveRoute(item.url)} tooltip={translatedTitle}>
-                      <Link href={item.url}>
+                      <Link href={item.url} prefetch={true}>
                         <item.icon />
                         <span>{translatedTitle}</span>
                       </Link>

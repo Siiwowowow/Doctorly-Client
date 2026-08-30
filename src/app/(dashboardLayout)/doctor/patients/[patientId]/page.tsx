@@ -157,7 +157,7 @@ export default function DoctorPatientDetailsPage() {
                     </Link>
                   </Button>
                   <Button variant="outline" className="border-blue-200 text-blue-700 hover:bg-blue-100" asChild>
-                    <Link href={`/chat?userId=${patient.userId}`}>
+                    <Link href={`/chat?patientId=${patient.id}`}>
                       <MessageSquare className="mr-2 h-4 w-4" />
                       {t("details.messagePatient")}
                     </Link>

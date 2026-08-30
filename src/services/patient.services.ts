@@ -5,7 +5,7 @@ import { ApiResponse, Patient } from "@/types/api.types";
 import { serverFetch } from "@/lib/serverFetch";
 
 export async function getPatientProfile(): Promise<ApiResponse<Patient>> {
-    return await serverFetch<Patient>("/patients/profile");
+    return await serverFetch<Patient>("/patients/me");
 }
 
 export async function getAllPatients(queryParams?: Record<string, any>): Promise<ApiResponse<Patient[]>> {
