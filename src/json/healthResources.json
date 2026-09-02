@@ -1,20 +1,176 @@
 [
   {
+    "id": "preventive-health-screenings",
+    "slug": "preventive-health-screenings",
+    "category": "Preventive Care",
+    "title": "The Complete Guide to Preventive Health Screenings by Age",
+    "subtitle": "Essential medical tests and health checklists recommended for every stage of life to detect health risks early.",
+    "time": "8 min read",
+    "date": "Aug 28, 2026",
+    "views": "3.4k",
+    "image": "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1200&q=80",
+    "author": {
+      "name": "Dr. Sarah Jenkins, MD",
+      "role": "Internal Medicine Specialist",
+      "avatar": "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=200&q=80"
+    },
+    "featured": true,
+    "tags": ["Checkups", "Wellness", "Longevity", "Early Detection"],
+    "content": [
+      {
+        "type": "paragraph",
+        "text": "Preventive healthcare is one of the most powerful tools modern medicine offers. Rather than waiting for symptoms to disrupt your daily routine, routine health screenings help identify physiological irregularities, cardiovascular risks, and metabolic changes before they develop into chronic conditions."
+      },
+      {
+        "type": "heading",
+        "text": "Essential Screenings in Your 20s and 30s"
+      },
+      {
+        "type": "paragraph",
+        "text": "During your twenties and thirties, the focus shifts toward establishing healthy baselines. Key screenings include comprehensive blood panels (Complete Blood Count, Fasting Blood Glucose, and Lipid Profile) at least once every 2 years, alongside routine blood pressure checks and annual dermatological skin exams."
+      },
+      {
+        "type": "quote",
+        "text": "Early detection turns potentially life-altering diagnoses into easily manageable conditions. Consistency is your greatest health investment."
+      },
+      {
+        "type": "heading",
+        "text": "Critical Checklists for Ages 40 and Beyond"
+      },
+      {
+        "type": "paragraph",
+        "text": "Upon reaching 40, cardiovascular risk assessments, mammograms, HbA1c diabetes screenings, and colon cancer screenings (starting at 45 for average risk individuals) become indispensable. Routine eye exams for glaucoma and bone density scans are also advised."
+      },
+      {
+        "type": "callout",
+        "title": "Doctorly Clinical Tip",
+        "text": "Schedule your annual comprehensive health checkup during your birthday month so you never miss an essential screening cycle."
+      }
+    ]
+  },
+  {
+    "id": "understanding-cholesterol",
+    "slug": "understanding-cholesterol",
     "category": "Heart Health",
-    "title": "Understanding Cholesterol: What Your Numbers Mean",
+    "title": "Understanding Cholesterol: What Your Lipid Panel Numbers Actually Mean",
+    "subtitle": "Demystifying HDL, LDL, and Triglycerides to protect your cardiovascular longevity.",
     "time": "5 min read",
-    "image": "/doctors/doctor2.png"
+    "date": "Aug 24, 2026",
+    "views": "2.8k",
+    "image": "https://images.unsplash.com/photo-1628348068343-c6a848d2b6dd?auto=format&fit=crop&w=800&q=80",
+    "author": {
+      "name": "Dr. Tanvir Ahmed, MBBS, FCPS",
+      "role": "Consultant Cardiologist",
+      "avatar": "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=200&q=80"
+    },
+    "featured": false,
+    "tags": ["Cardiology", "Lipids", "Heart Care", "Nutrition"],
+    "content": [
+      {
+        "type": "paragraph",
+        "text": "Cholesterol often gets an unfair reputation as a purely harmful substance. In reality, your body needs cholesterol to build cellular membranes, synthesize Vitamin D, and produce essential hormones. The danger arises when the balance between protective HDL and inflammatory LDL shifts out of equilibrium."
+      },
+      {
+        "type": "heading",
+        "text": "The Breakdown of Your Lipid Panel"
+      },
+      {
+        "type": "paragraph",
+        "text": "• LDL (Low-Density Lipoprotein): Known as 'bad cholesterol', elevated levels can cause plaque buildup in arteries.\n• HDL (High-Density Lipoprotein): Known as 'good cholesterol', it acts as a scavenger, carrying excess lipids back to the liver.\n• Triglycerides: A form of dietary fat in the bloodstream strongly influenced by sugar and refined carbohydrate intake."
+      },
+      {
+        "type": "callout",
+        "title": "Actionable Habit",
+        "text": "Incorporating soluble fiber (like oats, lentils, and flaxseeds) alongside 30 minutes of brisk daily walking can improve HDL levels by up to 12% within 8 weeks."
+      }
+    ]
   },
   {
+    "id": "superfoods-immune-system",
+    "slug": "superfoods-immune-system",
     "category": "Nutrition",
-    "title": "10 Superfoods to Boost Your Immune System Naturally",
-    "time": "4 min read",
-    "image": "/doctors/doctor5.png"
+    "title": "10 Nutrient-Dense Superfoods to Naturally Strengthen Immunity",
+    "subtitle": "Evidence-based dietary additions packed with polyphenols, vitamins, and antioxidants.",
+    "time": "6 min read",
+    "date": "Aug 20, 2026",
+    "views": "4.1k",
+    "image": "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=800&q=80",
+    "author": {
+      "name": "Nusrat Jahan, MSc",
+      "role": "Chief Clinical Nutritionist",
+      "avatar": "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=200&q=80"
+    },
+    "featured": false,
+    "tags": ["Immunity", "Diet", "Antioxidants", "Gut Health"],
+    "content": [
+      {
+        "type": "paragraph",
+        "text": "Your immune system is an intricate biological defense network that relies heavily on macro and micronutrient availability. Clinical studies consistently demonstrate that diverse plant-based diets rich in antioxidants and prebiotics optimize white blood cell efficacy and gut barrier resilience."
+      },
+      {
+        "type": "heading",
+        "text": "Top Immunomodulatory Foods"
+      },
+      {
+        "type": "paragraph",
+        "text": "1. Citrus fruits & Amla: Unmatched sources of bioactive Vitamin C.\n2. Fermented Yogurt & Kefir: Replenishes beneficial gut microflora that govern 70% of immune defenses.\n3. Raw Garlic & Ginger: Contain allicin and gingerol, potent anti-microbial compounds.\n4. Turmeric with Black Pepper: Curcumin provides cellular anti-inflammatory protection."
+      }
+    ]
   },
   {
+    "id": "managing-workplace-stress",
+    "slug": "managing-workplace-stress",
     "category": "Mental Wellness",
-    "title": "Managing Stress in a Fast-Paced Work Environment",
-    "time": "6 min read",
-    "image": "/doctors/doctor6.png"
+    "title": "Managing Chronic Stress & Burnout in Demanding Environments",
+    "subtitle": "Practical cognitive and physiological tools to reset your nervous system.",
+    "time": "7 min read",
+    "date": "Aug 16, 2026",
+    "views": "3.9k",
+    "image": "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=800&q=80",
+    "author": {
+      "name": "Dr. Emily Chen, PsyD",
+      "role": "Clinical Psychologist",
+      "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&q=80"
+    },
+    "featured": false,
+    "tags": ["Mental Health", "Stress", "Mindfulness", "Sleep"],
+    "content": [
+      {
+        "type": "paragraph",
+        "text": "Prolonged exposure to workplace stress triggers sustained cortisol secretion, which can degrade cognitive clarity, disrupt circadian rhythm, and compromise cardiovascular resilience. Implementing brief micro-breaks throughout the day provides rapid autonomic regulation."
+      },
+      {
+        "type": "heading",
+        "text": "The Physiological Sigh"
+      },
+      {
+        "type": "paragraph",
+        "text": "Developed by neurobiologists, two rapid inhalations through the nose followed by an extended exhalation through the mouth directly signals the vagus nerve to slow heart rate within seconds."
+      }
+    ]
+  },
+  {
+    "id": "telemedicine-digital-consultation",
+    "slug": "telemedicine-digital-consultation",
+    "category": "Digital Health",
+    "title": "How Telemedicine is Transforming Remote Patient Care & Follow-Ups",
+    "subtitle": "Why digital healthcare consultations improve compliance, speed, and clinical outcomes.",
+    "time": "5 min read",
+    "date": "Aug 12, 2026",
+    "views": "2.2k",
+    "image": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800&q=80",
+    "author": {
+      "name": "Dr. Farhan Qazi, MD",
+      "role": "Telehealth Director",
+      "avatar": "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=200&q=80"
+    },
+    "featured": false,
+    "tags": ["Telehealth", "Innovation", "Digital Clinic"],
+    "content": [
+      {
+        "type": "paragraph",
+        "text": "Virtual consultations bridge geographical barriers, allowing patients anywhere in Bangladesh and beyond to consult leading medical professors without tedious commute times or crowded waiting rooms."
+      }
+    ]
   }
 ]

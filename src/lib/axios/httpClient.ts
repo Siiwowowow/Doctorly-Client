@@ -1,6 +1,6 @@
-// src/lib/axios/httpClient.ts
 import { ApiResponse } from '@/types/api.types';
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import { apiCache } from '../apiCache';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000/api/v1';
 
@@ -79,7 +79,8 @@ instance.interceptors.response.use(
 
                 if (typeof window !== 'undefined') {
                     const currentPath = window.location.pathname;
-                    if (currentPath !== '/login') {
+                    const isProtected = /^\/(admin|doctor|user|patient|chat|video-call|book)(\/|$)/.test(currentPath);
+                    if (isProtected && currentPath !== '/login') {
                         window.location.href = `/login?reason=expired&redirect=${encodeURIComponent(currentPath)}`;
                     }
                 }
@@ -94,17 +95,54 @@ instance.interceptors.response.use(
 export interface ApiRequestOptions {
     params?: Record<string, unknown>;
     headers?: Record<string, string>;
+    cache?: boolean; // Default true for GET
+    ttlMs?: number;  // TTL in milliseconds (default 5 mins)
+    staleMs?: number; // Stale time in milliseconds (default 1 min)
 }
 
+/**
+ * Perform a GET request with instant memory caching & background revalidation (SWR)
+ */
 const httpGet = async <TData>(endpoint: string, options?: ApiRequestOptions): Promise<ApiResponse<TData>> => {
-    const response = await instance.get<ApiResponse<TData>>(endpoint, {
-        params: options?.params,
-        headers: options?.headers,
-    });
-    return response.data;
+    const useCache = options?.cache !== false;
+    const cacheKey = apiCache.makeKey(endpoint, options?.params);
+
+    if (useCache) {
+        const cached = apiCache.get<ApiResponse<TData>>(cacheKey);
+        if (cached) {
+            // If stale, revalidate in background without blocking caller
+            if (cached.isStale) {
+                apiCache.fetchWithDeduplication(cacheKey, async () => {
+                    const response = await instance.get<ApiResponse<TData>>(endpoint, {
+                        params: options?.params,
+                        headers: options?.headers,
+                    });
+                    apiCache.set(cacheKey, response.data, options?.ttlMs, options?.staleMs);
+                    return response.data;
+                }).catch(() => {});
+            }
+            return cached.data;
+        }
+    }
+
+    // Network fetch with request deduplication
+    const fetchPromise = () =>
+        instance.get<ApiResponse<TData>>(endpoint, {
+            params: options?.params,
+            headers: options?.headers,
+        }).then((res) => {
+            if (useCache) {
+                apiCache.set(cacheKey, res.data, options?.ttlMs, options?.staleMs);
+            }
+            return res.data;
+        });
+
+    return apiCache.fetchWithDeduplication(cacheKey, fetchPromise);
 };
 
 const httpPost = async <TData>(endpoint: string, data?: unknown, options?: ApiRequestOptions): Promise<ApiResponse<TData>> => {
+    // Invalidate relevant cache on mutation
+    apiCache.invalidate(endpoint.split('?')[0]);
     const response = await instance.post<ApiResponse<TData>>(endpoint, data, {
         params: options?.params,
         headers: options?.headers,
@@ -113,6 +151,7 @@ const httpPost = async <TData>(endpoint: string, data?: unknown, options?: ApiRe
 };
 
 const httpPut = async <TData>(endpoint: string, data?: unknown, options?: ApiRequestOptions): Promise<ApiResponse<TData>> => {
+    apiCache.invalidate(endpoint.split('?')[0]);
     const response = await instance.put<ApiResponse<TData>>(endpoint, data, {
         params: options?.params,
         headers: options?.headers,
@@ -121,6 +160,7 @@ const httpPut = async <TData>(endpoint: string, data?: unknown, options?: ApiReq
 };
 
 const httpPatch = async <TData>(endpoint: string, data?: unknown, options?: ApiRequestOptions): Promise<ApiResponse<TData>> => {
+    apiCache.invalidate(endpoint.split('?')[0]);
     const response = await instance.patch<ApiResponse<TData>>(endpoint, data, {
         params: options?.params,
         headers: options?.headers,
@@ -129,6 +169,7 @@ const httpPatch = async <TData>(endpoint: string, data?: unknown, options?: ApiR
 };
 
 const httpDelete = async <TData>(endpoint: string, options?: ApiRequestOptions): Promise<ApiResponse<TData>> => {
+    apiCache.invalidate(endpoint.split('?')[0]);
     const response = await instance.delete<ApiResponse<TData>>(endpoint, {
         params: options?.params,
         headers: options?.headers,
@@ -143,4 +184,6 @@ export const httpClient = {
     patch: httpPatch,
     delete: httpDelete,
     instance,
+    cache: apiCache,
 };
+

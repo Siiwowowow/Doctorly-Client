@@ -34,6 +34,8 @@ import {
 } from "@/components/ui/sheet";
 import {
   Activity,
+  MessageSquare,
+  Clock,
   CalendarDays,
   ChevronDown,
   CircleUserRound,
@@ -403,11 +405,11 @@ export default function Navbar() {
               className="w-[320px] max-w-[90vw] border-l border-border/60 p-0"
             >
               <div className="flex h-full flex-col">
-                {/* Mobile Header */}
-                <SheetHeader className="border-b border-border/50 p-5 text-left">
-                  <SheetTitle>
+                {/* Mobile Header with Doctorly Brand & Close */}
+                <SheetHeader className="border-b border-border/50 p-4 flex flex-row items-center justify-between text-left shrink-0">
+                  <SheetTitle className="m-0">
                     <Link href="/" onClick={closeMobileMenu} className="flex items-center gap-2.5">
-                      <div className="flex size-9 items-center justify-center rounded-xl bg-doctorly-primary text-white">
+                      <div className="flex size-9 items-center justify-center rounded-xl bg-doctorly-primary text-white shadow-sm shadow-doctorly-primary/20">
                         <Activity className="size-5" />
                       </div>
                       <span className="text-lg font-extrabold text-doctorly-text">
@@ -418,19 +420,28 @@ export default function Navbar() {
                   <SheetDescription className="sr-only">
                     Doctorly navigation menu
                   </SheetDescription>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={closeMobileMenu}
+                    className="size-8 rounded-lg text-muted-foreground hover:text-foreground"
+                    aria-label="Close navigation"
+                  >
+                    <X className="size-4" />
+                  </Button>
                 </SheetHeader>
 
-                {/* User */}
+                {/* User Profile Card if Authenticated */}
                 {isAuthenticated && user && (
-                  <div className="mx-4 mt-4 flex items-center gap-3 rounded-2xl border border-border/60 bg-muted/40 p-3">
-                    <Avatar className="size-10">
+                  <div className="mx-4 mt-4 flex items-center gap-3 rounded-2xl border border-border/60 bg-muted/40 p-3 shrink-0">
+                    <Avatar className="size-10 border border-border">
                       {userImage && <AvatarImage src={userImage} />}
                       <AvatarFallback className="bg-doctorly-primary/10 font-semibold text-doctorly-primary">
                         {getInitials(user.name, user.email)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold">
+                      <p className="truncate text-sm font-semibold text-foreground">
                         {user.name || "User"}
                       </p>
                       <p className="truncate text-xs text-muted-foreground">
@@ -440,98 +451,143 @@ export default function Navbar() {
                   </div>
                 )}
 
-                {/* Navigation */}
-                <motion.nav
-                  variants={mobileContainer}
-                  initial="hidden"
-                  animate="show"
-                  className="flex flex-col gap-1 p-4"
-                >
+                {/* Navigation Links Scrollable Body */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-1">
+                  {/* Public Links */}
                   {navLinks.map((link) => {
                     const Icon = link.icon;
                     const active = isActiveRoute(link.href);
                     return (
-                      <motion.div key={link.href} variants={mobileItem}>
-                        <Link
-                          href={link.href}
-                          onClick={closeMobileMenu}
-                          className={`relative flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
-                            active
-                              ? "bg-doctorly-primary/10 text-doctorly-primary"
-                              : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                          }`}
-                        >
-                          <motion.div whileHover={{ scale: 1.1, x: 2 }}>
-                            <Icon className="size-5" />
-                          </motion.div>
-                          <span>{t(link.key as any)}</span>
-                          {active && (
-                            <motion.div
-                              layoutId="mobile-active"
-                              className="absolute right-3 size-1.5 rounded-full bg-doctorly-primary"
-                            />
-                          )}
-                        </Link>
-                      </motion.div>
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        onClick={closeMobileMenu}
+                        className={`relative flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
+                          active
+                            ? "bg-doctorly-primary/10 text-doctorly-primary font-semibold"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        }`}
+                      >
+                        <Icon className="size-5 shrink-0" />
+                        <span>{t(link.key as any)}</span>
+                        {active && (
+                          <span className="ml-auto size-1.5 rounded-full bg-doctorly-primary" />
+                        )}
+                      </Link>
                     );
                   })}
 
-                  {/* Authenticated Links */}
+                  {/* Authenticated Role-Specific Links */}
                   {isAuthenticated && (
-                    <>
-                      <motion.div variants={mobileItem}>
-                        <Link
-                          href={dashboardUrl}
-                          onClick={closeMobileMenu}
-                          className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                        >
-                          <LayoutDashboard className="size-5" />
-                          Dashboard
-                        </Link>
-                      </motion.div>
-                      <motion.div variants={mobileItem}>
-                        <Link
-                          href="/user/profile"
-                          onClick={closeMobileMenu}
-                          className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                        >
-                          <User className="size-5" />
-                          Profile
-                        </Link>
-                      </motion.div>
-                    </>
-                  )}
-                </motion.nav>
+                    <div className="pt-2 mt-2 border-t border-border/40 space-y-1">
+                      <Link
+                        href={dashboardUrl}
+                        onClick={closeMobileMenu}
+                        className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                      >
+                        <LayoutDashboard className="size-5 shrink-0 text-doctorly-primary" />
+                        <span>Dashboard</span>
+                      </Link>
 
-                {/* Bottom Actions */}
-                <div className="mt-auto border-t border-border/50 p-4">
+                      {user?.role === "PATIENT" && (
+                        <>
+                          <Link
+                            href="/user/appointments"
+                            onClick={closeMobileMenu}
+                            className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                          >
+                            <CalendarDays className="size-5 shrink-0" />
+                            <span>Appointments</span>
+                          </Link>
+                          <Link
+                            href="/chat"
+                            onClick={closeMobileMenu}
+                            className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                          >
+                            <MessageSquare className="size-5 shrink-0" />
+                            <span>Messages</span>
+                          </Link>
+                          <Link
+                            href="/user/profile"
+                            onClick={closeMobileMenu}
+                            className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                          >
+                            <User className="size-5 shrink-0" />
+                            <span>Profile</span>
+                          </Link>
+                        </>
+                      )}
+
+                      {user?.role === "DOCTOR" && (
+                        <>
+                          <Link
+                            href="/doctor/appointments"
+                            onClick={closeMobileMenu}
+                            className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                          >
+                            <CalendarDays className="size-5 shrink-0" />
+                            <span>Appointments</span>
+                          </Link>
+                          <Link
+                            href="/doctor/schedule"
+                            onClick={closeMobileMenu}
+                            className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                          >
+                            <Clock className="size-5 shrink-0" />
+                            <span>Schedule</span>
+                          </Link>
+                          <Link
+                            href="/chat"
+                            onClick={closeMobileMenu}
+                            className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                          >
+                            <MessageSquare className="size-5 shrink-0" />
+                            <span>Messages</span>
+                          </Link>
+                          <Link
+                            href="/doctor/profile"
+                            onClick={closeMobileMenu}
+                            className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                          >
+                            <User className="size-5 shrink-0" />
+                            <span>Profile</span>
+                          </Link>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Bottom Actions: Sign In / Sign Up OR Logout */}
+                <div className="mt-auto border-t border-border/50 p-4 bg-background/80 shrink-0">
                   {isAuthenticated ? (
                     <Button
                       variant="outline"
-                      className="w-full rounded-xl border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                      className="w-full rounded-xl border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive text-xs font-semibold"
                       onClick={() => {
                         closeMobileMenu();
                         logout();
                       }}
+                      aria-label="Log Out"
                     >
                       <LogOut className="mr-2 size-4" />
                       Log Out
                     </Button>
                   ) : (
                     <div className="space-y-2">
-                      <Button variant="outline" className="w-full rounded-xl" asChild>
+                      <Button variant="outline" className="w-full rounded-xl text-xs font-semibold" asChild>
                         <Link href="/login" onClick={closeMobileMenu}>
                           <LogIn className="mr-2 size-4" />
                           Sign In
                         </Link>
                       </Button>
                       <Button
-                        className="w-full rounded-xl bg-doctorly-primary text-white hover:bg-doctorly-primary/90"
+                        className="w-full rounded-xl bg-doctorly-primary text-white hover:bg-doctorly-primary/90 text-xs font-semibold shadow-md shadow-doctorly-primary/20"
                         asChild
                       >
-                        <Link href="/book" onClick={closeMobileMenu}>
-                          <CalendarDays className="mr-2 size-4" />
-                          Book Consultation
+                        <Link href="/register" onClick={closeMobileMenu}>
+                          <User className="mr-2 size-4" />
+                          Sign Up
                         </Link>
                       </Button>
                     </div>

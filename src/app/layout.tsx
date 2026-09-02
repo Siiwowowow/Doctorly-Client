@@ -8,7 +8,6 @@ import { NotificationProvider } from "@/providers/NotificationProvider";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import Navbar from "@/components/shared/Navbar/Navbar";
-import AnnouncementBar from "@/components/landing/AnnouncementBar";
 import { Toaster } from "sonner";
 import { getUserInfo } from "@/services/auth.services";
 import HeaderWrapper from "@/components/shared/Layout/HeaderWrapper";
@@ -53,7 +52,6 @@ export default async function RootLayout({
                 <NextIntlClientProvider messages={messages}>
                   <TooltipProvider>
                     <HeaderWrapper>
-                      <AnnouncementBar />
                       <Navbar />
                     </HeaderWrapper>
                     <main className="flex-1 min-w-0 w-full">{children}</main>

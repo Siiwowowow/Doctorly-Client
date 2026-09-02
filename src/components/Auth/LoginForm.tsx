@@ -4,6 +4,7 @@ import { loginAction } from "@/app/(authRouteGroup)/(auth)/login/_action";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -15,15 +16,23 @@ import {
 import { ILoginPayload, loginZodSchema } from "@/zod/auth.validation";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
-import { Eye, EyeOff, Info } from "lucide-react";
+import {
+  Activity,
+  AlertCircle,
+  ArrowRight,
+  Eye,
+  EyeOff,
+  Info,
+  Loader2,
+  Lock,
+  Mail,
+} from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import AppField from "../shared/form/AppField";
-import AppSubmitButton from "../shared/form/AppSubmitButton";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/hooks/useUser";
 import { toast } from "sonner";
-import SocialLogin from "../shared/socialLogin/socialLogin";
 import { UserRole } from "@/lib/authUtils";
 
 interface LoginFormProps {
@@ -63,6 +72,11 @@ const LoginForm = ({ redirectPath, defaultEmail = "", reason = "" }: LoginFormPr
         const result = await mutateAsync(value) as any;
 
         if (!result.success) {
+          if (result.redirectUrl) {
+            toast.info(result.message || "Redirecting...");
+            window.location.href = result.redirectUrl;
+            return;
+          }
           setServerError(result.message || "Login failed");
           return;
         }
@@ -70,15 +84,8 @@ const LoginForm = ({ redirectPath, defaultEmail = "", reason = "" }: LoginFormPr
         toast.success("Login successful!");
         setUser(result.user);
 
-        router.refresh();
-
-        if (result.redirectUrl) {
-          router.push(result.redirectUrl);
-        } else {
-          const userRole = result.user?.role as UserRole;
-          const roleBasedRedirect = getRoleBasedRedirect(userRole);
-          router.push(roleBasedRedirect);
-        }
+        const targetUrl = result.redirectUrl || getRoleBasedRedirect(result.user?.role as UserRole);
+        window.location.href = targetUrl;
       } catch (error: any) {
         setServerError(error.message || "Invalid email or password.");
       }
@@ -100,18 +107,48 @@ const LoginForm = ({ redirectPath, defaultEmail = "", reason = "" }: LoginFormPr
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto shadow-md">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">Welcome Back!</CardTitle>
-        <CardDescription>Please enter your credentials to log in.</CardDescription>
+    <Card className="w-full max-w-md mx-auto shadow-xl border-border/60 backdrop-blur-sm bg-card/95 transition-all">
+      {/* Top Brand Header */}
+      <CardHeader className="text-center pb-4 pt-6 space-y-2">
+        <div className="flex justify-center mb-1">
+          <Link href="/" className="group inline-flex flex-col items-center">
+            <div className="flex size-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md shadow-primary/25 group-hover:scale-105 transition-transform duration-200">
+              <Activity className="size-6" />
+            </div>
+          </Link>
+        </div>
+        <div className="space-y-1">
+          <div className="flex items-center justify-center gap-2">
+            <CardTitle className="text-2xl font-bold tracking-tight text-foreground">
+              Welcome Back
+            </CardTitle>
+            <Badge variant="secondary" className="text-[11px] font-medium px-2 py-0.5">
+              Doctorly
+            </Badge>
+          </div>
+          <CardDescription className="text-sm text-muted-foreground">
+            Sign in to access your healthcare portal & appointments
+          </CardDescription>
+        </div>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="space-y-4 px-6 sm:px-8">
+        {/* Session Expired Alert */}
         {reason === "expired" && (
-          <Alert className="mb-4 bg-amber-50 text-amber-900 border-amber-200 dark:bg-amber-950 dark:text-amber-100 dark:border-amber-800">
-            <Info className="h-4 w-4 text-amber-600" />
-            <AlertDescription>
+          <Alert className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 py-2.5 px-3.5">
+            <Info className="h-4 w-4" />
+            <AlertDescription className="text-xs font-medium ml-2">
               Your session has expired. Please log in again.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Server Error Alert */}
+        {serverError && (
+          <Alert variant="destructive" className="py-2.5 px-3.5">
+            <AlertCircle className="size-4" />
+            <AlertDescription className="text-xs font-medium ml-2">
+              {serverError}
             </AlertDescription>
           </Alert>
         )}
@@ -127,6 +164,7 @@ const LoginForm = ({ redirectPath, defaultEmail = "", reason = "" }: LoginFormPr
           }}
           className="space-y-4"
         >
+          {/* Email Address */}
           <form.Field
             name="email"
             validators={{ onChange: loginZodSchema.shape.email }}
@@ -134,13 +172,16 @@ const LoginForm = ({ redirectPath, defaultEmail = "", reason = "" }: LoginFormPr
             {(field) => (
               <AppField
                 field={field}
-                label="Email"
+                label="Email Address"
                 type="email"
-                placeholder="Enter your email"
+                placeholder="name@example.com"
+                required
+                prepend={<Mail className="size-4 text-muted-foreground" />}
               />
             )}
           </form.Field>
 
+          {/* Password */}
           <form.Field
             name="password"
             validators={{ onChange: loginZodSchema.shape.password }}
@@ -151,14 +192,16 @@ const LoginForm = ({ redirectPath, defaultEmail = "", reason = "" }: LoginFormPr
                 label="Password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-                className="cursor-pointer"
+                required
+                prepend={<Lock className="size-4 text-muted-foreground" />}
                 append={
                   <Button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
                     variant="ghost"
                     size="icon"
+                    className="size-8 text-muted-foreground hover:text-foreground"
+                    tabIndex={-1}
                   >
                     {showPassword ? (
                       <EyeOff className="size-4" aria-hidden="true" />
@@ -171,54 +214,49 @@ const LoginForm = ({ redirectPath, defaultEmail = "", reason = "" }: LoginFormPr
             )}
           </form.Field>
 
-          <div className="text-right mt-2">
+          {/* Forgot Password Link */}
+          <div className="flex justify-end pt-0.5">
             <Link
               href="/forgot-password"
-              className="text-sm text-primary hover:underline underline-offset-4"
+              className="text-xs font-medium text-primary hover:underline underline-offset-4"
             >
               Forgot password?
             </Link>
           </div>
 
-          {serverError && (
-            <Alert variant="destructive">
-              <AlertDescription>{serverError}</AlertDescription>
-            </Alert>
-          )}
-
+          {/* Submit Button */}
           <form.Subscribe selector={(s) => [s.canSubmit, s.isSubmitting] as const}>
             {([canSubmit, isSubmitting]) => (
-              <AppSubmitButton
-                isPending={isSubmitting || isPending}
-                pendingLabel="Logging In...."
-                disabled={!canSubmit}
+              <Button
+                type="submit"
+                disabled={!canSubmit || isSubmitting || isPending}
+                className="w-full h-10 rounded-xl font-semibold shadow-md shadow-primary/20 flex items-center justify-center gap-2 mt-2"
               >
-                Log In
-              </AppSubmitButton>
+                {isSubmitting || isPending ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    <span>Logging in...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Log In</span>
+                    <ArrowRight className="size-4" />
+                  </>
+                )}
+              </Button>
             )}
           </form.Subscribe>
         </form>
-
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white dark:bg-slate-900 text-gray-500">Or continue with</span>
-          </div>
-        </div>
-
-        <SocialLogin />
       </CardContent>
 
-      <CardFooter className="justify-center border-t pt-4">
-        <p className="text-sm text-muted-foreground">
+      <CardFooter className="flex justify-center border-t border-border/50 py-4 bg-muted/20">
+        <p className="text-xs text-muted-foreground">
           Don&apos;t have an account?{" "}
           <Link
             href="/register"
-            className="text-primary font-medium hover:underline underline-offset-4"
+            className="font-semibold text-primary hover:underline underline-offset-4"
           >
-            Sign Up for an account
+            Sign up
           </Link>
         </p>
       </CardFooter>

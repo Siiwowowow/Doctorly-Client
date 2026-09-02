@@ -16,6 +16,8 @@ import {
 import { getUserInfo } from "@/services/auth.services";
 import { redirect } from "next/navigation";
 
+import { getDefaultDashboardRoute, UserRole } from "@/lib/authUtils";
+
 export default async function AdminLayout({
   children,
 }: {
@@ -23,8 +25,12 @@ export default async function AdminLayout({
 }) {
   const user = await getUserInfo();
 
-  if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
+  if (!user) {
     redirect("/login?redirect=/admin/dashboard");
+  }
+
+  if (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN") {
+    redirect(getDefaultDashboardRoute(user.role as UserRole));
   }
 
   return (

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/providers/AuthProvider";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ import { format } from "date-fns";
 export default function BookConsultationPage() {
   const { isAuthenticated, user } = useAuth();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const doctorId = searchParams.get("doctorId");
   const preselectedScheduleId = searchParams.get("scheduleId");
@@ -77,6 +79,11 @@ export default function BookConsultationPage() {
     try {
       // 1. Create Appointment
       const aptRes = await createAppointment({ doctorId, scheduleId: selectedScheduleId });
+      queryClient.invalidateQueries({ queryKey: ["user-appointments"] });
+      queryClient.invalidateQueries({ queryKey: ["doctor-appointments"] });
+      queryClient.invalidateQueries({ queryKey: ["doctor-dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["doctor-schedules"] });
+      queryClient.invalidateQueries({ queryKey: ["available-schedules"] });
       toast.success("Consultation booked successfully!");
       
       // 2. Initiate Payment

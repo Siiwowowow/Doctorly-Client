@@ -1,7 +1,7 @@
 //src/providers/AuthProvider.tsx
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useMemo, useCallback, useEffect } from "react";
 import { logoutUser } from "@/services/auth.services";
 import { ICurrentUser } from "@/types/user.types";
 
@@ -19,20 +19,29 @@ export function AuthProvider({
     initialUser 
 }: { 
     children: React.ReactNode; 
-    initialUser: ICurrentUser | null; // ✅ type fixed
+    initialUser: ICurrentUser | null;
 }) {
     const [user, setUser] = useState<ICurrentUser | null>(initialUser);
 
-    const logout = async () => {
+    useEffect(() => {
+        setUser(initialUser);
+    }, [initialUser]);
+
+    const logout = useCallback(async () => {
         setUser(null);
         await logoutUser();
         window.location.href = "/login";
-    };
+    }, []);
 
     const isAuthenticated = !!user;
 
+    const value = useMemo(
+        () => ({ user, setUser, logout, isAuthenticated }),
+        [user, logout, isAuthenticated]
+    );
+
     return (
-        <AuthContext.Provider value={{ user, setUser, logout, isAuthenticated }}>
+        <AuthContext.Provider value={value}>
             {children}
         </AuthContext.Provider>
     );

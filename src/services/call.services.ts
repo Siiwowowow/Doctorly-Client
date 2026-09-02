@@ -6,85 +6,121 @@ import { cookies } from "next/headers";
 
 const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-export async function initiateCall(data: { receiverId?: string, appointmentId?: string, isVideoCall?: boolean, type?: string }): Promise<ApiResponse<any>> {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("accessToken")?.value;
+export async function initiateCall(data: {
+  receiverId?: string;
+  appointmentId?: string;
+  isVideoCall?: boolean;
+  type?: "VIDEO" | "AUDIO" | string;
+}): Promise<ApiResponse<any>> {
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get("accessToken")?.value;
+  const sessionToken = cookieStore.get("better-auth.session_token")?.value;
 
-    const res = await fetch(`${BASE_API_URL}/calls`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Cookie: `accessToken=${accessToken}; better-auth.session_token=${cookieStore.get("better-auth.session_token")?.value}`
-        },
-        body: JSON.stringify(data)
-    });
+  const resolvedType = data.type || (data.isVideoCall === false ? "AUDIO" : "VIDEO");
 
-    if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || "Failed to initiate call");
-    }
+  const res = await fetch(`${BASE_API_URL}/calls`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Cookie: `accessToken=${accessToken || ""}; better-auth.session_token=${sessionToken || ""}`,
+    },
+    body: JSON.stringify({
+      receiverId: data.receiverId,
+      appointmentId: data.appointmentId,
+      type: resolvedType,
+    }),
+  });
 
-    return res.json();
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Failed to initiate call");
+  }
+
+  return res.json();
 }
 
 export async function acceptCall(callId: string): Promise<ApiResponse<any>> {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("accessToken")?.value;
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get("accessToken")?.value;
+  const sessionToken = cookieStore.get("better-auth.session_token")?.value;
 
-    const res = await fetch(`${BASE_API_URL}/calls/${callId}/accept`, {
-        method: "PATCH",
-        headers: {
-            "Content-Type": "application/json",
-            Cookie: `accessToken=${accessToken}; better-auth.session_token=${cookieStore.get("better-auth.session_token")?.value}`
-        }
-    });
+  const res = await fetch(`${BASE_API_URL}/calls/${callId}/accept`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Cookie: `accessToken=${accessToken || ""}; better-auth.session_token=${sessionToken || ""}`,
+    },
+  });
 
-    if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || "Failed to accept call");
-    }
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Failed to accept call");
+  }
 
-    return res.json();
+  return res.json();
 }
 
-export async function endCall(callId: string): Promise<ApiResponse<any>> {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("accessToken")?.value;
+export async function endCall(callId: string, reason?: string): Promise<ApiResponse<any>> {
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get("accessToken")?.value;
+  const sessionToken = cookieStore.get("better-auth.session_token")?.value;
 
-    const res = await fetch(`${BASE_API_URL}/calls/${callId}/end`, {
-        method: "PATCH",
-        headers: {
-            "Content-Type": "application/json",
-            Cookie: `accessToken=${accessToken}; better-auth.session_token=${cookieStore.get("better-auth.session_token")?.value}`
-        }
-    });
+  const res = await fetch(`${BASE_API_URL}/calls/${callId}/end`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Cookie: `accessToken=${accessToken || ""}; better-auth.session_token=${sessionToken || ""}`,
+    },
+    body: JSON.stringify({ reason }),
+  });
 
-    if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || "Failed to end call");
-    }
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Failed to end call");
+  }
 
-    return res.json();
+  return res.json();
 }
 
 export async function rejectCall(callId: string, reason?: string): Promise<ApiResponse<any>> {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("accessToken")?.value;
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get("accessToken")?.value;
+  const sessionToken = cookieStore.get("better-auth.session_token")?.value;
 
-    const res = await fetch(`${BASE_API_URL}/calls/${callId}/reject`, {
-        method: "PATCH",
-        headers: {
-            "Content-Type": "application/json",
-            Cookie: `accessToken=${accessToken}; better-auth.session_token=${cookieStore.get("better-auth.session_token")?.value}`
-        },
-        body: JSON.stringify({ reason })
-    });
+  const res = await fetch(`${BASE_API_URL}/calls/${callId}/reject`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Cookie: `accessToken=${accessToken || ""}; better-auth.session_token=${sessionToken || ""}`,
+    },
+    body: JSON.stringify({ reason }),
+  });
 
-    if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || "Failed to reject call");
-    }
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Failed to reject call");
+  }
 
-    return res.json();
+  return res.json();
 }
 
+export async function getCallById(callId: string): Promise<ApiResponse<any>> {
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get("accessToken")?.value;
+  const sessionToken = cookieStore.get("better-auth.session_token")?.value;
+
+  const res = await fetch(`${BASE_API_URL}/calls/${callId}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Cookie: `accessToken=${accessToken || ""}; better-auth.session_token=${sessionToken || ""}`,
+    },
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || "Failed to fetch call details");
+  }
+
+  return res.json();
+}

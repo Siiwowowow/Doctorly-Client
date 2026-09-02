@@ -1,5 +1,6 @@
-"use client"
+"use client";
 
+import { JoinCallButton } from "../_components/JoinCallButton";
 import { useParams } from "next/navigation"
 import { AppointmentStatus, PaymentStatus } from "@/types/api.types"
 import { getAppointmentById } from "@/services/appointment.services"
@@ -10,6 +11,7 @@ import { format } from "date-fns"
 import { CalendarDays, Clock, User, Phone, MapPin, Video, Pill, FileText, MessageSquare, Receipt } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
+import { BackButton } from "@/components/shared/BackButton"
 import { useQuery } from "@tanstack/react-query"
 
 export default function UserAppointmentDetailsPage() {
@@ -50,6 +52,9 @@ export default function UserAppointmentDetailsPage() {
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
+      <div className="flex items-center justify-between">
+        <BackButton fallbackUrl="/user/appointments" label="Back to Appointments" />
+      </div>
       {/* Header Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-background border rounded-2xl shadow-sm">
         <div className="flex items-center gap-4">
@@ -63,14 +68,7 @@ export default function UserAppointmentDetailsPage() {
         </div>
         
         <div className="flex flex-wrap items-center gap-3">
-          {appointment.videoCallingId && (appointment.status === AppointmentStatus.SCHEDULED || appointment.status === AppointmentStatus.INPROGRESS) && (
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white" asChild>
-               <Link href={`/video-call/${appointment.videoCallingId}`}>
-                 <Video className="mr-2 h-4 w-4" />
-                 Join Video Call
-               </Link>
-            </Button>
-          )}
+          <JoinCallButton appointment={appointment as any} />
         </div>
       </div>
 

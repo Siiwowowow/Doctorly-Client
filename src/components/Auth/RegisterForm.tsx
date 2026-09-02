@@ -23,7 +23,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
-import SocialLogin from "../shared/socialLogin/socialLogin";
 
 // Icons
 import {
@@ -90,6 +89,10 @@ export default function RegisterForm() {
       setServerError("Please enter a valid email address.");
       return;
     }
+    if (!phoneNumber.trim()) {
+      setServerError("Please enter your phone number.");
+      return;
+    }
     if (password.length < 6) {
       setServerError("Password must be at least 6 characters long.");
       return;
@@ -109,13 +112,10 @@ export default function RegisterForm() {
       const formData = new FormData();
       formData.append("name", name.trim());
       formData.append("email", email.trim().toLowerCase());
+      formData.append("phoneNumber", phoneNumber.trim());
       formData.append("password", password);
       formData.append("confirmPassword", confirmPassword);
       formData.append("role", "CUSTOMER");
-
-      if (phoneNumber.trim()) {
-        formData.append("phoneNumber", phoneNumber.trim());
-      }
 
       const result = (await registerAction(formData)) as any;
 
@@ -217,7 +217,7 @@ export default function RegisterForm() {
           {/* Phone Number */}
           <div className="space-y-1.5">
             <Label htmlFor="phoneNumber" className="text-xs font-medium text-foreground">
-              Phone Number <span className="text-muted-foreground text-[10px]">(Optional)</span>
+              Phone Number <span className="text-destructive">*</span>
             </Label>
             <div className="relative">
               <Phone className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
@@ -227,6 +227,7 @@ export default function RegisterForm() {
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 placeholder="+880 1XXX XXXXXX"
+                required
                 className="pl-9 h-10 rounded-xl"
                 disabled={isLoading}
               />
@@ -379,9 +380,6 @@ export default function RegisterForm() {
             )}
           </Button>
         </form>
-
-        {/* Social Login */}
-        <SocialLogin />
       </CardContent>
 
       <CardFooter className="flex justify-center border-t border-border/50 py-4 bg-muted/20">

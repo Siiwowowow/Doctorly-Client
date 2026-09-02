@@ -127,6 +127,7 @@
     "step4Desc": "Get digital prescriptions and seamless follow-ups securely."
   },
   "showcase": {
+    "eyebrow": "Virtual Healthcare",
     "title": "A consultation experience designed around you.",
     "subtitle": "High-quality video, instant chat, and digital prescriptions—all in one secure platform built specifically for healthcare.",
     "secureConnection": "Secure Connection",
@@ -234,7 +235,9 @@
     "articleDesc": "Discover which medical tests and screenings are recommended for your age group to catch potential health issues early and maintain optimal well-being."
   },
   "testimonials": {
-    "title": "Trusted by people who value better care."
+    "eyebrow": "Patient Stories",
+    "title": "Trusted by people who value better care.",
+    "description": "Real experiences from patients who chose Doctorly for their healthcare journey."
   },
   "mobileExperience": {
     "title": "Your healthcare, always within reach.",
@@ -349,7 +352,21 @@
     "logout": "Log out",
     "dashboard": "Dashboard",
     "profile": "Profile",
-    "settings": "Settings"
+    "settings": "Settings",
+    "back": "Back",
+    "close": "Close",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "leaveConsultation": "Leave Consultation?",
+    "leaveConsultationDesc": "Are you sure you want to leave this live consultation? You will be disconnected.",
+    "stay": "Stay",
+    "leave": "Leave",
+    "chat": "Messages",
+    "schedule": "Schedule",
+    "doctors": "Doctors",
+    "specialties": "Specialties"
   },
   "status": {
     "PENDING": "Pending",
@@ -695,7 +712,14 @@
     "patientDocuments": "Patient",
     "doctorDocuments": "Doctor",
     "noDocuments": "No shared documents yet",
-    "noDocumentsDesc": "Images, PDFs and medical records shared in this chat will appear here."
+    "noDocumentsDesc": "Images, PDFs and medical records shared in this chat will appear here.",
+    "retry": "Retry",
+    "failed": "Failed",
+    "delivered": "Delivered",
+    "seen": "Seen",
+    "sent": "Sent",
+    "doctorTyping": "Doctor is typing...",
+    "patientTyping": "Patient is typing..."
   },
   "notifications": {
     "title": "Notifications",

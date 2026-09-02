@@ -1,20 +1,23 @@
+import dynamic from "next/dynamic";
 import Hero from "@/components/landing/Hero";
 import TrustIndicators from "@/components/landing/TrustIndicators";
 import DoctorSearch from "@/components/landing/DoctorSearch";
 import Specialties from "@/components/landing/Specialties";
-import HowItWorks from "@/components/landing/HowItWorks";
-import TelemedicineShowcase from "@/components/landing/TelemedicineShowcase";
-import PatientExperience from "@/components/landing/PatientExperience";
-import WhyDoctorly from "@/components/landing/WhyDoctorly";
-import DoctorPlatform from "@/components/landing/DoctorPlatform";
-import HealthcareServices from "@/components/landing/HealthcareServices";
-import HealthResources from "@/components/landing/HealthResources";
-import Testimonials from "@/components/landing/Testimonials";
-import MobileExperience from "@/components/landing/MobileExperience";
-import SecurityPrivacy from "@/components/landing/SecurityPrivacy";
-import FAQ from "@/components/landing/FAQ";
-import FinalCTA from "@/components/landing/FinalCTA";
-import Footer from "@/components/landing/Footer";
+
+// Below-the-fold components dynamically imported for instant initial load time & minimal bundle size
+const HowItWorks = dynamic(() => import("@/components/landing/HowItWorks"), { ssr: true });
+const TelemedicineShowcase = dynamic(() => import("@/components/landing/TelemedicineShowcase"), { ssr: true });
+const PatientExperience = dynamic(() => import("@/components/landing/PatientExperience"), { ssr: true });
+const WhyDoctorly = dynamic(() => import("@/components/landing/WhyDoctorly"), { ssr: true });
+const DoctorPlatform = dynamic(() => import("@/components/landing/DoctorPlatform"), { ssr: true });
+const HealthcareServices = dynamic(() => import("@/components/landing/HealthcareServices"), { ssr: true });
+const HealthResources = dynamic(() => import("@/components/landing/HealthResources"), { ssr: true });
+const Testimonials = dynamic(() => import("@/components/landing/Testimonials"), { ssr: true });
+const MobileExperience = dynamic(() => import("@/components/landing/MobileExperience"), { ssr: true });
+const SecurityPrivacy = dynamic(() => import("@/components/landing/SecurityPrivacy"), { ssr: true });
+const FAQ = dynamic(() => import("@/components/landing/FAQ"), { ssr: true });
+const FinalCTA = dynamic(() => import("@/components/landing/FinalCTA"), { ssr: true });
+const Footer = dynamic(() => import("@/components/landing/Footer"), { ssr: true });
 
 export default function HomePage() {
   return (
@@ -39,4 +42,5 @@ export default function HomePage() {
     </div>
   );
 }
+
 

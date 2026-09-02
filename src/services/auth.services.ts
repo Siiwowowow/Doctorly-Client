@@ -3,6 +3,7 @@
 
 import { setTokenInCookies } from "@/lib/tokenUtils";
 import { cookies } from "next/headers";
+import { cache } from "react";
 
 const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api/v1";
 
@@ -10,6 +11,19 @@ export interface IRefreshTokenData {
     accessToken: string;
     refreshToken: string;
     token: string;
+}
+
+function isDynamicServerError(error: unknown): boolean {
+    if (error && typeof error === "object") {
+        if ("digest" in error && (error as { digest: string }).digest === "DYNAMIC_SERVER_USAGE") {
+            return true;
+        }
+        if ("message" in error && typeof (error as { message: string }).message === "string") {
+            const msg = (error as { message: string }).message;
+            return msg.includes("DYNAMIC_SERVER_USAGE") || msg.includes("Dynamic server usage");
+        }
+    }
+    return false;
 }
 
 export async function getNewTokensWithRefreshToken(
@@ -40,12 +54,39 @@ export async function getNewTokensWithRefreshToken(
 
         return { accessToken, refreshToken: newRefreshToken || refreshToken, token: token || sessionToken || "" };
     } catch (error) {
+        if (isDynamicServerError(error)) {
+            throw error;
+        }
         console.error("Error in getNewTokensWithRefreshToken:", error);
         return null;
     }
 }
 
-import { cache } from "react";
+export async function getSocketAuthTokens(): Promise<{ token: string | null; sessionToken: string | null }> {
+    try {
+        const cookieStore = await cookies();
+        let accessToken = cookieStore.get("accessToken")?.value || null;
+        let sessionToken = cookieStore.get("better-auth.session_token")?.value || null;
+        const refreshToken = cookieStore.get("refreshToken")?.value;
+
+        if (!accessToken && refreshToken) {
+            const newTokens = await getNewTokensWithRefreshToken(refreshToken);
+            if (newTokens) {
+                accessToken = newTokens.accessToken;
+                sessionToken = newTokens.token;
+            }
+        }
+
+        return { token: accessToken, sessionToken };
+    } catch (error) {
+        if (isDynamicServerError(error)) {
+            throw error;
+        }
+        console.error("Error in getSocketAuthTokens:", error);
+        return { token: null, sessionToken: null };
+    }
+}
+
 
 export const getUserInfo = cache(async () => {
     try {
@@ -96,6 +137,9 @@ export const getUserInfo = cache(async () => {
         const { data } = await res.json();
         return data;
     } catch (error) {
+        if (isDynamicServerError(error)) {
+            throw error;
+        }
         console.error("Error fetching user info:", error);
         return null;
     }
@@ -123,6 +167,9 @@ export async function logoutUser() {
         cookieStore.delete({ name: "better-auth.session_token", path: "/" });
         return true;
     } catch (error) {
+        if (isDynamicServerError(error)) {
+            throw error;
+        }
         console.error("Logout failed", error);
         return false;
     }

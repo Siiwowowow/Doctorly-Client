@@ -22,6 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Doctor } from "@/types/api.types";
+import { BackButton } from "@/components/shared/BackButton";
 
 export async function generateMetadata(props: { params: Promise<{ id: string }> }) {
   try {

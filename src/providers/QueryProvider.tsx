@@ -13,9 +13,9 @@ function makeQueryClient() {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        // High-performance caching: data remains fresh for 5 mins, cached in memory for 30 mins
-        staleTime: 5 * 60 * 1000,
-        gcTime: 30 * 60 * 1000,
+        // High-performance caching: data remains fresh for 10 mins, cached in memory for 60 mins
+        staleTime: 10 * 60 * 1000,
+        gcTime: 60 * 60 * 1000,
         refetchOnWindowFocus: false,
         refetchOnMount: false,
         refetchOnReconnect: true,

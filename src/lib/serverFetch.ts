@@ -6,6 +6,10 @@ const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5
 
 interface ServerFetchOptions extends RequestInit {
     params?: Record<string, unknown>;
+    next?: {
+        revalidate?: number | false;
+        tags?: string[];
+    };
 }
 
 export async function serverFetch<T>(
@@ -75,7 +79,7 @@ export async function serverFetch<T>(
                     cookieStore.set("accessToken", newAccess, {
                         httpOnly: true,
                         secure: process.env.NODE_ENV === "production",
-                        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+                        sameSite: "lax",
                         path: "/",
                         maxAge: 24 * 60 * 60,
                     });
@@ -84,7 +88,7 @@ export async function serverFetch<T>(
                     cookieStore.set("refreshToken", newRefresh, {
                         httpOnly: true,
                         secure: process.env.NODE_ENV === "production",
-                        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+                        sameSite: "lax",
                         path: "/",
                         maxAge: 7 * 24 * 60 * 60,
                     });
@@ -93,7 +97,7 @@ export async function serverFetch<T>(
                     cookieStore.set("better-auth.session_token", newSession, {
                         httpOnly: true,
                         secure: process.env.NODE_ENV === "production",
-                        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+                        sameSite: "lax",
                         path: "/",
                         maxAge: 24 * 60 * 60,
                     });

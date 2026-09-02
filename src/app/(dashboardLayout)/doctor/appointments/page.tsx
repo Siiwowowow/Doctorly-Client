@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Appointment, AppointmentStatus, PaymentStatus } from "@/types/api.types"
 import { getMyAppointments, updateAppointmentStatus } from "@/services/appointment.services"
 import { format } from "date-fns"
-import { Clock, Search, Filter, Video, CalendarDays, MessageSquare } from "lucide-react"
+import { Clock, Search, Filter, Video, Phone, CalendarDays, MessageSquare } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -73,23 +73,29 @@ function DoctorAppointmentsContent() {
     router.push(`?${params.toString()}`, { scroll: false })
   }
 
-  const handleStartCall = async (apt: Appointment) => {
+  const handleStartCall = async (apt: Appointment, type: "VIDEO" | "AUDIO" = "VIDEO") => {
     if (!apt.patientId) return;
+    console.log("[CALL][DOCTOR] initiate", { appointmentId: apt.id, patientId: apt.patientId, type });
     setIsCalling(true);
     try {
       const res = await initiateCall({
         receiverId: apt.patientId,
         appointmentId: apt.id,
-        isVideoCall: true
+        isVideoCall: type === "VIDEO",
+        type,
       });
       if (res.data?.id) {
-        router.push(`/video-call/${res.data.id}`);
+        console.log("[CALL][DOCTOR] session-created", { callId: res.data.id, type });
+        console.log("[CALL][DOCTOR] incoming-sent", { callId: res.data.id, receiverId: apt.patientId });
+        console.log(`[CALL][ROOM] appointmentId=${apt.id} callId=${res.data.id} roomId=call:${res.data.id}`);
+        const typeParam = type === "AUDIO" ? "?type=AUDIO" : "";
+        router.push(`/video-call/${res.data.id}${typeParam}`);
       }
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: t("messages.callFailed"),
-        description: error.message || "Could not start video call.",
+        description: error.message || "Could not start consultation call.",
       });
     } finally {
       setIsCalling(false);
@@ -270,18 +276,31 @@ function DoctorAppointmentsContent() {
                         </Button>
                       )}
 
-                      {/* Video Call Entry Point */}
+                      {/* Video & Audio Call Entry Points */}
                       {(apt.status === AppointmentStatus.SCHEDULED || apt.status === AppointmentStatus.INPROGRESS) && (
-                        <Button 
-                           size="sm" 
-                           variant="outline" 
-                           className="border-blue-200 text-blue-600 bg-blue-50 hover:bg-blue-100" 
-                           onClick={() => handleStartCall(apt)}
-                           disabled={isCalling}
-                        >
-                           <Video className="h-4 w-4 mr-2" />
-                           {isCalling ? t("actions.calling") : t("actions.callPatient")}
-                        </Button>
+                        <div className="inline-flex items-center gap-1">
+                          <Button 
+                             size="sm" 
+                             variant="outline" 
+                             className="border-blue-200 text-blue-600 bg-blue-50 hover:bg-blue-100" 
+                             onClick={() => handleStartCall(apt, "VIDEO")}
+                             disabled={isCalling}
+                             title="Start Video Consultation"
+                          >
+                             <Video className="h-4 w-4 mr-1.5" />
+                             {isCalling ? t("actions.calling") : t("actions.callPatient")}
+                          </Button>
+                          <Button
+                             size="sm"
+                             variant="outline"
+                             className="border-emerald-200 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 px-2.5"
+                             onClick={() => handleStartCall(apt, "AUDIO")}
+                             disabled={isCalling}
+                             title="Start Audio Consultation"
+                          >
+                             <Phone className="h-4 w-4" />
+                          </Button>
+                        </div>
                       )}
 
                       {/* Chat Entry Point */}

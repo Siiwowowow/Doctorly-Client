@@ -5,6 +5,10 @@ import { useMemo } from "react"
 import { useParams } from "next/navigation"
 import { Appointment, AppointmentStatus, PaymentStatus } from "@/types/api.types"
 import { getMyAppointments } from "@/services/appointment.services"
+import { initiateCall } from "@/services/call.services"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { toast } from "sonner"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -18,6 +22,29 @@ import { format } from "date-fns"
 export default function DoctorPatientDetailsPage() {
   const { patientId } = useParams()
   const t = useTranslations("doctorPatients")
+  const router = useRouter()
+  const [isCalling, setIsCalling] = useState(false)
+
+  const handleStartCall = async (apt: any, type: "VIDEO" | "AUDIO" = "VIDEO") => {
+    if (!patient?.userId && !patient?.id) return;
+    setIsCalling(true);
+    try {
+      const res = await initiateCall({
+        receiverId: patient.userId || patient.id,
+        appointmentId: apt.id,
+        isVideoCall: type === "VIDEO",
+        type,
+      });
+      if (res.data?.id) {
+        const typeParam = type === "AUDIO" ? "?type=AUDIO" : "";
+        router.push(`/video-call/${res.data.id}${typeParam}`);
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Could not start consultation call.");
+    } finally {
+      setIsCalling(false);
+    }
+  };
   
   const { data: appointmentsRes, isLoading, isError } = useQuery({
     queryKey: ["doctor-appointments"],
@@ -150,12 +177,14 @@ export default function DoctorPatientDetailsPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-3">
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white" asChild>
-                    <Link href={`/video-call/${activeAppointment.videoCallingId}`}>
-                      <Video className="mr-2 h-4 w-4" />
-                      {t("details.startVideo")}
-                    </Link>
-                  </Button>
+                  <Button 
+      className="bg-blue-600 hover:bg-blue-700 text-white" 
+      onClick={() => handleStartCall(activeAppointment, "VIDEO")}
+      disabled={isCalling}
+    >
+      <Video className="mr-2 h-4 w-4" />
+      {isCalling ? "Calling..." : t("details.startVideo") || "Start Video Call"}
+    </Button>
                   <Button variant="outline" className="border-blue-200 text-blue-700 hover:bg-blue-100" asChild>
                     <Link href={`/chat?patientId=${patient.id}`}>
                       <MessageSquare className="mr-2 h-4 w-4" />

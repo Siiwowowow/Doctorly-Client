@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   LayoutDashboard,
   User,
@@ -12,7 +12,8 @@ import {
   CreditCard,
   LogOut,
   Home,
-} from "lucide-react"
+  MessageSquare,
+} from "lucide-react";
 
 import {
   Sidebar,
@@ -25,11 +26,14 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarGroupContent,
-} from "@/components/ui/sidebar"
-import { useAuth } from "@/providers/AuthProvider"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { useTranslations } from "next-intl"
+  useSidebar,
+} from "@/components/ui/sidebar";
+import { useAuth } from "@/providers/AuthProvider";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { DashboardSidebarHeader } from "./DashboardSidebarHeader";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const userItems = [
   {
@@ -53,6 +57,11 @@ const userItems = [
     icon: CalendarDays,
   },
   {
+    title: "Messages",
+    url: "/chat",
+    icon: MessageSquare,
+  },
+  {
     title: "Medical Records",
     url: "/user/medical-records",
     icon: FileText,
@@ -72,74 +81,103 @@ const userItems = [
     url: "/user/payments",
     icon: CreditCard,
   },
-]
+];
 
 export function UserSidebar() {
-  const { user, logout } = useAuth()
-  const pathname = usePathname()
-  const t = useTranslations("dashboardHeaders")
-  const tCommon = useTranslations("common")
+  const { user, logout } = useAuth();
+  const pathname = usePathname();
+  const { state, isMobile, setOpenMobile } = useSidebar();
+  const isCollapsed = state === "collapsed" && !isMobile;
+  const t = useTranslations("dashboardHeaders");
+  const tCommon = useTranslations("common");
 
   const isActiveRoute = (url: string) => {
     if (url === "/") {
       return pathname === "/";
     }
     return pathname === url || pathname.startsWith(`${url}/`);
-  }
+  };
+
+  const userInitial = user?.name?.charAt(0) || user?.email?.charAt(0)?.toUpperCase() || "U";
 
   return (
-    <Sidebar>
-      <SidebarHeader className="p-4 border-b">
-        <div className="flex items-center gap-2 font-semibold">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <User size={20} />
-          </div>
-          <span className="truncate">{t("patientDashboard")}</span>
-        </div>
+    <Sidebar collapsible="icon" className="border-r border-border/60">
+      <SidebarHeader className="p-0">
+        <DashboardSidebarHeader title={t("patientDashboard")} icon={User} />
       </SidebarHeader>
-      <SidebarContent>
+
+      <SidebarContent className="flex-1 overflow-y-auto">
         <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          {!isCollapsed && <SidebarGroupLabel className="text-xs uppercase tracking-wider text-muted-foreground px-4 py-2">Patient Portal</SidebarGroupLabel>}
           <SidebarGroupContent>
             <SidebarMenu>
               {userItems.map((item) => {
-                const translationKey = item.title === 'My Profile' ? 'profile' : item.title.charAt(0).toLowerCase() + item.title.slice(1).replace(/ /g, '');
-                const translatedTitle = t(translationKey as any) || tCommon(translationKey as any) || item.title;
+                const translationKey =
+                  item.title === "My Profile"
+                    ? "profile"
+                    : item.title === "Messages"
+                    ? "chat"
+                    : item.title.charAt(0).toLowerCase() + item.title.slice(1).replace(/ /g, "");
+                const translatedTitle =
+                  t(translationKey as any) || tCommon(translationKey as any) || item.title;
+                const active = isActiveRoute(item.url);
 
                 return (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={isActiveRoute(item.url)} tooltip={translatedTitle}>
-                      <Link href={item.url} prefetch={true}>
-                        <item.icon />
+                    <SidebarMenuButton
+                      asChild
+                      isActive={active}
+                      tooltip={translatedTitle}
+                      onClick={() => {
+                        if (isMobile) setOpenMobile(false);
+                      }}
+                      className={`rounded-xl font-medium transition-colors ${active ? "bg-doctorly-primary/10 text-doctorly-primary font-semibold" : ""}`}
+                    >
+                      <Link href={item.url} prefetch={true} className="flex items-center gap-3">
+                        <item.icon className={`size-4.5 shrink-0 ${active ? "text-doctorly-primary" : "text-muted-foreground"}`} />
                         <span>{translatedTitle}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                )
+                );
               })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="p-4 border-t">
+
+      <SidebarFooter className="p-3 border-t border-border/50 mt-auto bg-background/50">
         <SidebarMenu>
           <SidebarMenuItem>
-            <div className="flex items-center gap-3 px-2 py-2 mb-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted">
-                <User size={24} />
+            {!isCollapsed ? (
+              <div className="flex items-center gap-3 p-2 mb-2 rounded-xl bg-muted/40 border border-border/40">
+                <Avatar className="size-8.5 border border-border shrink-0">
+                  <AvatarImage src={user?.uploadedImage || user?.image || ""} alt={user?.name || "Patient"} />
+                  <AvatarFallback className="bg-doctorly-primary/10 text-doctorly-primary font-bold text-xs">
+                    {userInitial}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col min-w-0 text-left">
+                  <span className="font-semibold text-xs text-foreground truncate">{user?.name || "Patient"}</span>
+                  <span className="text-[10px] text-muted-foreground truncate">{user?.email}</span>
+                </div>
               </div>
-              <div className="flex flex-col overflow-hidden text-sm">
-                <span className="font-medium truncate">{user?.name || "User"}</span>
-                <span className="text-xs text-muted-foreground truncate">{user?.email}</span>
-              </div>
-            </div>
-            <SidebarMenuButton onClick={logout} className="text-destructive hover:text-destructive hover:bg-destructive/10">
-              <LogOut />
-              <span>{tCommon("logout")}</span>
+            ) : null}
+
+            <SidebarMenuButton
+              onClick={() => {
+                if (isMobile) setOpenMobile(false);
+                logout();
+              }}
+              tooltip={tCommon("logout") || "Log Out"}
+              className="text-destructive hover:text-destructive hover:bg-destructive/10 rounded-xl font-medium"
+            >
+              <LogOut className="size-4 shrink-0 text-destructive" />
+              <span>{tCommon("logout") || "Log Out"}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }

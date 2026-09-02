@@ -37,6 +37,11 @@ async function refreshTokensInMiddleware(refreshToken: string, sessionToken?: st
 
 export async function proxy(request: NextRequest) {
   try {
+    // 0. Do not intercept Server Action POST requests with redirects
+    if (request.headers.has("next-action")) {
+      return NextResponse.next();
+    }
+
     const { pathname } = request.nextUrl;
     const pathWithQuery = `${pathname}${request.nextUrl.search}`;
     let accessToken = request.cookies.get("accessToken")?.value;
@@ -76,7 +81,7 @@ export async function proxy(request: NextRequest) {
         response.cookies.set("accessToken", refreshedTokens.accessToken, {
           httpOnly: true,
           secure: isProd,
-          sameSite: isProd ? "none" : "lax",
+          sameSite: "lax",
           path: "/",
           maxAge: 24 * 60 * 60,
         });
@@ -84,7 +89,7 @@ export async function proxy(request: NextRequest) {
           response.cookies.set("refreshToken", refreshedTokens.refreshToken, {
             httpOnly: true,
             secure: isProd,
-            sameSite: isProd ? "none" : "lax",
+            sameSite: "lax",
             path: "/",
             maxAge: 7 * 24 * 60 * 60,
           });
@@ -93,7 +98,7 @@ export async function proxy(request: NextRequest) {
           response.cookies.set("better-auth.session_token", refreshedTokens.sessionToken, {
             httpOnly: true,
             secure: isProd,
-            sameSite: isProd ? "none" : "lax",
+            sameSite: "lax",
             path: "/",
             maxAge: 24 * 60 * 60,
           });

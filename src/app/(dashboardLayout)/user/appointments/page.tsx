@@ -12,11 +12,13 @@ import Link from "next/link";
 import { Appointment, AppointmentStatus, PaymentStatus } from "@/types/api.types";
 import { Badge } from "@/components/ui/badge";
 import { JoinCallButton } from "./_components/JoinCallButton";
+import { useCall } from "@/providers/CallProvider";
 import { PayNowButton } from "./_components/PayNowButton";
 import { InvoiceDownloadButton } from "@/components/shared/InvoiceDownloadButton";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AppointmentsPage() {
+  const { isAppointmentRinging } = useCall();
   const { 
     data: appointmentsRes, 
     isLoading, 
@@ -206,8 +208,8 @@ export default function AppointmentsPage() {
                         </InvoiceDownloadButton>
                       )}
                       
-                      {/* Join Video Call logic - only if PAID and (SCHEDULED or INPROGRESS) */}
-                      {apt.paymentStatus === PaymentStatus.PAID && (apt.status === AppointmentStatus.SCHEDULED || apt.status === AppointmentStatus.INPROGRESS) && (
+                      {/* Join Video Call logic - when ringing or when PAID & (SCHEDULED or INPROGRESS) */}
+                      {(isAppointmentRinging(apt.id) || (apt.paymentStatus === PaymentStatus.PAID && (apt.status === AppointmentStatus.SCHEDULED || apt.status === AppointmentStatus.INPROGRESS))) && (
                         <JoinCallButton appointment={apt} />
                       )}
                     </div>

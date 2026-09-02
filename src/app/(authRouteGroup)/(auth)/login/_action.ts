@@ -47,7 +47,11 @@ export const loginAction = async (
 
     if (!response.ok || !resData.success) {
       if (resData.message === "Email not verified") {
-        redirect(`/verify-email?email=${encodeURIComponent(payload.email)}`);
+        return {
+          success: false,
+          message: "Email not verified",
+          redirectUrl: `/verify-email?email=${encodeURIComponent(payload.email)}`,
+        } as any;
       }
       return {
         success: false,
@@ -67,7 +71,11 @@ export const loginAction = async (
 
     // Password change flow
     if (needPasswordChange) {
-      redirect(`/reset-password?email=${encodeURIComponent(email)}`);
+      return {
+        success: true,
+        redirectUrl: `/reset-password?email=${encodeURIComponent(email)}`,
+        user,
+      } as any;
     }
 
     // Role-based sanitized redirect
@@ -82,9 +90,6 @@ export const loginAction = async (
       user,
     } as any;
   } catch (error: any) {
-    if (error?.digest?.startsWith("NEXT_REDIRECT")) {
-      throw error;
-    }
     console.error("Login action error:", error);
 
     return {

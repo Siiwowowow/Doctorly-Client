@@ -16,6 +16,8 @@ import {
 import { getUserInfo } from "@/services/auth.services";
 import { redirect } from "next/navigation";
 
+import { getDefaultDashboardRoute, UserRole } from "@/lib/authUtils";
+
 export default async function UserLayout({
   children,
 }: {
@@ -23,8 +25,12 @@ export default async function UserLayout({
 }) {
   const user = await getUserInfo();
 
-  if (!user || user.role !== "PATIENT") {
+  if (!user) {
     redirect("/login?redirect=/user/dashboard");
+  }
+
+  if (user.role !== "PATIENT") {
+    redirect(getDefaultDashboardRoute(user.role as UserRole));
   }
 
   return (

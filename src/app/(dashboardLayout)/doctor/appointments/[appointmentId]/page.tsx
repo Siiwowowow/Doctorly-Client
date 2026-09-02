@@ -4,6 +4,8 @@
 import { useParams } from "next/navigation"
 import { AppointmentStatus, PaymentStatus } from "@/types/api.types"
 import { getAppointmentById, updateAppointmentStatus } from "@/services/appointment.services"
+import { initiateCall } from "@/services/call.services"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -11,6 +13,7 @@ import { format } from "date-fns"
 import { CalendarDays, Clock, User, Phone, MapPin, Video, Pill, FileText, MessageSquare } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
+import { BackButton } from "@/components/shared/BackButton"
 import { useToast } from "@/hooks/use-toast"
 import { useTranslations } from "next-intl"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
@@ -23,6 +26,37 @@ export default function DoctorAppointmentDetailsPage() {
   const t = useTranslations("doctorAppointments")
   const queryClient = useQueryClient()
   const [isCompletionDialogOpen, setIsCompletionDialogOpen] = useState(false)
+  const [isCalling, setIsCalling] = useState(false)
+  const router = useRouter()
+
+  const handleStartCall = async (type: "VIDEO" | "AUDIO" = "VIDEO") => {
+    if (!appointment?.patientId) return;
+    console.log("[CALL][DOCTOR] initiate", { appointmentId: appointment.id, patientId: appointment.patientId, type });
+    setIsCalling(true);
+    try {
+      const res = await initiateCall({
+        receiverId: appointment.patientId,
+        appointmentId: appointment.id,
+        isVideoCall: type === "VIDEO",
+        type,
+      });
+      if (res.data?.id) {
+        console.log("[CALL][DOCTOR] session-created", { callId: res.data.id, type });
+        console.log("[CALL][DOCTOR] incoming-sent", { callId: res.data.id, receiverId: appointment.patientId });
+        console.log(`[CALL][ROOM] appointmentId=${appointment.id} callId=${res.data.id} roomId=call:${res.data.id}`);
+        const typeParam = type === "AUDIO" ? "?type=AUDIO" : "";
+        router.push(`/video-call/${res.data.id}${typeParam}`);
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Call Failed",
+        description: error.message || "Could not start consultation call.",
+      });
+    } finally {
+      setIsCalling(false);
+    }
+  };
 
   const { data: appointmentRes, isLoading, isError } = useQuery({
     queryKey: ["doctor-appointments", appointmentId],
@@ -151,14 +185,27 @@ export default function DoctorAppointmentDetailsPage() {
             </Button>
           )}
           
-          {appointment.videoCallingId && (appointment.status === AppointmentStatus.SCHEDULED || appointment.status === AppointmentStatus.INPROGRESS) && (
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white" asChild>
-               <Link href={`/video-call/${appointment.videoCallingId}`}>
-                 <Video className="mr-2 h-4 w-4" />
-                 {t("details.joinVideo")}
-               </Link>
-            </Button>
-          )}
+          {(appointment.status === AppointmentStatus.SCHEDULED || appointment.status === AppointmentStatus.INPROGRESS) && (
+              <div className="inline-flex items-center gap-2">
+                <Button 
+                  className="bg-blue-600 hover:bg-blue-700 text-white" 
+                  onClick={() => handleStartCall("VIDEO")}
+                  disabled={isCalling}
+                >
+                  <Video className="mr-2 h-4 w-4" />
+                  {isCalling ? t("actions.calling") || "Calling..." : t("details.joinVideo") || "Start Video Call"}
+                </Button>
+                <Button 
+                  variant="outline"
+                  className="border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 hover:bg-emerald-100" 
+                  onClick={() => handleStartCall("AUDIO")}
+                  disabled={isCalling}
+                  title="Start Audio Call"
+                >
+                  <Phone className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
         </div>
       </div>
 

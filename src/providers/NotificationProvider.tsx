@@ -114,7 +114,7 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
   }, [socket, isConnected, user?.role, router]);
 
   // Mark single as read (Optimistic & Real-time)
-  const markAsRead = async (id: string) => {
+  const markAsRead = useCallback(async (id: string) => {
     const target = notifications.find((n) => n.id === id);
     if (!target || target.isRead) return;
 
@@ -129,10 +129,10 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
     } catch (error) {
       console.error("Failed to mark as read:", error);
     }
-  };
+  }, [notifications]);
 
   // Mark all as read (Optimistic & Real-time)
-  const markAllAsRead = async () => {
+  const markAllAsRead = useCallback(async () => {
     if (unreadCount === 0) return;
 
     // Instant optimistic update
@@ -146,10 +146,10 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
       console.error("Failed to mark all as read:", error);
       toast.error("Failed to mark all notifications as read");
     }
-  };
+  }, [unreadCount]);
 
   // Remove / Dismiss notification with cross icon (Optimistic & Real-time)
-  const removeNotification = async (id: string) => {
+  const removeNotification = useCallback(async (id: string) => {
     const target = notifications.find((n) => n.id === id);
     if (!target) return;
 
@@ -171,10 +171,10 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
       }
       toast.error("Failed to remove notification");
     }
-  };
+  }, [notifications]);
 
   // Clear all read notifications
-  const clearAllRead = async () => {
+  const clearAllRead = useCallback(async () => {
     const readOnes = notifications.filter((n) => n.isRead);
     if (readOnes.length === 0) return;
 
@@ -188,21 +188,33 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
       console.error("Failed to delete read notifications:", error);
       toast.error("Failed to clear read notifications");
     }
-  };
+  }, [notifications]);
+
+  const value = React.useMemo(
+    () => ({
+      notifications,
+      unreadCount,
+      loading,
+      markAsRead,
+      markAllAsRead,
+      removeNotification,
+      clearAllRead,
+      fetchNotifications,
+    }),
+    [
+      notifications,
+      unreadCount,
+      loading,
+      markAsRead,
+      markAllAsRead,
+      removeNotification,
+      clearAllRead,
+      fetchNotifications,
+    ]
+  );
 
   return (
-    <NotificationContext.Provider
-      value={{
-        notifications,
-        unreadCount,
-        loading,
-        markAsRead,
-        markAllAsRead,
-        removeNotification,
-        clearAllRead,
-        fetchNotifications,
-      }}
-    >
+    <NotificationContext.Provider value={value}>
       {children}
     </NotificationContext.Provider>
   );

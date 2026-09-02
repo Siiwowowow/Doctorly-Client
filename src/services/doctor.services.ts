@@ -7,13 +7,13 @@ import { serverFetch } from "@/lib/serverFetch";
 export async function getAllDoctors(queryParams?: Record<string, any>): Promise<ApiResponse<Doctor[]>> {
     return await serverFetch<Doctor[]>("/doctors", {
         params: queryParams,
-        cache: "no-store",
+        next: { revalidate: 60, tags: ["doctors"] },
     });
 }
 
 export async function getDoctorById(id: string): Promise<ApiResponse<Doctor>> {
     return await serverFetch<Doctor>(`/doctors/${id}`, {
-        cache: "no-store",
+        next: { revalidate: 60, tags: [`doctor-${id}`] },
     });
 }
 

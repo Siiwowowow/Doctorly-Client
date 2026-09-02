@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ArrowLeft, Printer, Stethoscope, User, CalendarDays } from "lucide-react"
 import Link from "next/link"
+import { BackButton } from "@/components/shared/BackButton"
 import { format } from "date-fns"
 import { useQuery } from "@tanstack/react-query"
 
@@ -44,6 +45,9 @@ export default function PrescriptionDetailsPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      <div className="flex items-center justify-between print:hidden">
+        <BackButton fallbackUrl="/doctor/prescriptions" label="Back to Prescriptions" />
+      </div>
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-background border rounded-2xl shadow-sm">
         <div className="flex items-center gap-4">
