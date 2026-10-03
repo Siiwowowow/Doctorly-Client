@@ -8,20 +8,19 @@
 const DEFAULT_STUN_SERVERS: RTCIceServer[] = [
   { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] },
   { urls: ['stun:global.stun.twilio.com:3478'] },
-  { urls: ['stun:openrelay.metered.ca:80'] },
+  { urls: ['stun:stun.relay.metered.ca:80'] },
 ];
 
 const DEFAULT_FALLBACK_TURN_SERVERS: RTCIceServer[] = [
   {
     urls: [
-      'turn:openrelay.metered.ca:80',
-      'turn:openrelay.metered.ca:80?transport=tcp',
-      'turn:openrelay.metered.ca:443',
-      'turn:openrelay.metered.ca:443?transport=tcp',
-      'turns:openrelay.metered.ca:443?transport=tcp',
+      'turn:global.relay.metered.ca:80',
+      'turn:global.relay.metered.ca:80?transport=tcp',
+      'turn:global.relay.metered.ca:443',
+      'turns:global.relay.metered.ca:443?transport=tcp',
     ],
-    username: 'openrelayproject',
-    credential: 'openrelayproject',
+    username: 'acb1a39f68319df913415b35',
+    credential: 'fau3ppTnse3ATxoh',
   },
 ];
 
