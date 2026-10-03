@@ -119,7 +119,9 @@ export function UserSidebar() {
                     ? "chat"
                     : item.title.charAt(0).toLowerCase() + item.title.slice(1).replace(/ /g, "");
                 const translatedTitle =
-                  t(translationKey as any) || tCommon(translationKey as any) || item.title;
+                  (t.has(translationKey as any) ? t(translationKey as any) : undefined) ||
+                  (tCommon.has(translationKey as any) ? tCommon(translationKey as any) : undefined) ||
+                  item.title;
                 const active = isActiveRoute(item.url);
 
                 return (

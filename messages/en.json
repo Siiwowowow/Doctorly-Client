@@ -406,6 +406,7 @@
     "payments": "Payments",
     "notifications": "Notifications",
     "messages": "Messages",
+    "chat": "Messages",
     "settings": "Settings",
     "doctorApplications": "Doctor Applications"
   },
