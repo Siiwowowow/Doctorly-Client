@@ -12,12 +12,14 @@ import { toast } from "sonner"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { User, Phone, MapPin, Mail, Calendar, FileText, Pill, CalendarDays, Clock, Video, MessageSquare, Droplet } from "lucide-react"
+import { User, Phone, MapPin, Mail, Calendar, FileText, Pill, CalendarDays, Clock, Video, MessageSquare, Droplet, HeartHandshake } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { useTranslations } from "next-intl"
 import { useQuery } from "@tanstack/react-query"
 import { format } from "date-fns"
+import { getPatientById } from "@/services/patient.services"
+import { formatBloodGroup } from "@/app/(dashboardLayout)/user/profile/components/PatientProfileView"
 
 export default function DoctorPatientDetailsPage() {
   const { patientId } = useParams()
@@ -46,15 +48,22 @@ export default function DoctorPatientDetailsPage() {
     }
   };
   
-  const { data: appointmentsRes, isLoading, isError } = useQuery({
+  const { data: appointmentsRes, isLoading: appointmentsLoading, isError: appointmentsError } = useQuery({
     queryKey: ["doctor-appointments"],
     queryFn: () => getMyAppointments(),
     staleTime: 1000 * 60 * 5, // 5 mins
   })
 
+  const { data: patientRes, isLoading: patientLoading, isError: patientError } = useQuery({
+    queryKey: ["doctor-patient", patientId],
+    queryFn: () => getPatientById(String(patientId)),
+    enabled: Boolean(patientId),
+    staleTime: 1000 * 60 * 2,
+  })
+
   // Extract patient and specific appointments
-  const { patient, patientAppointments, activeAppointment } = useMemo(() => {
-    if (!appointmentsRes?.data || !patientId) return { patient: null, patientAppointments: [], activeAppointment: undefined }
+  const { appointmentPatient, patientAppointments, activeAppointment } = useMemo(() => {
+    if (!appointmentsRes?.data || !patientId) return { appointmentPatient: null, patientAppointments: [], activeAppointment: undefined }
 
     const allApts: Appointment[] = appointmentsRes.data
     const pApts = allApts.filter(apt => apt.patientId === patientId)
@@ -72,10 +81,12 @@ export default function DoctorPatientDetailsPage() {
     const activeApt = pApts.find(a => a.status === AppointmentStatus.INPROGRESS) || 
                       pApts.slice().reverse().find(a => a.status === AppointmentStatus.SCHEDULED && new Date(a.schedule?.startDateTime || "") >= new Date(new Date().setHours(0,0,0,0)))
 
-    return { patient: p, patientAppointments: pApts, activeAppointment: activeApt }
+    return { appointmentPatient: p, patientAppointments: pApts, activeAppointment: activeApt }
   }, [appointmentsRes, patientId])
 
-  if (isLoading) {
+  const patient = patientRes?.data || appointmentPatient
+
+  if (appointmentsLoading || patientLoading) {
     return (
       <div className="space-y-6 max-w-5xl mx-auto">
         <Skeleton className="h-37.5 w-full rounded-xl" />
@@ -84,7 +95,7 @@ export default function DoctorPatientDetailsPage() {
     )
   }
 
-  if (isError || !patient) {
+  if ((appointmentsError && patientError) || !patient) {
     return (
       <div className="p-12 text-center">
         <h2 className="text-2xl font-bold mb-2">{t("emptyStates.notFound")}</h2>
@@ -149,13 +160,34 @@ export default function DoctorPatientDetailsPage() {
                     <span>{patient.address}</span>
                   </div>
                 )}
-                {patient.bloodGroup && (
+                {(patient.bloodGroup || patient.patientHealthData?.bloodGroup) && (
                   <div className="flex items-center gap-3 p-2 bg-red-50 text-red-800 rounded-md">
                     <Droplet className="h-4 w-4 shrink-0" />
-                    <span className="font-semibold">{t("details.bloodGroup")}: {patient.bloodGroup}</span>
+                    <span className="font-semibold">{t("details.bloodGroup")}: {formatBloodGroup(patient.bloodGroup || patient.patientHealthData?.bloodGroup)}</span>
+                  </div>
+                )}
+                {patient.dateOfBirth && (
+                  <div className="flex items-center gap-3 p-2 bg-muted/30 rounded-md">
+                    <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <span>DOB: {format(new Date(patient.dateOfBirth), "MMM dd, yyyy")} {patient.age !== null && patient.age !== undefined ? `(${patient.age} years)` : ""}</span>
+                  </div>
+                )}
+                {patient.gender && (
+                  <div className="flex items-center gap-3 p-2 bg-muted/30 rounded-md">
+                    <User className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <span>Gender: {patient.gender.charAt(0) + patient.gender.slice(1).toLowerCase()}</span>
                   </div>
                 )}
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><HeartHandshake className="h-5 w-5 text-red-500" />Emergency Contact</CardTitle></CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <p className="font-semibold">{patient.emergencyContactName || "Not provided"}</p>
+              <p className="text-muted-foreground">{patient.emergencyContactRelationship || "Relationship not provided"}</p>
+              {patient.emergencyContactNumber && <a className="inline-flex items-center gap-2 text-primary hover:underline" href={`tel:${patient.emergencyContactNumber}`}><Phone className="h-4 w-4" />{patient.emergencyContactNumber}</a>}
             </CardContent>
           </Card>
         </div>

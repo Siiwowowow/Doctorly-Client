@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
-import { User, Phone, MapPin, Mail, Calendar, Droplet } from "lucide-react";
+import { User, Phone, MapPin, Mail, Calendar, Droplet, HeartHandshake } from "lucide-react";
 import { EditProfileDialog } from "./EditProfileDialog";
 import { Patient } from "@/types/api.types";
 
@@ -112,6 +112,20 @@ export function PatientProfileView({ initialProfile }: PatientProfileViewProps) 
                 </span>
               </div>
             </div>
+            <div className="space-y-2">
+              <Label className="text-muted-foreground">Date of Birth & Age</Label>
+              <div className="flex items-center gap-3 p-3 bg-muted/40 rounded-lg border border-border/50">
+                <Calendar className="size-4 text-muted-foreground" />
+                <span className="font-medium">{profile.dateOfBirth ? new Date(profile.dateOfBirth).toLocaleDateString() : "Not provided"}{profile.age !== null && profile.age !== undefined ? ` · ${profile.age} years` : ""}</span>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-muted-foreground">Gender</Label>
+              <div className="flex items-center gap-3 p-3 bg-muted/40 rounded-lg border border-border/50">
+                <User className="size-4 text-muted-foreground" />
+                <span className="font-medium">{profile.gender ? profile.gender.charAt(0) + profile.gender.slice(1).toLowerCase() : "Not provided"}</span>
+              </div>
+            </div>
             <div className="space-y-2 sm:col-span-2">
               <Label className="text-muted-foreground">Address</Label>
               <div className="flex items-center gap-3 p-3 bg-muted/40 rounded-lg border border-border/50">
@@ -120,6 +134,15 @@ export function PatientProfileView({ initialProfile }: PatientProfileViewProps) 
               </div>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-sm border-border/50">
+        <CardHeader><CardTitle className="text-xl flex items-center gap-2"><HeartHandshake className="size-5 text-red-500" />Emergency Contact</CardTitle><CardDescription>This information is visible to your consulting doctor.</CardDescription></CardHeader>
+        <CardContent className="grid gap-4 sm:grid-cols-3">
+          <div><Label className="text-muted-foreground">Name</Label><p className="font-medium mt-1">{profile.emergencyContactName || "Not provided"}</p></div>
+          <div><Label className="text-muted-foreground">Mobile</Label><p className="font-medium mt-1">{profile.emergencyContactNumber || "Not provided"}</p></div>
+          <div><Label className="text-muted-foreground">Relationship</Label><p className="font-medium mt-1">{profile.emergencyContactRelationship || "Not provided"}</p></div>
         </CardContent>
       </Card>
     </div>

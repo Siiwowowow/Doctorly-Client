@@ -32,6 +32,10 @@ import {
   Mail,
   Lock,
   Phone,
+  MapPin,
+  Calendar,
+  Droplet,
+  HeartHandshake,
   Activity,
   AlertCircle,
   CheckCircle2,
@@ -48,6 +52,13 @@ export default function RegisterForm() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [address, setAddress] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [gender, setGender] = useState("");
+  const [bloodGroup, setBloodGroup] = useState("");
+  const [emergencyContactName, setEmergencyContactName] = useState("");
+  const [emergencyContactNumber, setEmergencyContactNumber] = useState("");
+  const [emergencyContactRelationship, setEmergencyContactRelationship] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(true);
 
   // UI interaction states
@@ -94,6 +105,23 @@ export default function RegisterForm() {
       setServerError("Please enter a valid phone number (between 10 and 15 digits).");
       return;
     }
+    if (address.trim().length < 5) {
+      setServerError("Please enter your complete home address.");
+      return;
+    }
+    if (!dateOfBirth || new Date(`${dateOfBirth}T00:00:00`) > new Date()) {
+      setServerError("Please enter a valid date of birth.");
+      return;
+    }
+    if (!gender || !bloodGroup) {
+      setServerError("Please select your gender and blood group.");
+      return;
+    }
+    const cleanEmergencyPhone = emergencyContactNumber.trim().replace(/[\s\-()]/g, "");
+    if (emergencyContactName.trim().length < 2 || cleanEmergencyPhone.length < 10 || !emergencyContactRelationship.trim()) {
+      setServerError("Please complete all emergency contact details.");
+      return;
+    }
     if (password.length < 6) {
       setServerError("Password must be at least 6 characters long.");
       return;
@@ -115,6 +143,13 @@ export default function RegisterForm() {
       formData.append("email", email.trim().toLowerCase());
       formData.append("contactNumber", cleanPhone);
       formData.append("phoneNumber", cleanPhone);
+      formData.append("address", address.trim());
+      formData.append("dateOfBirth", dateOfBirth);
+      formData.append("gender", gender);
+      formData.append("bloodGroup", bloodGroup);
+      formData.append("emergencyContactName", emergencyContactName.trim());
+      formData.append("emergencyContactNumber", cleanEmergencyPhone);
+      formData.append("emergencyContactRelationship", emergencyContactRelationship.trim());
       formData.append("password", password);
       formData.append("confirmPassword", confirmPassword);
       formData.append("role", "CUSTOMER");
@@ -140,7 +175,7 @@ export default function RegisterForm() {
   };
 
   return (
-    <Card className="w-full max-w-lg shadow-xl border-border/60 backdrop-blur-sm bg-card/95 transition-all">
+    <Card className="w-full max-w-2xl shadow-xl border-border/60 backdrop-blur-sm bg-card/95 transition-all">
       {/* Top Brand Header */}
       <CardHeader className="text-center pb-4 pt-6 space-y-2">
         <div className="flex justify-center mb-1">
@@ -233,6 +268,48 @@ export default function RegisterForm() {
                 className="pl-9 h-10 rounded-xl"
                 disabled={isLoading}
               />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="address" className="text-xs font-medium">Home Address <span className="text-destructive">*</span></Label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="House, road, area, city" required className="pl-9 h-10 rounded-xl" disabled={isLoading} />
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="dateOfBirth" className="text-xs font-medium">Date of Birth <span className="text-destructive">*</span></Label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <Input id="dateOfBirth" type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} max={new Date().toISOString().slice(0, 10)} required className="pl-9 h-10 rounded-xl" disabled={isLoading} />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="gender" className="text-xs font-medium">Gender <span className="text-destructive">*</span></Label>
+              <select id="gender" value={gender} onChange={(e) => setGender(e.target.value)} required disabled={isLoading} className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm">
+                <option value="">Select</option><option value="MALE">Male</option><option value="FEMALE">Female</option><option value="OTHER">Other</option>
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="bloodGroup" className="text-xs font-medium">Blood Group <span className="text-destructive">*</span></Label>
+              <div className="relative">
+                <Droplet className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-red-500 pointer-events-none" />
+                <select id="bloodGroup" value={bloodGroup} onChange={(e) => setBloodGroup(e.target.value)} required disabled={isLoading} className="flex h-10 w-full rounded-xl border border-input bg-background pl-9 pr-3 text-sm">
+                  <option value="">Select</option><option value="A_POSITIVE">A+</option><option value="A_NEGATIVE">A-</option><option value="B_POSITIVE">B+</option><option value="B_NEGATIVE">B-</option><option value="AB_POSITIVE">AB+</option><option value="AB_NEGATIVE">AB-</option><option value="O_POSITIVE">O+</option><option value="O_NEGATIVE">O-</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-border/60 bg-muted/20 p-4 space-y-3">
+            <div className="flex items-center gap-2 text-sm font-semibold"><HeartHandshake className="size-4 text-destructive" />Emergency Contact</div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Input aria-label="Emergency contact name" value={emergencyContactName} onChange={(e) => setEmergencyContactName(e.target.value)} placeholder="Contact name" required disabled={isLoading} />
+              <Input aria-label="Emergency contact phone" type="tel" value={emergencyContactNumber} onChange={(e) => setEmergencyContactNumber(e.target.value)} placeholder="Mobile number" required disabled={isLoading} />
+              <Input aria-label="Emergency contact relationship" value={emergencyContactRelationship} onChange={(e) => setEmergencyContactRelationship(e.target.value)} placeholder="Relationship" required disabled={isLoading} />
             </div>
           </div>
 
@@ -398,4 +475,4 @@ export default function RegisterForm() {
     </Card>
   );
 }
-
+

@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Edit3, Loader2 } from "lucide-react";
 import { updatePatientProfile } from "@/services/patient.services";
 import { toast } from "sonner";
-import { BloodGroup, Patient } from "@/types/api.types";
+import { BloodGroup, Gender, Patient } from "@/types/api.types";
 
 interface EditProfileDialogProps {
   profile: Patient;
@@ -61,6 +61,11 @@ export function EditProfileDialog({ profile, onProfileUpdated }: EditProfileDial
     contactNumber: profile.contactNumber || "",
     address: profile.address || "",
     bloodGroup: initialBg,
+    dateOfBirth: profile.dateOfBirth?.slice(0, 10) || profile.patientHealthData?.dateOfBirth?.slice(0, 10) || "",
+    gender: profile.gender || profile.patientHealthData?.gender || "",
+    emergencyContactName: profile.emergencyContactName || "",
+    emergencyContactNumber: profile.emergencyContactNumber || "",
+    emergencyContactRelationship: profile.emergencyContactRelationship || "",
   });
 
   useEffect(() => {
@@ -70,6 +75,11 @@ export function EditProfileDialog({ profile, onProfileUpdated }: EditProfileDial
       contactNumber: profile.contactNumber || "",
       address: profile.address || "",
       bloodGroup: currentBg,
+      dateOfBirth: profile.dateOfBirth?.slice(0, 10) || profile.patientHealthData?.dateOfBirth?.slice(0, 10) || "",
+      gender: profile.gender || profile.patientHealthData?.gender || "",
+      emergencyContactName: profile.emergencyContactName || "",
+      emergencyContactNumber: profile.emergencyContactNumber || "",
+      emergencyContactRelationship: profile.emergencyContactRelationship || "",
     });
   }, [profile, open]);
 
@@ -90,9 +100,14 @@ export function EditProfileDialog({ profile, onProfileUpdated }: EditProfileDial
       name: string;
       contactNumber?: string;
       address?: string;
+      emergencyContactName?: string;
+      emergencyContactNumber?: string;
+      emergencyContactRelationship?: string;
       bloodGroup?: BloodGroup;
       patientHealthData?: {
         bloodGroup?: BloodGroup;
+        dateOfBirth?: string;
+        gender?: Gender;
       };
     } = {
       name: formData.name.trim(),
@@ -104,9 +119,17 @@ export function EditProfileDialog({ profile, onProfileUpdated }: EditProfileDial
     if (formData.address) {
       payload.address = formData.address.trim();
     }
+    payload.emergencyContactName = formData.emergencyContactName.trim();
+    payload.emergencyContactNumber = formData.emergencyContactNumber.trim().replace(/[\s\-()]/g, "");
+    payload.emergencyContactRelationship = formData.emergencyContactRelationship.trim();
+    payload.patientHealthData = {
+      ...(formData.dateOfBirth ? { dateOfBirth: formData.dateOfBirth } : {}),
+      ...(formData.gender ? { gender: formData.gender as Gender } : {}),
+    };
     if (formData.bloodGroup) {
       payload.bloodGroup = formData.bloodGroup as BloodGroup;
       payload.patientHealthData = {
+        ...payload.patientHealthData,
         bloodGroup: formData.bloodGroup as BloodGroup,
       };
     }
@@ -118,9 +141,16 @@ export function EditProfileDialog({ profile, onProfileUpdated }: EditProfileDial
       contactNumber: formData.contactNumber ? formData.contactNumber.trim() : profile.contactNumber,
       address: formData.address ? formData.address.trim() : profile.address,
       bloodGroup: formData.bloodGroup || profile.bloodGroup,
+      dateOfBirth: formData.dateOfBirth || profile.dateOfBirth,
+      gender: (formData.gender as Gender) || profile.gender,
+      emergencyContactName: formData.emergencyContactName,
+      emergencyContactNumber: formData.emergencyContactNumber,
+      emergencyContactRelationship: formData.emergencyContactRelationship,
       patientHealthData: {
         ...(profile.patientHealthData || {}),
         bloodGroup: (formData.bloodGroup as BloodGroup) || profile.patientHealthData?.bloodGroup,
+        dateOfBirth: formData.dateOfBirth || profile.patientHealthData?.dateOfBirth,
+        gender: (formData.gender as Gender) || profile.patientHealthData?.gender,
       },
     };
 
@@ -163,7 +193,7 @@ export function EditProfileDialog({ profile, onProfileUpdated }: EditProfileDial
           Edit Profile
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[440px]">
+      <DialogContent className="sm:max-w-[560px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Profile</DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
@@ -211,6 +241,10 @@ export function EditProfileDialog({ profile, onProfileUpdated }: EditProfileDial
               </SelectContent>
             </Select>
           </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2"><Label htmlFor="dateOfBirth">Date of Birth</Label><Input id="dateOfBirth" name="dateOfBirth" type="date" max={new Date().toISOString().slice(0, 10)} value={formData.dateOfBirth} onChange={handleChange} /></div>
+            <div className="space-y-2"><Label htmlFor="gender">Gender</Label><Select value={formData.gender || "SELECT"} onValueChange={(value) => setFormData((prev) => ({ ...prev, gender: value === "SELECT" ? "" : value }))}><SelectTrigger id="gender"><SelectValue placeholder="Select gender" /></SelectTrigger><SelectContent><SelectItem value="SELECT" disabled>Select gender</SelectItem><SelectItem value={Gender.MALE}>Male</SelectItem><SelectItem value={Gender.FEMALE}>Female</SelectItem><SelectItem value={Gender.OTHER}>Other</SelectItem></SelectContent></Select></div>
+          </div>
           <div className="space-y-2">
             <Label htmlFor="address">Address</Label>
             <Input
@@ -220,6 +254,11 @@ export function EditProfileDialog({ profile, onProfileUpdated }: EditProfileDial
               onChange={handleChange}
               placeholder="Enter your address"
             />
+          </div>
+          <div className="rounded-xl border p-4 space-y-3">
+            <p className="text-sm font-semibold">Emergency Contact</p>
+            <div className="grid gap-3 sm:grid-cols-2"><div className="space-y-2"><Label htmlFor="emergencyContactName">Name</Label><Input id="emergencyContactName" name="emergencyContactName" value={formData.emergencyContactName} onChange={handleChange} /></div><div className="space-y-2"><Label htmlFor="emergencyContactRelationship">Relationship</Label><Input id="emergencyContactRelationship" name="emergencyContactRelationship" value={formData.emergencyContactRelationship} onChange={handleChange} /></div></div>
+            <div className="space-y-2"><Label htmlFor="emergencyContactNumber">Mobile Number</Label><Input id="emergencyContactNumber" name="emergencyContactNumber" type="tel" value={formData.emergencyContactNumber} onChange={handleChange} /></div>
           </div>
           <div className="pt-4 flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isLoading}>

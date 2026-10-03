@@ -168,7 +168,13 @@ export interface Patient {
     profilePhoto?: string | null;
     contactNumber?: string | null;
     address?: string | null;
+    emergencyContactName?: string | null;
+    emergencyContactNumber?: string | null;
+    emergencyContactRelationship?: string | null;
     bloodGroup?: string | null;
+    gender?: Gender | null;
+    dateOfBirth?: string | null;
+    age?: number | null;
     isDeleted: boolean;
     deletedAt?: string | null;
     createdAt: string;

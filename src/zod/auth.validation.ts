@@ -15,6 +15,13 @@ export const registerZodSchema = z.object({
   email: z.string().email("Invalid email address"),
   phoneNumber: z.string().min(10, "Phone number must be at least 10 characters").max(20, "Phone number must be at most 20 characters"),
   contactNumber: z.string().optional(),
+  address: z.string().min(5, "Home address is required"),
+  dateOfBirth: z.string().min(1, "Date of birth is required"),
+  gender: z.enum(["MALE", "FEMALE", "OTHER"]),
+  bloodGroup: z.enum(["A_POSITIVE", "A_NEGATIVE", "B_POSITIVE", "B_NEGATIVE", "AB_POSITIVE", "AB_NEGATIVE", "O_POSITIVE", "O_NEGATIVE"]),
+  emergencyContactName: z.string().min(2, "Emergency contact name is required"),
+  emergencyContactNumber: z.string().min(10, "Valid emergency contact number is required"),
+  emergencyContactRelationship: z.string().min(2, "Relationship is required"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -48,4 +55,4 @@ export type IForgotPasswordPayload = z.infer<typeof forgotPasswordZodSchema>;
 export type IResetPasswordPayload = z.infer<typeof resetPasswordZodSchema>;
 export type ILoginPayload = z.infer<typeof loginZodSchema>;
 export type IRegisterPayload = z.infer<typeof registerZodSchema>;
-export type IVerifyEmailPayload = z.infer<typeof verifyEmailZodSchema>; 
+export type IVerifyEmailPayload = z.infer<typeof verifyEmailZodSchema>;
