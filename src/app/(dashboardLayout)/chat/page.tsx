@@ -420,7 +420,7 @@ export default function AdvancedClinicalChatPage() {
       sender: user,
       content,
       messageType: currentFile ? (currentFile.type.startsWith("image/") ? "IMAGE" : "DOCUMENT") : "TEXT",
-      status: "SENT",
+      status: currentFile ? "SENDING" : "SENT",
       createdAt: new Date().toISOString(),
       attachments: currentFile
         ? [
@@ -495,6 +495,9 @@ export default function AdvancedClinicalChatPage() {
       }
     } catch (err: any) {
       toast.error(err.message || "Failed to deliver message");
+      setMessages((prev) =>
+        prev.map((m) => (m.tempId === tempId ? { ...m, status: "FAILED" } : m))
+      );
     }
   };
 
@@ -503,8 +506,25 @@ export default function AdvancedClinicalChatPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 25 * 1024 * 1024) {
-      toast.error("File size cannot exceed 25MB");
+    const maxFileSize = 3 * 1024 * 1024;
+    const allowedTypes = new Set([
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+    ]);
+
+    if (!allowedTypes.has(file.type)) {
+      toast.error("Only PDF, DOC, DOCX, JPG, PNG, and WebP files are supported");
+      e.target.value = "";
+      return;
+    }
+
+    if (file.size > maxFileSize) {
+      toast.error("File size cannot exceed 3MB");
+      e.target.value = "";
       return;
     }
 
@@ -1030,7 +1050,12 @@ export default function AdvancedClinicalChatPage() {
                           <span>{format(new Date(msg.createdAt || Date.now()), "hh:mm a")}</span>
                           {isMe && (
                             <span className="flex items-center gap-0.5 ml-0.5">
-                              {msg.status === "READ" ? (
+                              {msg.status === "SENDING" ? (
+                                <>
+                                  <span className="opacity-80">Uploading</span>
+                                  <Loader2 className="size-3 animate-spin opacity-80" />
+                                </>
+                              ) : msg.status === "READ" ? (
                                 <>
                                   <span className="font-semibold text-cyan-200">Seen</span>
                                   <CheckCheck className="size-3.5 text-cyan-300 stroke-[2.5]" />
