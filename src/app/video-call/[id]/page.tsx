@@ -462,7 +462,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
       } else if (state === "disconnected") {
         setConnectionStatus("RECONNECTING");
       } else if (state === "failed") {
-        setConnectionStatus("FAILED");
+        setConnectionStatus(iceRestartAttemptsRef.current < 3 ? "RECONNECTING" : "FAILED");
         logCall("STATE", "failed");
       } else if (state === "closed") {
         setConnectionStatus("ENDED");
@@ -976,9 +976,9 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
     initLocalStream().then(() => {
       if (socket && isConnected) {
         if (isInitiatorRef.current) {
-          createOffer();
+          createOffer(true);
         } else {
-          (socket as any).emit("call:ready", { callId, userId: user?.id, role: user?.role });
+          (socket as any).emit("call:ready", { callId, userId: user?.id, role: user?.role, iceRestart: true });
         }
       }
     });
