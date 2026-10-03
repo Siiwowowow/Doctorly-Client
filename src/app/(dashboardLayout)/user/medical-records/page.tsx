@@ -117,7 +117,8 @@ export default function MedicalRecordsPage() {
                   </div>
                   <div>
                     <h4 className="text-sm font-semibold text-muted-foreground mb-1">Diagnosis / Notes</h4>
-                    <p className="text-sm leading-relaxed whitespace-pre-line">{record.description || "No specific notes provided."}</p>
+                    <p className="text-sm font-medium">{record.diagnosis || "No diagnosis recorded"}</p>
+                    {record.clinicalNotes && <p className="text-sm leading-relaxed whitespace-pre-line mt-1 text-muted-foreground">{record.clinicalNotes}</p>}
                   </div>
                 </div>
                 

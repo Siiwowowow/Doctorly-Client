@@ -84,8 +84,8 @@ export default function MedicalRecordsManagementPage() {
                      {(record as any).recordType || "General"}
                   </TableCell>
                   <TableCell>
-                    <div className="max-w-[300px] truncate" title={record.description}>
-                      {record.description || "N/A"}
+                    <div className="max-w-[300px] truncate" title={record.clinicalNotes || record.diagnosis}>
+                      {record.diagnosis || record.clinicalNotes || "N/A"}
                     </div>
                   </TableCell>
                 </TableRow>

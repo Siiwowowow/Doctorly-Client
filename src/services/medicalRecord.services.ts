@@ -8,6 +8,13 @@ export async function getMyMedicalRecords(): Promise<ApiResponse<any[]>> {
     return await serverFetch<any[]>("/medical-records/my-records");
 }
 
+export async function getDoctorMedicalRecords(patientId?: string): Promise<ApiResponse<any[]>> {
+    if (patientId) {
+        return await serverFetch<any[]>(`/medical-records/patient/${patientId}`);
+    }
+    return await serverFetch<any[]>("/medical-records/my-records");
+}
+
 export async function getAllMedicalRecords(queryParams?: Record<string, any>): Promise<ApiResponse<any[]>> {
     return await serverFetch<any[]>("/medical-records", { params: queryParams });
 }

@@ -286,7 +286,14 @@ export interface PrescriptionMedicine {
 
 export interface MedicalRecord {
     id: string;
-    description: string;
+    diagnosis: string;
+    symptoms: string;
+    clinicalNotes?: string | null;
+    treatment?: string | null;
+    advice?: string | null;
+    followUpDate?: string | null;
+    followUpNotes?: string | null;
+    description?: string;
     createdAt: string;
     updatedAt: string;
     patientId: string;

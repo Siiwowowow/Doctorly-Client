@@ -4,7 +4,7 @@
 import { useEffect, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { MedicalRecord } from "@/types/api.types"
-import { getAllMedicalRecords } from "@/services/medicalRecord.services"
+import { getDoctorMedicalRecords } from "@/services/medicalRecord.services"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -26,8 +26,7 @@ function MedicalRecordList() {
   useEffect(() => {
     const fetchRecords = async () => {
       try {
-        const queryParams = patientIdFilter ? { patientId: patientIdFilter } : undefined
-        const res = await getAllMedicalRecords(queryParams)
+        const res = await getDoctorMedicalRecords(patientIdFilter || undefined)
         setRecords(res.data || [])
       } catch (error: any) {
         toast({
@@ -44,7 +43,8 @@ function MedicalRecordList() {
 
   const filteredRecords = records.filter((r) => {
     return r.patient?.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-           r.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           r.diagnosis?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           r.clinicalNotes?.toLowerCase().includes(searchQuery.toLowerCase()) ||
            r.id.toLowerCase().includes(searchQuery.toLowerCase())
   })
 
@@ -108,7 +108,8 @@ function MedicalRecordList() {
                       </div>
                       
                       <div className="mt-3 p-3 bg-background border rounded-lg text-sm text-foreground/80">
-                        {record.description}
+                        <p className="font-medium">{record.diagnosis || "No diagnosis recorded"}</p>
+                        {record.clinicalNotes && <p className="mt-1 text-muted-foreground">{record.clinicalNotes}</p>}
                       </div>
                     </div>
                   </div>
