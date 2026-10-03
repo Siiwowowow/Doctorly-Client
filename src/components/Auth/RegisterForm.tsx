@@ -89,8 +89,9 @@ export default function RegisterForm() {
       setServerError("Please enter a valid email address.");
       return;
     }
-    if (!phoneNumber.trim()) {
-      setServerError("Please enter your phone number.");
+    const cleanPhone = phoneNumber.trim().replace(/[\s\-()]/g, "");
+    if (!cleanPhone || cleanPhone.length < 10 || cleanPhone.length > 15) {
+      setServerError("Please enter a valid phone number (between 10 and 15 digits).");
       return;
     }
     if (password.length < 6) {
@@ -112,7 +113,8 @@ export default function RegisterForm() {
       const formData = new FormData();
       formData.append("name", name.trim());
       formData.append("email", email.trim().toLowerCase());
-      formData.append("phoneNumber", phoneNumber.trim());
+      formData.append("contactNumber", cleanPhone);
+      formData.append("phoneNumber", cleanPhone);
       formData.append("password", password);
       formData.append("confirmPassword", confirmPassword);
       formData.append("role", "CUSTOMER");

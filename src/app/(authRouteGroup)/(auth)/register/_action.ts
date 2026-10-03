@@ -18,14 +18,18 @@ export async function registerAction(formData: FormData) {
     if (!res.ok) {
       let errorMessage = "Registration failed";
       
-      if (typeof data.message === "string") {
+      if (Array.isArray(data.errorSources) && data.errorSources.length > 0) {
+        errorMessage = data.errorSources.map((err: any) => err.message || `${err.path}: invalid input`).join(". ");
+      } else if (data.errorMessages && Array.isArray(data.errorMessages)) {
+        errorMessage = data.errorMessages.map((err: any) => err.message || err.path).join(". ");
+      } else if (typeof data.message === "string" && data.message !== "Zod Validation Error") {
         errorMessage = data.message;
       } else if (Array.isArray(data.message)) {
         errorMessage = data.message.map((err: any) => err.message || err.path || JSON.stringify(err)).join(", ");
       } else if (data.message && typeof data.message === "object") {
         errorMessage = data.message.message || JSON.stringify(data.message);
-      } else if (data.errorMessages && Array.isArray(data.errorMessages)) {
-        errorMessage = data.errorMessages.map((err: any) => err.message || err.path).join(", ");
+      } else if (typeof data.message === "string") {
+        errorMessage = data.message;
       }
 
       return {
