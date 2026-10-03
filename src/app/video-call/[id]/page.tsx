@@ -134,9 +134,6 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
         const pc = peerConnectionRef.current;
         if (pc && pc.signalingState !== "closed") {
           pc.setConfiguration(configuration);
-          if (isInitiatorRef.current && pc.connectionState !== "connected") {
-            createOfferRef.current?.(true);
-          }
         }
       })
       .catch((error) => {
@@ -363,6 +360,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
 
       if (remoteVideoRef.current) {
         remoteVideoRef.current.srcObject = stream;
+        remoteVideoRef.current.muted = false;
         remoteVideoRef.current.play().catch((err) => {
           console.warn("[CALL][AUTOPLAY] Remote video autoplay blocked:", err);
           setAudioBlocked(true);
@@ -371,10 +369,15 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
 
       if (remoteAudioRef.current) {
         remoteAudioRef.current.srcObject = stream;
-        remoteAudioRef.current.play().catch((err) => {
-          console.warn("[CALL][AUTOPLAY] Remote audio autoplay blocked:", err);
-          setAudioBlocked(true);
-        });
+        if (isAudioOnly) {
+          remoteAudioRef.current.muted = false;
+          remoteAudioRef.current.play().catch((err) => {
+            console.warn("[CALL][AUTOPLAY] Remote audio autoplay blocked:", err);
+            setAudioBlocked(true);
+          });
+        } else {
+          remoteAudioRef.current.muted = true;
+        }
       }
 
       setConnectionStatus("CONNECTED");
@@ -963,8 +966,14 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
   };
 
   const handleUnblockAudio = () => {
-    if (remoteVideoRef.current) remoteVideoRef.current.play().catch(() => {});
-    if (remoteAudioRef.current) remoteAudioRef.current.play().catch(() => {});
+    if (remoteVideoRef.current && !isAudioOnly) {
+      remoteVideoRef.current.muted = false;
+      remoteVideoRef.current.play().catch(() => {});
+    }
+    if (remoteAudioRef.current && isAudioOnly) {
+      remoteAudioRef.current.muted = false;
+      remoteAudioRef.current.play().catch(() => {});
+    }
     setAudioBlocked(false);
   };
 
@@ -1014,9 +1023,12 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
   // Participant formatting
   const isDoctor = user?.role === "DOCTOR";
   const otherParty = isDoctor ? callDetails?.receiver : callDetails?.caller;
+  const rawDoctorName = otherParty?.doctor?.name;
   const otherPartyName = isDoctor
     ? (otherParty?.patient?.name || otherParty?.name || "Patient")
-    : (otherParty?.doctor?.name ? `Dr. ${otherParty.doctor.name}` : otherParty?.name || "Doctor");
+    : (rawDoctorName
+        ? (rawDoctorName.startsWith("Dr.") ? rawDoctorName : `Dr. ${rawDoctorName}`)
+        : otherParty?.name || "Doctor");
   const otherPartyPhoto = otherParty?.doctor?.profilePhoto || otherParty?.patient?.profilePhoto || otherParty?.image;
 
   const formatTime = (secs: number) => {
@@ -1214,6 +1226,9 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
           </div>
         )}
 
+        {/* Remote Audio Stream (Crucial for Audio-Only calls and background playback fallback) */}
+        <audio ref={remoteAudioRef} autoPlay playsInline className="hidden" />
+
         {!isAudioOnly ? (
           <div className="relative w-full h-full flex items-center justify-center overflow-hidden sm:rounded-[28px] sm:border sm:border-white/10 sm:bg-[#080808] sm:shadow-2xl sm:shadow-black/70">
             {/* Remote Video Stream */}
@@ -1221,7 +1236,6 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
               ref={remoteVideoRef}
               autoPlay
               playsInline
-              muted
               className="w-full h-full object-cover bg-[#080808]"
             />
 

@@ -5,14 +5,35 @@
  * Dynamically resolves STUN and TURN configurations from environment variables
  * with production-grade fallback and multi-transport support (UDP, TCP, TLS turns:).
  */
+const DEFAULT_STUN_SERVERS: RTCIceServer[] = [
+  { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] },
+  { urls: ['stun:global.stun.twilio.com:3478'] },
+  { urls: ['stun:openrelay.metered.ca:80'] },
+];
+
+const DEFAULT_FALLBACK_TURN_SERVERS: RTCIceServer[] = [
+  {
+    urls: [
+      'turn:openrelay.metered.ca:80',
+      'turn:openrelay.metered.ca:80?transport=tcp',
+      'turn:openrelay.metered.ca:443',
+      'turn:openrelay.metered.ca:443?transport=tcp',
+      'turns:openrelay.metered.ca:443?transport=tcp',
+    ],
+    username: 'openrelayproject',
+    credential: 'openrelayproject',
+  },
+];
+
 export function getIceServersConfig(serverIssuedIceServers: RTCIceServer[] = []): RTCConfiguration {
   const iceServers: RTCIceServer[] = [];
 
+  // 1. If backend issued ICE servers, add them first
   if (serverIssuedIceServers.length > 0) {
     iceServers.push(...serverIssuedIceServers);
   }
 
-  // 1. STUN Servers (Public Google & Twilio STUN + Custom Env)
+  // 2. STUN Servers (Public Google & Twilio STUN + Custom Env)
   const envStun = process.env.NEXT_PUBLIC_WEBRTC_STUN_URL || process.env.NEXT_PUBLIC_STUN_SERVER;
   if (envStun) {
     const urls = envStun.split(',').map((s) => s.trim()).filter(Boolean);
@@ -22,12 +43,9 @@ export function getIceServersConfig(serverIssuedIceServers: RTCIceServer[] = [])
   }
 
   // Always include high-availability public STUN servers
-  iceServers.push(
-    { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] },
-    { urls: ['stun:global.stun.twilio.com:3478'] }
-  );
+  iceServers.push(...DEFAULT_STUN_SERVERS);
 
-  // 2. TURN Servers (For symmetric NATs, cellular carriers, and enterprise firewalls)
+  // 3. TURN Servers (For symmetric NATs, cellular carriers, and enterprise firewalls)
   const envTurn = process.env.NEXT_PUBLIC_WEBRTC_TURN_URL || process.env.NEXT_PUBLIC_TURN_SERVER;
   const envTurnUser = process.env.NEXT_PUBLIC_WEBRTC_TURN_USERNAME || process.env.NEXT_PUBLIC_TURN_USERNAME;
   const envTurnCred = process.env.NEXT_PUBLIC_WEBRTC_TURN_CREDENTIAL || process.env.NEXT_PUBLIC_TURN_CREDENTIAL;
@@ -41,9 +59,20 @@ export function getIceServersConfig(serverIssuedIceServers: RTCIceServer[] = [])
     });
   }
 
+  // 4. Ensure at least one TURN relay is ALWAYS present!
+  // Critical for cellular networks (4G/5G), Symmetric NAT, and CGNAT mobile carriers
+  const hasTurnServer = iceServers.some((s) => {
+    const urls = Array.isArray(s.urls) ? s.urls : [s.urls];
+    return urls.some((u) => typeof u === 'string' && (u.startsWith('turn:') || u.startsWith('turns:')));
+  });
+
+  if (!hasTurnServer) {
+    iceServers.push(...DEFAULT_FALLBACK_TURN_SERVERS);
+  }
+
   return {
     iceServers,
-    iceCandidatePoolSize: 10,
+    iceCandidatePoolSize: 0,
     bundlePolicy: 'max-bundle',
     rtcpMuxPolicy: 'require',
   };
