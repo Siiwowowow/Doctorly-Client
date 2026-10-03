@@ -103,6 +103,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
   const isAcquiringMediaRef = useRef<Promise<MediaStream | null> | null>(null);
   const connectionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isPeerReadyRef = useRef<boolean>(false);
+  const loadedCallIdRef = useRef<string | null>(null);
 
   // Structured WebRTC Debug Logger
   const logCall = useCallback((tag: string, event: string, details?: any) => {
@@ -606,6 +607,8 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
 
   // 11. Initial Call Fetch & Lifecycle Validation
   useEffect(() => {
+    if (!user?.id || loadedCallIdRef.current === callId) return;
+    loadedCallIdRef.current = callId;
     let isMounted = true;
     getCallById(callId)
       .then((res) => {
@@ -649,6 +652,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
       })
       .catch((err) => {
         console.warn("[CALL][SESSION] Fetch failed:", err);
+        loadedCallIdRef.current = null;
         setConnectionStatus("FAILED");
       });
 
@@ -755,7 +759,27 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
       (socket as any).off("call:canceled", handleCallEndedEvent);
       (socket as any).off("call:rejected", handleCallEndedEvent);
 
-      // Clean unmount teardown
+    };
+  }, [
+    socket,
+    isConnected,
+    callId,
+    user?.id,
+    user?.role,
+    callDetails?.status,
+    createOffer,
+    handleReceiveOffer,
+    handleReceiveAnswer,
+    handleReceiveIceCandidate,
+    handleEndCallLocally,
+    logCall,
+  ]);
+
+  // Media resources must only be destroyed when leaving this call page.
+  // Listener dependencies can change during negotiation and must not tear down
+  // an otherwise healthy RTCPeerConnection.
+  useEffect(() => {
+    return () => {
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach((track) => track.stop());
         localStreamRef.current = null;
@@ -773,20 +797,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
         connectionTimeoutRef.current = null;
       }
     };
-  }, [
-    socket,
-    isConnected,
-    callId,
-    user?.id,
-    user?.role,
-    callDetails?.status,
-    createOffer,
-    handleReceiveOffer,
-    handleReceiveAnswer,
-    handleReceiveIceCandidate,
-    handleEndCallLocally,
-    logCall,
-  ]);
+  }, []);
 
   // 13. Callee In-Page Accept
   const handleInPageAccept = async () => {
@@ -810,9 +821,6 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
   const handleInPageDecline = async () => {
     try {
       await rejectCall(callId, "Declined by patient");
-      if (socket && isConnected) {
-        (socket as any).emit("call:reject", { callId, reason: "Declined" });
-      }
     } catch (err) {
       console.warn("[CALL][SESSION] Reject error:", err);
     } finally {
@@ -827,9 +835,6 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
     setIsEnding(true);
     try {
       await endCall(callId, "Consultation completed");
-      if (socket && isConnected) {
-        (socket as any).emit("call:end", { callId });
-      }
     } catch (error) {
       console.error("[CALL][SESSION] End call request error:", error);
     } finally {
@@ -889,9 +894,16 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
 
   const handleRetryConnection = () => {
     setConnectionStatus("CONNECTING");
+    if (peerConnectionRef.current?.signalingState !== "closed") {
+      peerConnectionRef.current?.restartIce();
+    }
     initLocalStream().then(() => {
       if (socket && isConnected) {
-        (socket as any).emit("call:ready", { callId, userId: user?.id, role: user?.role });
+        if (isInitiatorRef.current) {
+          createOffer();
+        } else {
+          (socket as any).emit("call:ready", { callId, userId: user?.id, role: user?.role });
+        }
       }
     });
   };
@@ -1127,6 +1139,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
               ref={remoteVideoRef}
               autoPlay
               playsInline
+              muted
               className="w-full h-full object-cover sm:object-contain bg-slate-950"
             />
 

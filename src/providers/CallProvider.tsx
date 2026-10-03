@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Phone, PhoneOff, Video, Mic, ShieldCheck, Stethoscope, User, PhoneCall } from "lucide-react";
+import { PhoneOff, Video, Mic, ShieldCheck, Stethoscope, User, PhoneCall } from "lucide-react";
 import { acceptCall as acceptCallService, rejectCall as rejectCallService } from "@/services/call.services";
 import { ringtonePlayer } from "@/lib/ringtone";
 
@@ -209,7 +209,6 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
 
     try {
       await rejectCallService(callIdToReject, reason || "Declined by recipient");
-      (socket as any)?.emit("call:reject", { callId: callIdToReject, reason: reason || "Declined" });
     } catch {
       // Ignore network errors on reject
     }
