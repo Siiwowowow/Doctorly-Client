@@ -256,23 +256,22 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
 
       {/* Global In-App Incoming Call Ringing Modal */}
       {incomingCall && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md animate-in fade-in duration-300 p-4">
-          <div role="alertdialog" aria-modal="true" aria-labelledby="incoming-call-title" aria-describedby="incoming-call-desc" className="relative bg-slate-900 border border-slate-700/80 shadow-2xl rounded-3xl p-5 sm:p-8 max-w-[92vw] sm:max-w-md w-full mx-auto text-center text-white max-h-[92dvh] overflow-y-auto animate-in zoom-in-95 duration-300 focus:outline-none">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-xl animate-in fade-in duration-300 p-4">
+          <div role="alertdialog" aria-modal="true" aria-labelledby="incoming-call-title" aria-describedby="incoming-call-desc" className="relative bg-[#080808] border border-white/10 shadow-[0_30px_100px_rgba(0,0,0,0.85)] rounded-[32px] p-5 sm:p-8 max-w-[92vw] sm:max-w-md w-full mx-auto text-center text-white max-h-[92dvh] overflow-y-auto animate-in zoom-in-95 duration-300 focus:outline-none">
             
             {/* Ambient Background Glow */}
-            <div className="absolute -top-24 -left-24 w-48 h-48 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -top-24 -left-24 w-48 h-48 bg-white/[0.04] rounded-full blur-3xl pointer-events-none" />
 
             {/* Consultation Type Badge */}
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-300 mb-6">
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/[0.05] border border-white/10 text-xs font-medium text-white/65 mb-6">
               {isAudioCall ? (
                 <>
-                  <Mic className="h-3.5 w-3.5 text-emerald-400" />
+                  <Mic className="h-3.5 w-3.5 text-white/70" />
                   <span>Incoming Audio Call</span>
                 </>
               ) : (
                 <>
-                  <Video className="h-3.5 w-3.5 text-blue-400" />
+                  <Video className="h-3.5 w-3.5 text-white/70" />
                   <span>Incoming Video Consultation</span>
                 </>
               )}
@@ -280,11 +279,11 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
 
             {/* Caller Avatar with Pulsing Rings */}
             <div className="relative mx-auto w-24 h-24 sm:w-28 sm:h-28 mb-5 flex items-center justify-center">
-              <div className="absolute inset-0 rounded-full bg-primary/30 animate-ping opacity-50" />
-              <div className="absolute -inset-2 rounded-full border-2 border-primary/40 animate-pulse" />
+              <div className="absolute inset-0 rounded-full bg-white/10 animate-ping opacity-50" />
+              <div className="absolute -inset-2 rounded-full border border-white/20 animate-pulse" />
               <Avatar className="w-full h-full border-4 border-slate-800 shadow-xl relative z-10">
                 <AvatarImage src={callerPhoto} alt={callerName} className="object-cover" />
-                <AvatarFallback className="bg-primary/30 text-white font-bold text-xl sm:text-2xl flex items-center justify-center">
+                <AvatarFallback className="bg-white/10 text-white font-bold text-xl sm:text-2xl flex items-center justify-center">
                   {isDoctorCaller ? <Stethoscope className="h-8 w-8" /> : <User className="h-8 w-8" />}
                 </AvatarFallback>
               </Avatar>

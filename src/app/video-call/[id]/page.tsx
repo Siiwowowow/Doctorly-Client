@@ -952,8 +952,8 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
   // 18. Terminal / Ended Screen
   if (connectionStatus === "ENDED" || connectionStatus === "REJECTED" || connectionStatus === "MISSED") {
     return (
-      <div className="relative isolate w-full h-[100dvh] overflow-hidden bg-[#05070d] text-white flex flex-col items-center justify-center p-6 text-center">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_25%,rgba(14,165,233,0.18),transparent_38%),radial-gradient(circle_at_15%_85%,rgba(16,185,129,0.12),transparent_32%)]" />
+      <div className="relative isolate w-full h-[100dvh] overflow-hidden bg-black text-white flex flex-col items-center justify-center p-6 text-center">
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_35%,rgba(255,255,255,0.055),transparent_38%)]" />
         <div className="w-20 h-20 rounded-[28px] bg-white/[0.06] border border-white/10 flex items-center justify-center mb-5 shadow-2xl shadow-black/40">
           <PhoneOff className="h-10 w-10 text-rose-500" />
         </div>
@@ -983,10 +983,10 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
 
   if (isCalleeRinging) {
     return (
-      <div className="relative isolate w-full h-[100dvh] overflow-hidden bg-[#05070d] text-white flex flex-col items-center justify-center p-6 text-center">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_35%,rgba(16,185,129,0.2),transparent_35%),radial-gradient(circle_at_20%_90%,rgba(59,130,246,0.12),transparent_30%)]" />
+      <div className="relative isolate w-full h-[100dvh] overflow-hidden bg-black text-white flex flex-col items-center justify-center p-6 text-center">
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_35%,rgba(255,255,255,0.065),transparent_36%)]" />
         <div className="relative mb-6">
-          <div className="w-32 h-32 rounded-[38px] border border-emerald-400/40 overflow-hidden shadow-[0_24px_70px_rgba(16,185,129,0.22)] flex items-center justify-center bg-white/[0.06] animate-pulse">
+          <div className="w-32 h-32 rounded-[38px] border border-white/20 overflow-hidden shadow-[0_24px_70px_rgba(0,0,0,0.7)] flex items-center justify-center bg-white/[0.06] animate-pulse">
             <Avatar className="w-full h-full">
               <AvatarImage src={otherPartyPhoto} alt={otherPartyName} className="object-cover" />
               <AvatarFallback className="text-2xl font-bold bg-primary/20 text-white">
@@ -1002,7 +1002,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
           </span>
         </div>
 
-        <div className="mb-3 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-300 backdrop-blur-xl">Doctorly secure call</div>
+        <div className="mb-3 rounded-full border border-white/15 bg-white/[0.05] px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-white/70 backdrop-blur-xl">Doctorly secure call</div>
         <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-1">{otherPartyName}</h2>
         <p className="text-sm text-slate-300 mb-2">Incoming consultation call</p>
         <p className="text-xs text-slate-500 mb-8 max-w-sm">
@@ -1035,8 +1035,8 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
   }
 
   return (
-    <div className="relative isolate w-full h-[100dvh] bg-[#05070d] text-white flex flex-col select-none overflow-hidden font-sans">
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_15%_15%,rgba(14,165,233,0.13),transparent_30%),radial-gradient(circle_at_90%_80%,rgba(16,185,129,0.1),transparent_28%)]" />
+    <div className="relative isolate w-full h-[100dvh] bg-black text-white flex flex-col select-none overflow-hidden font-sans">
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_40%,rgba(255,255,255,0.035),transparent_45%)]" />
       <audio ref={remoteAudioRef} autoPlay playsInline />
 
       {/* Top Header Bar */}
@@ -1079,7 +1079,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
           {/* Call Duration */}
           {connectionStatus === "CONNECTED" && (
             <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-3 py-1.5 rounded-full text-xs font-medium text-slate-300">
-              <Clock className="h-3.5 w-3.5 text-primary" />
+              <Clock className="h-3.5 w-3.5 text-white/60" />
               <span>{formatTime(callDuration)}</span>
             </div>
           )}
@@ -1090,14 +1090,14 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
           <div className="hidden sm:flex items-center gap-2 bg-black/35 border border-white/10 px-3 py-2 rounded-full backdrop-blur-2xl">
             <Avatar className="h-5 w-5">
               <AvatarImage src={otherPartyPhoto} alt={otherPartyName} />
-              <AvatarFallback className="text-[10px] bg-primary/30">
+              <AvatarFallback className="text-[10px] bg-white/10">
                 {isDoctor ? <User className="h-3 w-3" /> : <Stethoscope className="h-3 w-3" />}
               </AvatarFallback>
             </Avatar>
             <span className="text-xs font-medium text-slate-200">{otherPartyName}</span>
           </div>
 
-          <div className="hidden md:flex items-center gap-1 text-[11px] text-emerald-400/90 bg-emerald-950/40 border border-emerald-500/20 px-2.5 py-1 rounded-full">
+          <div className="hidden md:flex items-center gap-1 text-[11px] text-white/60 bg-white/[0.04] border border-white/10 px-2.5 py-1.5 rounded-full">
             <ShieldCheck className="h-3.5 w-3.5" />
             <span>HIPAA Encrypted</span>
           </div>
@@ -1124,7 +1124,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
         )}
 
         {audioBlocked && (
-          <div className="absolute top-20 z-40 bg-primary/95 text-white px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-3 backdrop-blur-md">
+          <div className="absolute top-20 z-40 bg-[#111]/95 border border-white/15 text-white px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-3 backdrop-blur-md">
             <VolumeX className="h-5 w-5 shrink-0" />
             <span className="text-xs font-medium">Browser blocked audio autoplay.</span>
             <Button
@@ -1139,32 +1139,32 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
         )}
 
         {!isAudioOnly ? (
-          <div className="relative w-full h-full flex items-center justify-center overflow-hidden sm:rounded-[28px] sm:border sm:border-white/10 sm:bg-white/[0.025] sm:shadow-2xl sm:shadow-black/50">
+          <div className="relative w-full h-full flex items-center justify-center overflow-hidden sm:rounded-[28px] sm:border sm:border-white/10 sm:bg-[#080808] sm:shadow-2xl sm:shadow-black/70">
             {/* Remote Video Stream */}
             <video
               ref={remoteVideoRef}
               autoPlay
               playsInline
               muted
-              className="w-full h-full object-cover bg-[#080b12]"
+              className="w-full h-full object-cover bg-[#080808]"
             />
 
             {/* Connecting Overlay */}
             {connectionStatus !== "CONNECTED" && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#080b12]/90 backdrop-blur-xl z-10 p-6 text-center">
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 backdrop-blur-xl z-10 p-6 text-center">
                 <div className="relative mb-6">
                   <div className="w-28 h-28 rounded-full border-4 border-slate-700 overflow-hidden shadow-2xl flex items-center justify-center bg-slate-800">
                     <Avatar className="w-full h-full">
                       <AvatarImage src={otherPartyPhoto} alt={otherPartyName} className="object-cover" />
-                      <AvatarFallback className="text-2xl font-bold bg-primary/20 text-white">
+                      <AvatarFallback className="text-2xl font-bold bg-white/10 text-white">
                         {isDoctor ? <User className="h-10 w-10" /> : <Stethoscope className="h-10 w-10" />}
                       </AvatarFallback>
                     </Avatar>
                   </div>
                   {connectionStatus === "CONNECTING" || connectionStatus === "INITIALIZING" || connectionStatus === "RINGING" ? (
                     <span className="absolute -bottom-1 -right-1 flex h-6 w-6">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-6 w-6 bg-primary items-center justify-center text-[10px]">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white/50 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-6 w-6 bg-white text-black items-center justify-center text-[10px]">
                         <Radio className="h-3.5 w-3.5 text-white" />
                       </span>
                     </span>
@@ -1186,7 +1186,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
                   <div className="flex items-center gap-3">
                     <Button
                       onClick={handleRetryConnection}
-                      className="bg-primary hover:bg-primary/90 text-white rounded-full px-6 py-2 text-xs font-semibold shadow-lg inline-flex items-center gap-2"
+                      className="bg-white hover:bg-white/90 text-black rounded-full px-6 py-2 text-xs font-semibold shadow-lg inline-flex items-center gap-2"
                     >
                       <RefreshCw className="h-3.5 w-3.5" />
                       Retry Connection
@@ -1225,29 +1225,29 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
             {connectionStatus === "CONNECTED" && (
               <div className="absolute bottom-28 left-4 sm:left-6 z-20 max-w-[65%] rounded-2xl border border-white/10 bg-black/35 px-4 py-2.5 backdrop-blur-2xl shadow-xl">
                 <p className="truncate text-sm font-semibold text-white">{otherPartyName}</p>
-                <p className="flex items-center gap-1.5 text-[11px] text-emerald-300">
-                  <span className="size-1.5 rounded-full bg-emerald-400" /> Connected securely
+                <p className="flex items-center gap-1.5 text-[11px] text-white/60">
+                  <span className="size-1.5 rounded-full bg-white/70" /> Connected securely
                 </p>
               </div>
             )}
           </div>
         ) : (
           /* Audio-Only View */
-          <div className="relative w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gradient-to-b from-slate-900 via-slate-950 to-slate-900">
-            <div className="absolute w-72 h-72 sm:w-96 sm:h-96 bg-primary/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="relative w-full h-full flex flex-col items-center justify-center p-6 text-center bg-black">
+            <div className="absolute w-72 h-72 sm:w-96 sm:h-96 bg-white/[0.035] rounded-full blur-3xl pointer-events-none" />
 
             <div className="relative mb-6">
               {connectionStatus === "CONNECTED" && (
                 <>
-                  <div className="absolute -inset-6 rounded-full border border-emerald-500/30 animate-ping opacity-30" />
-                  <div className="absolute -inset-12 rounded-full border border-primary/20 animate-pulse opacity-40" />
+                  <div className="absolute -inset-6 rounded-full border border-white/20 animate-ping opacity-30" />
+                  <div className="absolute -inset-12 rounded-full border border-white/10 animate-pulse opacity-40" />
                 </>
               )}
 
               <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full border-4 border-slate-700/80 shadow-2xl overflow-hidden relative z-10 bg-slate-800">
                 <Avatar className="w-full h-full">
                   <AvatarImage src={otherPartyPhoto} alt={otherPartyName} className="object-cover" />
-                  <AvatarFallback className="text-3xl font-bold bg-primary/20 text-white">
+                  <AvatarFallback className="text-3xl font-bold bg-white/10 text-white">
                     {isDoctor ? <User className="h-16 w-16" /> : <Stethoscope className="h-16 w-16" />}
                   </AvatarFallback>
                 </Avatar>
@@ -1279,7 +1279,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
               <div className="flex items-center gap-3 mb-4">
                 <Button
                   onClick={handleRetryConnection}
-                  className="bg-primary hover:bg-primary/90 text-white rounded-full px-6 py-2 text-xs font-semibold shadow-lg inline-flex items-center gap-2"
+                  className="bg-white hover:bg-white/90 text-black rounded-full px-6 py-2 text-xs font-semibold shadow-lg inline-flex items-center gap-2"
                 >
                   <RefreshCw className="h-3.5 w-3.5" />
                   Retry Audio Call
@@ -1299,7 +1299,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
                 {[40, 75, 55, 90, 65, 80, 45, 95, 60, 85, 50, 70].map((height, idx) => (
                   <div
                     key={idx}
-                    className="w-1 bg-emerald-400/80 rounded-full animate-pulse"
+                    className="w-1 bg-white/70 rounded-full animate-pulse"
                     style={{
                       height: `${height}%`,
                       animationDelay: `${(idx * 0.1).toFixed(1)}s`,
@@ -1314,7 +1314,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
 
         {/* Floating Controls */}
         <footer className="absolute bottom-3 sm:bottom-6 inset-x-0 z-30 flex items-center justify-center px-3">
-          <div className="flex items-center gap-1.5 sm:gap-3 bg-black/45 border border-white/10 px-2.5 sm:px-4 py-2.5 rounded-[24px] shadow-[0_20px_70px_rgba(0,0,0,0.65)] backdrop-blur-2xl max-w-[calc(100vw-1.5rem)]">
+          <div className="flex items-center gap-1.5 sm:gap-3 bg-black/75 border border-white/15 px-2.5 sm:px-4 py-2.5 rounded-[24px] shadow-[0_20px_70px_rgba(0,0,0,0.8)] backdrop-blur-2xl max-w-[calc(100vw-1.5rem)]">
             <Button
               variant={isMicOn ? "secondary" : "destructive"}
               size="icon"
@@ -1363,7 +1363,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
                 size="icon"
                 className={`rounded-full h-11 w-11 sm:h-12 sm:w-12 ${
                   isChatOpen
-                    ? "bg-primary text-white shadow-[0_0_20px_rgba(var(--primary),0.4)]"
+                    ? "bg-white text-black shadow-lg"
                     : "bg-white/10 hover:bg-white/20 text-white border border-white/10"
                 }`}
                 onClick={() => setIsChatOpen(!isChatOpen)}
@@ -1395,13 +1395,13 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
 
         {/* In-Call Live Chat Drawer */}
         <aside
-          className={`fixed inset-y-0 right-0 z-50 w-full sm:w-80 md:w-96 bg-slate-900/95 backdrop-blur-2xl border-l border-white/10 flex flex-col transition-transform duration-300 ease-in-out ${
+          className={`fixed inset-y-0 right-0 z-50 w-full sm:w-80 md:w-96 bg-black/95 backdrop-blur-2xl border-l border-white/10 flex flex-col transition-transform duration-300 ease-in-out ${
             isChatOpen ? "translate-x-0" : "translate-x-full"
           }`}
         >
           <div className="flex items-center justify-between p-4 border-b border-white/10">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-primary/20 text-primary">
+              <div className="p-1.5 rounded-lg bg-white/10 text-white/80">
                 <MessageSquare className="h-4 w-4" />
               </div>
               <h3 className="text-sm font-bold text-white tracking-wide">In-Call Consultation Chat</h3>
@@ -1438,7 +1438,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
                     <div
                       className={`px-3.5 py-2.5 rounded-2xl max-w-[85%] text-xs sm:text-sm break-words shadow-sm ${
                         isMe
-                          ? "bg-primary text-white rounded-br-none"
+                          ? "bg-white text-black rounded-br-none"
                           : "bg-slate-800 text-slate-100 rounded-bl-none border border-white/10"
                       }`}
                     >
@@ -1462,13 +1462,13 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
               value={msgInput}
               onChange={(e) => setMsgInput(e.target.value)}
               placeholder="Type message..."
-              className="bg-slate-800/80 border-white/10 text-white placeholder:text-slate-500 text-xs sm:text-sm rounded-xl focus-visible:ring-primary h-10"
+              className="bg-white/[0.06] border-white/10 text-white placeholder:text-white/30 text-xs sm:text-sm rounded-xl focus-visible:ring-white/30 h-10"
             />
             <Button
               type="submit"
               size="icon"
               disabled={!msgInput.trim()}
-              className="h-10 w-10 shrink-0 rounded-xl bg-primary hover:bg-primary/90 text-white"
+              className="h-10 w-10 shrink-0 rounded-xl bg-white hover:bg-white/90 text-black"
             >
               <Send className="h-4 w-4" />
             </Button>
@@ -1479,7 +1479,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
       {/* Leave Confirmation Modal */}
       {showLeaveConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-in fade-in duration-200">
-          <div role="alertdialog" aria-modal="true" className="bg-slate-900 border border-slate-700/80 rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl animate-in zoom-in-95 duration-200 text-white">
+          <div role="alertdialog" aria-modal="true" className="bg-[#080808] border border-white/10 rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl animate-in zoom-in-95 duration-200 text-white">
             <div className="size-12 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center mx-auto mb-4 border border-rose-500/20">
               <PhoneOff className="size-6" />
             </div>
