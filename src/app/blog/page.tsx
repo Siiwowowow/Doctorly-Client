@@ -8,7 +8,6 @@ import {
   Search,
   Clock,
   Calendar,
-  Eye,
   ArrowLeft,
   Sparkles,
   BookOpen,
@@ -52,28 +51,28 @@ export default function BlogPage() {
   return (
     <div className="min-h-screen bg-slate-50/50 pb-20">
       {/* Header Banner */}
-      <div className="relative overflow-hidden bg-gradient-to-b from-teal-900 via-doctorly-primary to-teal-950 py-16 sm:py-20 text-white">
+      <div className="relative overflow-hidden bg-gradient-to-b from-blue-950 via-doctorly-primary to-blue-950 py-16 sm:py-20 text-white">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent pointer-events-none" />
 
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <Link
             href="/"
-            className="mb-6 inline-flex items-center gap-2 text-xs font-semibold text-teal-200 hover:text-white transition-colors"
+            className="mb-6 inline-flex items-center gap-2 text-xs font-semibold text-blue-200 hover:text-white transition-colors"
           >
             <ArrowLeft className="size-4" />
             <span>Back to Home</span>
           </Link>
 
           <div className="max-w-3xl">
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-teal-400/30 bg-white/10 px-3.5 py-1 text-xs font-bold text-teal-100 backdrop-blur-md">
-              <Sparkles className="size-3.5 text-teal-300" />
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-white/10 px-3.5 py-1 text-xs font-bold text-blue-100 backdrop-blur-md">
+              <Sparkles className="size-3.5 text-blue-300" />
               <span>Doctorly Health & Clinical Library</span>
             </div>
 
             <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl text-white">
               Medically-Reviewed Articles & Guides
             </h1>
-            <p className="mt-3 text-sm sm:text-base text-teal-100/90 leading-relaxed">
+            <p className="mt-3 text-sm sm:text-base text-blue-100/90 leading-relaxed">
               Explore evidence-based health insights, nutrition guides, and wellness tips reviewed by certified medical specialists.
             </p>
           </div>
@@ -124,7 +123,7 @@ export default function BlogPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35, delay: idx * 0.05 }}
                 onClick={() => handleOpenArticle(article)}
-                className="group cursor-pointer overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-teal-200 hover:shadow-xl flex flex-col justify-between"
+                className="group cursor-pointer overflow-hidden rounded-lg border border-slate-200/80 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl flex flex-col justify-between"
               >
                 <div>
                   {/* Image Header */}
@@ -170,7 +169,7 @@ export default function BlogPage() {
                 {/* Author Footer */}
                 <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-3">
                   <div className="flex items-center gap-2">
-                    <div className="relative size-7 overflow-hidden rounded-full border border-teal-500/20">
+                    <div className="relative size-7 overflow-hidden rounded-full border border-blue-500/20">
                       <Image
                         src={article.author.avatar}
                         alt={article.author.name}

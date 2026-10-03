@@ -34,7 +34,7 @@ export default function DoctorSearch() {
   };
   
   return (
-    <section className="relative overflow-hidden bg-doctorly-bg py-20 md:py-24">
+    <section className="relative overflow-hidden bg-slate-50/70 py-16 md:py-20">
       {/* Background decoration */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute left-[-120px] top-20 h-72 w-72 rounded-full bg-doctorly-primary/5 blur-3xl" />
@@ -75,9 +75,9 @@ export default function DoctorSearch() {
         >
           <div
             className="
-              rounded-2xl border border-gray-200/80
+              rounded-xl border border-gray-200/80
               bg-white p-2 shadow-[0_12px_40px_rgba(15,23,42,0.06)]
-              md:rounded-[22px] md:p-2.5
+              md:rounded-xl md:p-2.5
             "
           >
             <div className="flex flex-col gap-2 md:flex-row md:items-center">
@@ -215,7 +215,7 @@ export default function DoctorSearch() {
               }}
               whileHover={{ y: -5 }}
               className="
-                group relative overflow-hidden rounded-2xl
+                group relative overflow-hidden rounded-lg
                 border border-gray-200/80 bg-white
                 p-4 shadow-sm
                 transition-all duration-300

@@ -128,7 +128,7 @@ export default function BlogDetailModal({
           {/* Top Sticky Bar */}
           <div className="sticky top-0 z-40 flex items-center justify-between border-b border-slate-100 bg-white/95 px-4 sm:px-6 py-3 backdrop-blur-md">
             <div className="flex items-center gap-2">
-              <span className="rounded-full bg-teal-50 border border-teal-200 px-3 py-1 text-xs font-bold text-doctorly-primary">
+              <span className="rounded-full bg-blue-50 border border-blue-200 px-3 py-1 text-xs font-bold text-doctorly-primary">
                 {article.category}
               </span>
               <span className="hidden sm:inline-flex items-center gap-1 text-xs font-medium text-slate-500">
@@ -300,13 +300,13 @@ export default function BlogDetailModal({
                     return (
                       <div
                         key={index}
-                        className="my-5 rounded-2xl bg-teal-50/80 p-4 sm:p-5 border border-teal-200/80 text-teal-950 shadow-sm"
+                        className="my-5 rounded-lg bg-blue-50/80 p-4 sm:p-5 border border-blue-200/80 text-blue-950 shadow-sm"
                       >
-                        <div className="flex items-center gap-2 font-bold text-teal-900 text-xs sm:text-sm mb-1.5">
+                        <div className="flex items-center gap-2 font-bold text-blue-900 text-xs sm:text-sm mb-1.5">
                           <Stethoscope className="size-4 text-doctorly-primary" />
                           <span>{block.title || "Clinical Health Advice"}</span>
                         </div>
-                        <p className="text-xs sm:text-sm text-teal-800 leading-relaxed">
+                        <p className="text-xs sm:text-sm text-blue-800 leading-relaxed">
                           {block.text}
                         </p>
                       </div>
@@ -361,7 +361,7 @@ export default function BlogDetailModal({
               </div>
               <Button
                 asChild
-                className="shrink-0 rounded-xl bg-white text-doctorly-primary font-bold hover:bg-teal-50 shadow-md text-xs sm:text-sm h-10 px-5"
+                className="shrink-0 rounded-xl bg-white text-doctorly-primary font-bold hover:bg-blue-50 shadow-md text-xs sm:text-sm h-10 px-5"
               >
                 <Link
                   href="/doctors"

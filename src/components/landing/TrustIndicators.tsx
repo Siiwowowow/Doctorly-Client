@@ -94,7 +94,7 @@ export default function TrustIndicators() {
   const stats = getStats(t);
   
   return (
-    <section className="relative overflow-hidden border-y border-gray-100 bg-white py-10 md:py-12">
+    <section className="relative overflow-hidden border-y border-gray-100 bg-white py-8 md:py-10">
       {/* Background */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute left-1/4 top-0 h-40 w-40 rounded-full bg-doctorly-primary/5 blur-3xl" />
@@ -108,7 +108,7 @@ export default function TrustIndicators() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="mb-8 text-center"
+          className="mb-6 text-center"
         >
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-doctorly-primary">
             {t("trustedHealthcare")}

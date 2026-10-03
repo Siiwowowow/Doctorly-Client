@@ -8,6 +8,10 @@
     "login": "Login"
   },
   "hero": {
+    "landingEyebrow": "Care that meets you where you are",
+    "landingTitleStart": "Expert doctors.",
+    "landingTitleHighlight": "Wherever life takes you.",
+    "landingDescription": "Talk with verified specialists, book appointments, and get the care you need from the comfort of home.",
     "findSpecialist": "Find a Specialist",
     "bookConsult": "Book Video Consult",
     "encrypted": "Encrypted & Secure",

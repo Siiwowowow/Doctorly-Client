@@ -55,13 +55,13 @@ export default function HealthcareServices() {
   ];
 
   return (
-    <section className="py-24 bg-gray-50 border-y border-gray-100">
+    <section className="border-y border-gray-100 bg-slate-50/70 py-16 md:py-20">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-doctorly-text mb-4 tracking-tight">
+        <div className="mx-auto mb-10 max-w-2xl text-center md:mb-12">
+          <h2 className="mb-3 text-3xl font-semibold text-doctorly-text md:text-4xl">
             {t("title")}
           </h2>
-          <p className="text-lg text-gray-600">
+          <p className="text-base leading-7 text-gray-600 md:text-lg">
             {t("subtitle")}
           </p>
         </div>
@@ -72,9 +72,9 @@ export default function HealthcareServices() {
             return (
               <div 
                 key={idx} 
-                className="bg-white p-6 rounded-2xl border border-gray-100 hover:border-doctorly-secondary hover:shadow-lg transition-all duration-300 group"
+                className="group rounded-lg border border-gray-200/80 bg-white p-5 transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-[0_16px_36px_-22px_rgba(37,99,235,0.35)] md:p-6"
               >
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110 ${service.color}`}>
+                <div className={`mb-5 flex size-12 items-center justify-center rounded-lg transition-transform duration-300 group-hover:scale-105 ${service.color}`}>
                   <Icon className="w-6 h-6" strokeWidth={1.5} />
                 </div>
                 <h3 className="font-bold text-doctorly-text mb-2">{service.title}</h3>

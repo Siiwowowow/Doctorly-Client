@@ -4,7 +4,7 @@ export default function BlogLoading() {
   return (
     <div className="min-h-screen bg-slate-50/50 pb-20 animate-pulse">
       {/* Header Banner Skeleton */}
-      <div className="bg-gradient-to-b from-teal-900 via-doctorly-primary to-teal-950 py-16 sm:py-20 text-white">
+      <div className="bg-gradient-to-b from-blue-950 via-doctorly-primary to-blue-950 py-16 sm:py-20 text-white">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 space-y-4">
           <Skeleton className="h-4 w-28 bg-white/20 rounded-md" />
           <Skeleton className="h-10 w-96 bg-white/20 rounded-xl" />

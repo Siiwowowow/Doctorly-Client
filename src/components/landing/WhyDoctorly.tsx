@@ -37,14 +37,14 @@ export default function WhyDoctorly() {
   ];
 
   return (
-    <section className="py-24 bg-white border-y border-gray-100">
+    <section className="border-y border-gray-100 bg-white py-16 md:py-20">
       <div className="container mx-auto px-4 md:px-6">
         
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-doctorly-text mb-4 tracking-tight">
+        <div className="mx-auto mb-10 max-w-2xl text-center md:mb-12">
+          <h2 className="mb-3 text-3xl font-semibold text-doctorly-text md:text-4xl">
             {t("title")}
           </h2>
-          <p className="text-lg text-gray-600">
+          <p className="text-base leading-7 text-gray-600 md:text-lg">
             {t("subtitle")}
           </p>
         </div>

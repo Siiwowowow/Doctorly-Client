@@ -11,17 +11,13 @@ import Navbar from "@/components/shared/Navbar/Navbar";
 import { Toaster } from "sonner";
 import { getUserInfo } from "@/services/auth.services";
 import HeaderWrapper from "@/components/shared/Layout/HeaderWrapper";
-import { Hind_Siliguri, Outfit } from "next/font/google";
+import localFont from "next/font/local";
 
-const hindSiliguri = Hind_Siliguri({
-  subsets: ["bengali", "latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-hind",
-});
-
-const outfit = Outfit({
-  subsets: ["latin"],
-  variable: "--font-outfit",
+const anekBangla = localFont({
+  src: "../../public/Font/AnekBangla-VariableFont_wdth,wght.ttf",
+  display: "swap",
+  variable: "--font-anek-bangla-local",
+  weight: "100 800",
 });
 export const metadata: Metadata = {
   title: "Doctorly | Smart Healthcare Management Platform",
@@ -41,9 +37,7 @@ export default async function RootLayout({
     <html lang={locale} suppressHydrationWarning translate="no">
       <body
         suppressHydrationWarning
-        className={`flex flex-col min-h-screen antialiased bg-doctorly-bg text-doctorly-text ${hindSiliguri.variable} ${outfit.variable} ${
-          locale === "bn" ? "font-hind" : "font-outfit"
-        }`}
+        className={`flex min-h-screen flex-col antialiased bg-doctorly-bg text-doctorly-text ${anekBangla.className} ${anekBangla.variable}`}
       >
         <QueryProviders>
           <AuthProvider initialUser={user}>

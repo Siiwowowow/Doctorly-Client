@@ -187,9 +187,14 @@ const VerifyEmailForm = () => {
     <Card className="w-full max-w-md mx-auto shadow-md">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-bold">Verify Your Email</CardTitle>
-        <CardDescription>
-          We&lsquo;ve sent a verification code to{" "}
-          <span className="font-medium">{emailFromUrl}</span>
+        <CardDescription className="space-y-1">
+          <span>
+            We&lsquo;ve sent a 6-digit verification code to{" "}
+            <strong className="font-semibold text-foreground">{emailFromUrl}</strong>
+          </span>
+          <span className="block text-xs text-muted-foreground pt-1">
+            Please check your <strong>Inbox</strong>. If you don&apos;t see it, be sure to check your <strong>Spam / Junk</strong> folder.
+          </span>
         </CardDescription>
       </CardHeader>
 

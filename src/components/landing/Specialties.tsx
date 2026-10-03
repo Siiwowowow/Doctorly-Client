@@ -21,18 +21,18 @@ export default function Specialties() {
   const specialtiesList = getSpecialties(t);
   
   return (
-    <section className="py-24 bg-white relative overflow-hidden">
+    <section className="relative overflow-hidden bg-white py-16 md:py-20">
       {/* Decorative background element */}
       <div className="absolute -top-[200px] -right-[200px] w-[500px] h-[500px] rounded-full bg-doctorly-secondary/30 blur-3xl opacity-50 pointer-events-none"></div>
 
       <div className="container mx-auto px-4 md:px-6 relative z-10">
         
-        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+        <div className="mb-10 flex flex-col items-start justify-between gap-5 md:mb-12 md:flex-row md:items-end">
           <div className="max-w-2xl">
-            <h2 className="text-3xl md:text-4xl font-bold text-doctorly-text mb-4 tracking-tight">
+            <h2 className="mb-3 text-3xl font-semibold text-doctorly-text md:text-4xl">
               {t("title")}
             </h2>
-            <p className="text-lg text-gray-600">
+            <p className="text-base leading-7 text-gray-600 md:text-lg">
               {t("subtitle")}
             </p>
           </div>
@@ -41,15 +41,15 @@ export default function Specialties() {
           </button>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-4 xl:grid-cols-6">
           {specialtiesList.map((spec, i) => {
             const Icon = spec.icon;
             return (
               <div 
                 key={i} 
-                className="group cursor-pointer bg-white border border-gray-100 p-6 rounded-2xl flex flex-col items-center justify-center text-center hover:border-doctorly-secondary hover:shadow-[0_15px_30px_-10px_rgba(10,107,119,0.1)] hover:-translate-y-1 transition-all duration-300"
+                className="group flex cursor-pointer flex-col items-center justify-center rounded-lg border border-gray-200/80 bg-white p-4 text-center transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-[0_16px_36px_-22px_rgba(37,99,235,0.35)] sm:p-5"
               >
-                <div className={`w-14 h-14 rounded-full ${spec.bg} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                <div className={`mb-4 flex size-12 items-center justify-center rounded-lg ${spec.bg} transition-transform duration-300 group-hover:scale-105`}>
                   <Icon className={`w-6 h-6 ${spec.color}`} strokeWidth={1.5} />
                 </div>
                 <h3 className="font-semibold text-gray-800 text-sm">{spec.name}</h3>

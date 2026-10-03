@@ -3,7 +3,7 @@
 import React from "react";
 import { useSidebar } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { Activity, X, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Activity, X } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
@@ -13,7 +13,7 @@ interface DashboardSidebarHeaderProps {
 }
 
 export function DashboardSidebarHeader({ title, icon: Icon }: DashboardSidebarHeaderProps) {
-  const { state, isMobile, setOpenMobile, toggleSidebar } = useSidebar();
+  const { state, isMobile, setOpenMobile } = useSidebar();
   const isCollapsed = state === "collapsed" && !isMobile;
   const t = useTranslations("common");
 
@@ -41,8 +41,7 @@ export function DashboardSidebarHeader({ title, icon: Icon }: DashboardSidebarHe
         )}
       </div>
 
-      {/* Actions: Mobile Close Button or Desktop Toggle */}
-      {isMobile ? (
+      {isMobile && (
         <Button
           variant="ghost"
           size="icon"
@@ -51,21 +50,6 @@ export function DashboardSidebarHeader({ title, icon: Icon }: DashboardSidebarHe
           aria-label={t("close") || "Close sidebar"}
         >
           <X className="size-4" />
-        </Button>
-      ) : (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleSidebar}
-          className="size-8 rounded-lg text-muted-foreground hover:text-doctorly-primary hover:bg-doctorly-primary/10 transition-colors shrink-0"
-          title={isCollapsed ? (t("expandSidebar") || "Expand sidebar") : (t("collapseSidebar") || "Collapse sidebar")}
-          aria-label={isCollapsed ? (t("expandSidebar") || "Expand sidebar") : (t("collapseSidebar") || "Collapse sidebar")}
-        >
-          {isCollapsed ? (
-            <PanelLeftOpen className="size-4" />
-          ) : (
-            <PanelLeftClose className="size-4" />
-          )}
         </Button>
       )}
     </div>

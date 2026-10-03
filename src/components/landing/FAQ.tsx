@@ -42,15 +42,15 @@ export default function FAQ() {
   };
 
   return (
-    <section className="py-24 bg-gray-50 border-t border-gray-100">
+    <section className="border-t border-gray-100 bg-slate-50/70 py-16 md:py-20">
       <div className="container mx-auto px-4 md:px-6">
         <div className="max-w-3xl mx-auto">
           
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-doctorly-text mb-4 tracking-tight">
+          <div className="mb-10 text-center md:mb-12">
+            <h2 className="mb-3 text-3xl font-semibold text-doctorly-text md:text-4xl">
               {t("title")}
             </h2>
-            <p className="text-lg text-gray-600">
+            <p className="text-base leading-7 text-gray-600 md:text-lg">
               {t("subtitle")}
             </p>
           </div>
@@ -61,7 +61,7 @@ export default function FAQ() {
               return (
                 <div 
                   key={index} 
-                  className={`bg-white border transition-colors duration-300 rounded-2xl overflow-hidden ${isOpen ? 'border-doctorly-primary/30 shadow-md' : 'border-gray-200 hover:border-gray-300'}`}
+                  className={`overflow-hidden rounded-lg border bg-white transition-colors duration-300 ${isOpen ? 'border-doctorly-primary/30 shadow-md' : 'border-gray-200 hover:border-gray-300'}`}
                 >
                   <button
                     className="w-full px-6 py-5 text-left flex justify-between items-center focus:outline-none"

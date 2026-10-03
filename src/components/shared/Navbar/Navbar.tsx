@@ -4,7 +4,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { motion, Variants } from "framer-motion";
+import { motion } from "framer-motion";
 import { useAuth } from "@/providers/AuthProvider";
 import { useLocale, useTranslations } from "next-intl";
 import { NavbarNotifications } from "./NavbarNotifications";
@@ -65,27 +65,6 @@ const navLinks = [
 ];
 
 // --------------------------------------------------
-// Animation variants
-// --------------------------------------------------
-const mobileContainer: Variants = {
-  hidden: {},
-  show: {
-    transition: {
-      staggerChildren: 0.06,
-    },
-  },
-};
-
-const mobileItem: Variants = {
-  hidden: { opacity: 0, x: 20 },
-  show: {
-    opacity: 1,
-    x: 0,
-    transition: { duration: 0.25, ease: "easeOut" },
-  },
-};
-
-// --------------------------------------------------
 // Component
 // --------------------------------------------------
 export default function Navbar() {
@@ -142,9 +121,9 @@ export default function Navbar() {
   // Render
   // --------------------------------------------------
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/75 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 w-full border-b border-border/70 bg-white/95 backdrop-blur-xl">
       {/* Main Navbar */}
-      <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         
         {/* Logo */}
         <Link href="/" className="group flex shrink-0 items-center gap-2.5">
@@ -172,34 +151,23 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden items-center rounded-full border border-border/60 bg-muted/40 p-1 md:flex">
+        <nav className="hidden h-16 items-center gap-1 md:flex">
           {navLinks.map((link) => {
-            const Icon = link.icon;
             const active = isActiveRoute(link.href);
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className="relative flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition-colors"
+                aria-current={active ? "page" : undefined}
+                className="relative flex h-full items-center px-3 text-sm font-medium transition-colors"
               >
                 {active && (
                   <motion.div
                     layoutId="navbar-active"
                     transition={{ type: "spring", stiffness: 450, damping: 35 }}
-                    className="absolute inset-0 rounded-full bg-background shadow-sm"
+                    className="absolute inset-x-3 bottom-0 h-0.5 bg-doctorly-primary"
                   />
                 )}
-                <motion.div
-                  whileHover={{ scale: 1.12, y: -1 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                  className="relative z-10"
-                >
-                  <Icon
-                    className={`size-4 ${
-                      active ? "text-doctorly-primary" : "text-muted-foreground"
-                    }`}
-                  />
-                </motion.div>
                 <span
                   className={`relative z-10 ${
                     active
