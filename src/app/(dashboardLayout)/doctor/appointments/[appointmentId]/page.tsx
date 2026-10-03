@@ -19,6 +19,7 @@ import { useTranslations } from "next-intl"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { useState } from "react"
+import { calculateAge, formatBloodGroupValue, formatGender } from "@/lib/patientDetails"
 
 export default function DoctorAppointmentDetailsPage() {
   const { appointmentId } = useParams()
@@ -109,6 +110,8 @@ export default function DoctorAppointmentDetailsPage() {
   }
 
   const appointment = appointmentRes.data
+  const dateOfBirth = appointment.patient?.patientHealthData?.dateOfBirth || appointment.patient?.dateOfBirth
+  const patientAge = appointment.patient?.age ?? calculateAge(dateOfBirth)
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
@@ -227,13 +230,16 @@ export default function DoctorAppointmentDetailsPage() {
                     <p className="text-sm text-muted-foreground">{appointment.patient?.email}</p>
                     <div className="mt-2 flex flex-wrap gap-2 text-xs">
                       <span className="bg-muted px-2 py-1 rounded-md font-medium text-muted-foreground">
-                        Blood: <span className="text-foreground font-semibold">{appointment.patient?.bloodGroup || appointment.patient?.patientHealthData?.bloodGroup || t("table.na")}</span>
+                        Blood: <span className="text-foreground font-semibold">{formatBloodGroupValue(appointment.patient?.bloodGroup || appointment.patient?.patientHealthData?.bloodGroup) || t("table.na")}</span>
                       </span>
                       <span className="bg-muted px-2 py-1 rounded-md font-medium text-muted-foreground">
-                        Gender: <span className="text-foreground font-semibold">{appointment.patient?.patientHealthData?.gender || (appointment.patient as any)?.gender || t("table.na")}</span>
+                        Gender: <span className="text-foreground font-semibold">{formatGender(appointment.patient?.patientHealthData?.gender || appointment.patient?.gender)}</span>
                       </span>
                       <span className="bg-muted px-2 py-1 rounded-md font-medium text-muted-foreground">
-                        DOB: <span className="text-foreground font-semibold">{appointment.patient?.patientHealthData?.dateOfBirth ? format(new Date(appointment.patient.patientHealthData.dateOfBirth), "MMM d, yyyy") : t("table.na")}</span>
+                        DOB: <span className="text-foreground font-semibold">{dateOfBirth ? format(new Date(dateOfBirth), "MMM d, yyyy") : t("table.na")}</span>
+                      </span>
+                      <span className="bg-primary/10 px-2 py-1 rounded-md font-medium text-primary">
+                        Age: <span className="font-semibold">{patientAge !== null ? `${patientAge} years` : t("table.na")}</span>
                       </span>
                     </div>
                   </div>

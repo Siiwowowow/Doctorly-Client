@@ -15,6 +15,8 @@ import { Plus, Trash2, ArrowLeft, Pill, FileText, User } from "lucide-react"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { Skeleton } from "@/components/ui/skeleton"
+import { calculateAge, formatBloodGroupValue, formatGender } from "@/lib/patientDetails"
+import { format } from "date-fns"
 
 export default function NewPrescriptionPage() {
   const searchParams = useSearchParams()
@@ -41,6 +43,8 @@ export default function NewPrescriptionPage() {
   })
   
   const appointment = appointmentRes?.data
+  const patientDob = appointment?.patient?.patientHealthData?.dateOfBirth || appointment?.patient?.dateOfBirth
+  const patientAge = appointment?.patient?.age ?? calculateAge(patientDob)
 
   const handleAddMedicine = () => {
     setMedicines([...medicines, { medicineName: "", dosage: "", frequency: "", duration: "", instructions: "" }])
@@ -152,9 +156,9 @@ export default function NewPrescriptionPage() {
                   <div className="space-y-1">
                      <div className="flex items-center gap-2">
                        <h4 className="font-semibold text-base text-emerald-950 dark:text-emerald-100">{appointment.patient?.name || appointment.patient?.user?.name || "Patient Found"}</h4>
-                       {(appointment.patient?.patientHealthData?.bloodGroup || (appointment.patient as any)?.bloodGroup) && (
+                       {(appointment.patient?.patientHealthData?.bloodGroup || appointment.patient?.bloodGroup) && (
                          <span className="text-xs bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300 font-semibold px-2 py-0.5 rounded-full">
-                           {appointment.patient?.patientHealthData?.bloodGroup || (appointment.patient as any)?.bloodGroup}
+                           {formatBloodGroupValue(appointment.patient?.patientHealthData?.bloodGroup || appointment.patient?.bloodGroup)}
                          </span>
                        )}
                      </div>
@@ -162,6 +166,11 @@ export default function NewPrescriptionPage() {
                      {appointment.patient?.contactNumber && (
                        <p className="text-xs text-muted-foreground">Phone: {appointment.patient.contactNumber}</p>
                      )}
+                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                       <span>Gender: <strong className="text-foreground">{formatGender(appointment.patient?.patientHealthData?.gender || appointment.patient?.gender)}</strong></span>
+                       <span>DOB: <strong className="text-foreground">{patientDob ? format(new Date(patientDob), "MMM d, yyyy") : "N/A"}</strong></span>
+                       <span>Age: <strong className="text-foreground">{patientAge !== null ? `${patientAge} years` : "N/A"}</strong></span>
+                     </div>
                      <p className="text-xs font-mono text-muted-foreground/80 mt-1">Appt ID: {appointment.id}</p>
                   </div>
                 </div>

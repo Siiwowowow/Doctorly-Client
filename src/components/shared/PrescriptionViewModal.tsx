@@ -20,6 +20,7 @@ import {
   Pill,
 } from "lucide-react";
 import { format } from "date-fns";
+import { calculateAge, formatBloodGroupValue, formatGender } from "@/lib/patientDetails";
 
 interface PrescriptionViewModalProps {
   prescription: Prescription | null;
@@ -42,12 +43,10 @@ export function PrescriptionViewModal({
   const doctor = prescription.doctor;
   
   // Format clean blood group (e.g. O_POSITIVE -> O+)
-  const rawBg = (patient as any)?.patientHealthData?.bloodGroup || (patient as any)?.bloodGroup || "";
-  const bloodGroup = rawBg
-    ? rawBg.replace(/_POSITIVE/gi, "+").replace(/_NEGATIVE/gi, "-")
-    : null;
-
-  const gender = (patient as any)?.patientHealthData?.gender;
+  const bloodGroup = formatBloodGroupValue(patient?.patientHealthData?.bloodGroup || patient?.bloodGroup);
+  const gender = formatGender(patient?.patientHealthData?.gender || patient?.gender);
+  const dateOfBirth = patient?.patientHealthData?.dateOfBirth || patient?.dateOfBirth;
+  const age = patient?.age ?? calculateAge(dateOfBirth);
   
   // Clean doctor name (prevent Dr. Dr. duplicate)
   const cleanDoctorName = doctor?.name
@@ -150,7 +149,7 @@ export function PrescriptionViewModal({
             </div>
 
             {/* Patient Info Card */}
-            <div className="bg-slate-50 border border-slate-200/90 rounded-xl p-4 sm:p-5 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+            <div className="bg-slate-50 border border-slate-200/90 rounded-xl p-4 sm:p-5 grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
               <div className="space-y-0.5">
                 <span className="text-slate-400 uppercase tracking-wider font-bold text-[10px]">Patient Name</span>
                 <p className="font-bold text-sm text-slate-900">{patient?.name || "Patient"}</p>
@@ -158,15 +157,20 @@ export function PrescriptionViewModal({
               <div className="space-y-0.5">
                 <span className="text-slate-400 uppercase tracking-wider font-bold text-[10px]">Blood Group & Gender</span>
                 <div className="flex items-center gap-1.5">
-                  {bloodGroup ? (
+                  {bloodGroup !== "N/A" ? (
                     <span className="font-bold text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded font-mono">
                       {bloodGroup}
                     </span>
                   ) : (
                     <span className="text-slate-600 font-medium">N/A</span>
                   )}
-                  {gender && <span className="font-semibold text-slate-600 capitalize">({gender.toLowerCase()})</span>}
+                  {gender !== "N/A" && <span className="font-semibold text-slate-600">({gender})</span>}
                 </div>
+              </div>
+              <div className="space-y-0.5">
+                <span className="text-slate-400 uppercase tracking-wider font-bold text-[10px]">Date of Birth & Age</span>
+                <p className="font-semibold text-slate-800">{dateOfBirth ? format(new Date(dateOfBirth), "dd MMM yyyy") : "N/A"}</p>
+                <p className="font-bold text-primary">{age !== null ? `${age} years` : "Age N/A"}</p>
               </div>
               <div className="space-y-0.5">
                 <span className="text-slate-400 uppercase tracking-wider font-bold text-[10px]">Contact Number</span>
