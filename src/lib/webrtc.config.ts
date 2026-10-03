@@ -5,8 +5,12 @@
  * Dynamically resolves STUN and TURN configurations from environment variables
  * with production-grade fallback and multi-transport support (UDP, TCP, TLS turns:).
  */
-export function getIceServersConfig(): RTCConfiguration {
+export function getIceServersConfig(serverIssuedIceServers: RTCIceServer[] = []): RTCConfiguration {
   const iceServers: RTCIceServer[] = [];
+
+  if (serverIssuedIceServers.length > 0) {
+    iceServers.push(...serverIssuedIceServers);
+  }
 
   // 1. STUN Servers (Public Google & Twilio STUN + Custom Env)
   const envStun = process.env.NEXT_PUBLIC_WEBRTC_STUN_URL || process.env.NEXT_PUBLIC_STUN_SERVER;
@@ -35,30 +39,6 @@ export function getIceServersConfig(): RTCConfiguration {
       username: envTurnUser,
       credential: envTurnCred,
     });
-  } else {
-    // OpenRelay TURN Fallback for NAT/firewall traversal in development/testing across UDP, TCP, and TLS
-    iceServers.push(
-      {
-        urls: 'turn:openrelay.metered.ca:80',
-        username: 'openrelayproject',
-        credential: 'openrelayproject',
-      },
-      {
-        urls: 'turn:openrelay.metered.ca:443',
-        username: 'openrelayproject',
-        credential: 'openrelayproject',
-      },
-      {
-        urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-        username: 'openrelayproject',
-        credential: 'openrelayproject',
-      },
-      {
-        urls: 'turns:openrelay.metered.ca:443?transport=tcp',
-        username: 'openrelayproject',
-        credential: 'openrelayproject',
-      }
-    );
   }
 
   return {

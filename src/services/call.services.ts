@@ -6,6 +6,21 @@ import { cookies } from "next/headers";
 
 const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+export async function getCallIceServers(): Promise<ApiResponse<{ iceServers: RTCIceServer[]; expiresAt: string }>> {
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get("accessToken")?.value;
+  const sessionToken = cookieStore.get("better-auth.session_token")?.value;
+  const res = await fetch(`${BASE_API_URL}/calls/ice-servers`, {
+    headers: {
+      "Content-Type": "application/json",
+      Cookie: `accessToken=${accessToken || ""}; better-auth.session_token=${sessionToken || ""}`,
+    },
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("Failed to load secure media relay configuration");
+  return res.json();
+}
+
 export async function initiateCall(data: {
   receiverId?: string;
   appointmentId?: string;

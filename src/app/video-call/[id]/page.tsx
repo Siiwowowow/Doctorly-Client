@@ -34,7 +34,7 @@ import {
   PhoneIncoming,
 } from "lucide-react";
 import { toast } from "sonner";
-import { endCall, getCallById, acceptCall, rejectCall } from "@/services/call.services";
+import { endCall, getCallById, acceptCall, rejectCall, getCallIceServers } from "@/services/call.services";
 import { getIceServersConfig } from "@/lib/webrtc.config";
 import { format } from "date-fns";
 
@@ -98,8 +98,13 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
   const localStreamRef = useRef<MediaStream | null>(null);
   const remoteStreamRef = useRef<MediaStream | null>(null);
   const pendingCandidatesQueue = useRef<RTCIceCandidateInit[]>([]);
+  const pendingLocalCandidatesQueue = useRef<RTCIceCandidateInit[]>([]);
   const isInitiatorRef = useRef<boolean>(false);
   const isMakingOfferRef = useRef<boolean>(false);
+  const iceRestartAttemptsRef = useRef(0);
+  const iceRestartTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const createOfferRef = useRef<((iceRestart?: boolean) => Promise<void>) | null>(null);
+  const iceConfigurationRef = useRef<RTCConfiguration>(getIceServersConfig());
   const isAcquiringMediaRef = useRef<Promise<MediaStream | null> | null>(null);
   const connectionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isPeerReadyRef = useRef<boolean>(false);
@@ -114,6 +119,31 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
       console.log(`${formattedTag} ${event}`);
     }
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    getCallIceServers()
+      .then((response) => {
+        if (!active || !response.data?.iceServers?.length) return;
+        const configuration = getIceServersConfig(response.data.iceServers);
+        iceConfigurationRef.current = configuration;
+        logCall("ICE", "server-credentials-loaded", {
+          expiresAt: response.data.expiresAt,
+          servers: response.data.iceServers.length,
+        });
+        const pc = peerConnectionRef.current;
+        if (pc && pc.signalingState !== "closed") {
+          pc.setConfiguration(configuration);
+          if (isInitiatorRef.current && pc.connectionState !== "connected") {
+            createOfferRef.current?.(true);
+          }
+        }
+      })
+      .catch((error) => {
+        console.warn("[CALL][ICE] Secure TURN configuration unavailable:", error);
+      });
+    return () => { active = false; };
+  }, [logCall]);
 
   // 1. Duration Counter
   useEffect(() => {
@@ -272,7 +302,13 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
         clearTimeout(connectionTimeoutRef.current);
         connectionTimeoutRef.current = null;
       }
+      if (iceRestartTimerRef.current) {
+        clearTimeout(iceRestartTimerRef.current);
+        iceRestartTimerRef.current = null;
+      }
       pendingCandidatesQueue.current = [];
+      pendingLocalCandidatesQueue.current = [];
+      iceRestartAttemptsRef.current = 0;
       isPeerReadyRef.current = false;
 
       if (socket && isConnected) {
@@ -291,7 +327,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
       return peerConnectionRef.current;
     }
 
-    const config = getIceServersConfig();
+    const config = iceConfigurationRef.current;
     const hasTurn = config.iceServers?.some((s) => {
       const urls = Array.isArray(s.urls) ? s.urls : [s.urls];
       return urls.some((u) => u.startsWith("turn:") || u.startsWith("turns:"));
@@ -357,16 +393,12 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
           address: event.candidate.address,
         });
 
-        if (socket && isConnected) {
-          (socket as any).emit("call:ice-candidate", {
-            callId,
-            candidate: {
-              candidate: event.candidate.candidate,
-              sdpMid: event.candidate.sdpMid,
-              sdpMLineIndex: event.candidate.sdpMLineIndex,
-              usernameFragment: event.candidate.usernameFragment,
-            },
-          });
+        const candidate = event.candidate.toJSON();
+        if (socket?.connected) {
+          (socket as any).emit("call:ice-candidate", { callId, candidate });
+        } else {
+          pendingLocalCandidatesQueue.current.push(candidate);
+          logCall("ICE", "queued-local-candidate", { queueLength: pendingLocalCandidatesQueue.current.length });
         }
       } else {
         logCall("ICE", "gathering-complete");
@@ -386,6 +418,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
       logCall("STATE", "iceConnectionState", state);
 
       if (state === "connected" || state === "completed") {
+        iceRestartAttemptsRef.current = 0;
         setConnectionStatus("CONNECTED");
         if (connectionTimeoutRef.current) {
           clearTimeout(connectionTimeoutRef.current);
@@ -395,8 +428,19 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
         setConnectionStatus("RECONNECTING");
       } else if (state === "failed") {
         logCall("STATE", "ice-connection-failed");
-        if (pc.restartIce) {
-          pc.restartIce();
+        setConnectionStatus("RECONNECTING");
+        if (iceRestartAttemptsRef.current < 3 && !iceRestartTimerRef.current) {
+          iceRestartAttemptsRef.current += 1;
+          const attempt = iceRestartAttemptsRef.current;
+          iceRestartTimerRef.current = setTimeout(() => {
+            iceRestartTimerRef.current = null;
+            logCall("ICE", "restart-attempt", { attempt });
+            if (isInitiatorRef.current) {
+              createOfferRef.current?.(true);
+            } else if (socket?.connected) {
+              (socket as any).emit("call:ready", { callId, userId: user?.id, role: user?.role, iceRestart: true });
+            }
+          }, Math.min(1000 * attempt, 3000));
         }
       }
     };
@@ -406,6 +450,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
       logCall("STATE", "connectionState", state);
 
       if (state === "connected") {
+        iceRestartAttemptsRef.current = 0;
         setConnectionStatus("CONNECTED");
         logCall("STATE", "connected");
         if (connectionTimeoutRef.current) {
@@ -434,7 +479,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
 
     peerConnectionRef.current = pc;
     return pc;
-  }, [callId, isConnected, logCall, socket]);
+  }, [callId, isConnected, logCall, socket, user?.id, user?.role]);
 
   // 6. Flush Queued ICE Candidates
   const flushPendingIceCandidates = useCallback(
@@ -460,7 +505,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
   );
 
   // 7. Create Offer (DOCTOR / CALLER ONLY — Triggered after call:ready handshake)
-  const createOffer = useCallback(async () => {
+  const createOffer = useCallback(async (iceRestart = false) => {
     if (isMakingOfferRef.current) return;
     try {
       isMakingOfferRef.current = true;
@@ -474,6 +519,11 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
 
       const pc = getOrCreatePeerConnection();
 
+      if (pc.signalingState !== "stable") {
+        logCall("SIGNAL", "offer-skipped-nonstable", { signalingState: pc.signalingState, iceRestart });
+        return;
+      }
+
       if (localStream) {
         const senders = pc.getSenders();
         localStream.getTracks().forEach((track) => {
@@ -486,10 +536,11 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
       const offer = await pc.createOffer({
         offerToReceiveAudio: true,
         offerToReceiveVideo: !isAudioOnly,
+        iceRestart,
       });
 
       await pc.setLocalDescription(offer);
-      logCall("SIGNAL", "offer-sent", { type: offer.type });
+      logCall("SIGNAL", "offer-sent", { type: offer.type, iceRestart });
 
       if (socket && isConnected) {
         (socket as any).emit("call:offer", {
@@ -517,6 +568,10 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
       isMakingOfferRef.current = false;
     }
   }, [callId, getOrCreatePeerConnection, initLocalStream, isAudioOnly, isConnected, logCall, socket]);
+
+  useEffect(() => {
+    createOfferRef.current = createOffer;
+  }, [createOffer]);
 
   // 8. Handle Received Offer (PATIENT / CALLEE ONLY)
   const handleReceiveOffer = useCallback(
@@ -671,6 +726,10 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
       if (!res?.success) {
         toast.error(res?.error || "Unable to join consultation room");
       } else {
+        while (pendingLocalCandidatesQueue.current.length > 0) {
+          const candidate = pendingLocalCandidatesQueue.current.shift();
+          if (candidate) (socket as any).emit("call:ice-candidate", { callId, candidate });
+        }
         // If Callee is already in or joined, emit call:ready to announce readiness to Caller
         if (!isInitiatorRef.current && (callDetails?.status === "ACCEPTED" || callDetails?.status === "IN_PROGRESS")) {
           logCall("SIGNAL", "emit:call:ready(on-join)", { callId });
@@ -774,6 +833,23 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
     handleEndCallLocally,
     logCall,
   ]);
+
+  // Mobile devices frequently switch between Wi-Fi and cellular networks.
+  // Rejoin signaling and perform a full ICE renegotiation when connectivity returns.
+  useEffect(() => {
+    const handleNetworkOnline = () => {
+      if (!socket?.connected || connectionStatus === "ENDED") return;
+      (socket as any).emit("call:join", { callId });
+      setConnectionStatus("RECONNECTING");
+      if (isInitiatorRef.current) {
+        createOfferRef.current?.(true);
+      } else {
+        (socket as any).emit("call:ready", { callId, userId: user?.id, role: user?.role, iceRestart: true });
+      }
+    };
+    window.addEventListener("online", handleNetworkOnline);
+    return () => window.removeEventListener("online", handleNetworkOnline);
+  }, [callId, connectionStatus, socket, user?.id, user?.role]);
 
   // Media resources must only be destroyed when leaving this call page.
   // Listener dependencies can change during negotiation and must not tear down
