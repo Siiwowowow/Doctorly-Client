@@ -57,7 +57,7 @@ export async function resendOtpAction(email: string) {
     const formData = new URLSearchParams();
     formData.append('email', email);
 
-    const res = await fetch(`${BASE_API_URL}/auth/forget-password`, {
+    const res = await fetch(`${BASE_API_URL}/auth/resend-verification-otp`, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
