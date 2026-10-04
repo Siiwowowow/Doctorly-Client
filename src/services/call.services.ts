@@ -51,7 +51,11 @@ export async function initiateCall(data: {
     throw new Error(errorData.message || "Failed to initiate call");
   }
 
-  return res.json();
+  const response = await res.json();
+  if (response.data?.status === "BUSY") {
+    throw new Error("Call is busy");
+  }
+  return response;
 }
 
 export async function acceptCall(callId: string): Promise<ApiResponse<any>> {

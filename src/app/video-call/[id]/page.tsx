@@ -171,13 +171,9 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
       }
 
       const mediaPromise = (async () => {
+        const previousStream = localStreamRef.current;
         try {
           logCall("MEDIA", "getUserMedia", { audio: true, video: !targetAudioOnly, facingMode: targetFacingMode });
-
-          if (localStreamRef.current) {
-            localStreamRef.current.getTracks().forEach((track) => track.stop());
-            localStreamRef.current = null;
-          }
 
           let stream: MediaStream;
 
@@ -196,8 +192,8 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
               stream = await navigator.mediaDevices.getUserMedia({
                 video: {
                   facingMode: targetFacingMode,
-                  width: { ideal: 1280, max: 1920 },
-                  height: { ideal: 720, max: 1080 },
+                  width: { ideal: 3840, max: 3840 },
+                  height: { ideal: 2160, max: 2160 },
                 },
                 audio: {
                   echoCancellation: true,
@@ -207,48 +203,85 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
               });
             } catch (videoErr) {
               console.warn("[CALL][MEDIA] High-res video constraints failed, trying basic video:", videoErr);
-              try {
-                stream = await navigator.mediaDevices.getUserMedia({
-                  video: true,
-                  audio: true,
-                });
-              } catch (cameraErr) {
-                console.warn("[CALL][MEDIA] Camera unavailable, falling back to audio stream:", cameraErr);
-                toast.info("Camera not detected. Connecting audio only.");
-                setIsAudioOnly(true);
-                setIsVideoOn(false);
-                stream = await navigator.mediaDevices.getUserMedia({
-                  audio: true,
-                  video: false,
-                });
+              const previousVideoTrack = previousStream?.getVideoTracks().find((track) => track.readyState === "live");
+              if (previousVideoTrack) {
+                previousStream?.getVideoTracks().forEach((track) => track.stop());
+                try {
+                  stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                      facingMode: targetFacingMode,
+                      width: { ideal: 3840, max: 3840 },
+                      height: { ideal: 2160, max: 2160 },
+                    },
+                    audio: true,
+                  });
+                } catch (cameraSwitchErr) {
+                  try {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                      video: {
+                        facingMode,
+                        width: { ideal: 3840, max: 3840 },
+                        height: { ideal: 2160, max: 2160 },
+                      },
+                      audio: true,
+                    });
+                    setFacingMode(facingMode);
+                  } catch {
+                    throw cameraSwitchErr;
+                  }
+                }
+              } else {
+                try {
+                  stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                      facingMode: targetFacingMode,
+                      width: { ideal: 3840, max: 3840 },
+                      height: { ideal: 2160, max: 2160 },
+                    },
+                    audio: true,
+                  });
+                } catch (cameraErr) {
+                  console.warn("[CALL][MEDIA] Camera unavailable, falling back to audio stream:", cameraErr);
+                  toast.info("Camera not detected. Connecting audio only.");
+                  setIsAudioOnly(true);
+                  setIsVideoOn(false);
+                  stream = await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: false,
+                  });
+                }
               }
             }
           }
-
-          localStreamRef.current = stream;
-          setPermissionError(null);
 
           const audioTracksCount = stream.getAudioTracks().length;
           const videoTracksCount = stream.getVideoTracks().length;
           logCall("MEDIA", "local-stream-acquired", { audioTracks: audioTracksCount, videoTracks: videoTracksCount });
 
-          if (localVideoRef.current && !targetAudioOnly) {
-            localVideoRef.current.srcObject = stream;
-          }
-
           // Attach or replace tracks on existing RTCPeerConnection
           if (peerConnectionRef.current && peerConnectionRef.current.signalingState !== "closed") {
             const pc = peerConnectionRef.current;
             const senders = pc.getSenders();
-            stream.getTracks().forEach((track) => {
-              const sender = senders.find((s) => s.track?.kind === track.kind);
+            for (const track of stream.getTracks()) {
+              const previousTrack = previousStream?.getTracks().find((oldTrack) => oldTrack.kind === track.kind);
+              if (previousTrack) track.enabled = previousTrack.enabled;
+              const sender = senders.find((candidate) => candidate.track?.kind === track.kind);
               if (sender) {
-                sender.replaceTrack(track).catch((e) => console.warn("[CALL][MEDIA] replaceTrack error:", e));
+                await sender.replaceTrack(track);
               } else {
                 pc.addTrack(track, stream);
               }
-            });
+            }
           }
+
+          localStreamRef.current = stream;
+          if (previousStream && previousStream !== stream) {
+            previousStream.getTracks().forEach((track) => track.stop());
+          }
+          if (localVideoRef.current && !targetAudioOnly) {
+            localVideoRef.current.srcObject = stream;
+          }
+          setPermissionError(null);
 
           setIsMicOn(true);
           if (!targetAudioOnly) setIsVideoOn(true);
@@ -360,7 +393,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
 
       if (remoteVideoRef.current) {
         remoteVideoRef.current.srcObject = stream;
-        remoteVideoRef.current.muted = false;
+        remoteVideoRef.current.muted = true;
         remoteVideoRef.current.play().catch((err) => {
           console.warn("[CALL][AUTOPLAY] Remote video autoplay blocked:", err);
           setAudioBlocked(true);
@@ -369,15 +402,11 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
 
       if (remoteAudioRef.current) {
         remoteAudioRef.current.srcObject = stream;
-        if (isAudioOnly) {
-          remoteAudioRef.current.muted = false;
-          remoteAudioRef.current.play().catch((err) => {
-            console.warn("[CALL][AUTOPLAY] Remote audio autoplay blocked:", err);
-            setAudioBlocked(true);
-          });
-        } else {
-          remoteAudioRef.current.muted = true;
-        }
+        remoteAudioRef.current.muted = false;
+        remoteAudioRef.current.play().catch((err) => {
+          console.warn("[CALL][AUTOPLAY] Remote audio autoplay blocked:", err);
+          setAudioBlocked(true);
+        });
       }
 
       setConnectionStatus("CONNECTED");
@@ -793,6 +822,21 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
       await handleReceiveIceCandidate(payload.candidate);
     };
 
+    const handleCallMessageEvent = (payload: any) => {
+      if (payload.callId !== callId || payload.senderId === user?.id) return;
+      const message: InCallMessage = {
+        id: payload.tempId || `${payload.senderId}:${payload.timestamp}`,
+        senderId: payload.senderId,
+        senderName: payload.senderName || "Participant",
+        content: payload.content,
+        timestamp: payload.timestamp || new Date().toISOString(),
+      };
+      setMessages((previous) =>
+        previous.some((item) => item.id === message.id) ? previous : [...previous, message]
+      );
+      setUnreadCount((count) => count + 1);
+    };
+
     const handleCallEndedEvent = (payload: any) => {
       if (payload.callId !== callId) return;
       logCall("SIGNAL", "recv:call:ended");
@@ -806,6 +850,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
     (socket as any).on("call:offer", handleCallOfferEvent);
     (socket as any).on("call:answer", handleCallAnswerEvent);
     (socket as any).on("call:ice-candidate", handleIceCandidateEvent);
+    (socket as any).on("call:message", handleCallMessageEvent);
     (socket as any).on("call:ended", handleCallEndedEvent);
     (socket as any).on("call:canceled", handleCallEndedEvent);
     (socket as any).on("call:rejected", handleCallEndedEvent);
@@ -817,6 +862,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
       (socket as any).off("call:offer", handleCallOfferEvent);
       (socket as any).off("call:answer", handleCallAnswerEvent);
       (socket as any).off("call:ice-candidate", handleIceCandidateEvent);
+      (socket as any).off("call:message", handleCallMessageEvent);
       (socket as any).off("call:ended", handleCallEndedEvent);
       (socket as any).off("call:canceled", handleCallEndedEvent);
       (socket as any).off("call:rejected", handleCallEndedEvent);
@@ -967,10 +1013,9 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
 
   const handleUnblockAudio = () => {
     if (remoteVideoRef.current && !isAudioOnly) {
-      remoteVideoRef.current.muted = false;
       remoteVideoRef.current.play().catch(() => {});
     }
-    if (remoteAudioRef.current && isAudioOnly) {
+    if (remoteAudioRef.current) {
       remoteAudioRef.current.muted = false;
       remoteAudioRef.current.play().catch(() => {});
     }
