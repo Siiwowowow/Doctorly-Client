@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
 @import "tailwindcss";
 
 @import "shadcn/tailwind.css";
@@ -5,11 +7,14 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --color-doctorly-primary: #2563EB;
-  --color-doctorly-secondary: #DBEAFE;
-  --color-doctorly-bg: #F8FAFF;
-  --color-doctorly-text: #111827;
-  --color-doctorly-accent: #10B981;
+  --color-doctorly-primary: #1D63ED;
+  --color-doctorly-secondary: #edf5f4;
+  --color-doctorly-bg: #f7fbfe;
+  --color-doctorly-text: #0D152E;
+  --color-doctorly-accent: #1D63ED;
+  --color-doctorly-teal: #1D63ED;
+  --color-doctorly-mint: #F3F8F7;
+  --color-doctorly-sage: #EAF3F2;
   
   /* Original colors preserved just in case */
   --color-shop_light_pink: #fcf0e4;
@@ -74,8 +79,8 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.546 0.245 262.881);
-  --primary-foreground: oklch(0.985 0 0);
+  --primary: #1D63ED;
+  --primary-foreground: #ffffff;
   --secondary: oklch(0.975 0.018 255);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.975 0.018 255);
@@ -85,7 +90,7 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.915 0.018 255);
   --input: oklch(0.915 0.018 255);
-  --ring: oklch(0.546 0.245 262.881);
+  --ring: #1D63ED;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -94,12 +99,12 @@
   --radius: 0.5rem;
   --sidebar: oklch(0.995 0.003 255);
   --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.546 0.245 262.881);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-primary: #1D63ED;
+  --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: oklch(0.975 0.018 255);
   --sidebar-accent-foreground: oklch(0.205 0.04 255);
   --sidebar-border: oklch(0.915 0.018 255);
-  --sidebar-ring: oklch(0.546 0.245 262.881);
+  --sidebar-ring: #1D63ED;
 }
 
 .dark {
@@ -109,8 +114,8 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.623 0.214 259.815);
-  --primary-foreground: oklch(0.145 0 0);
+  --primary: #1D63ED;
+  --primary-foreground: #ffffff;
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -120,7 +125,7 @@
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --ring: #1D63ED;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -128,12 +133,12 @@
   --chart-5: oklch(0.269 0 0);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.623 0.214 259.815);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-primary: #1D63ED;
+  --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-ring: #1D63ED;
 }
 
 @layer base {
@@ -153,10 +158,45 @@ body {
   color: var(--color-doctorly-text);
 }
 
+.font-serif-heading {
+  font-family: 'Playfair Display', Georgia, Cambria, 'Times New Roman', serif;
+}
+
+.font-cursive {
+  font-family: 'Caveat', cursive, sans-serif;
+}
+
+.font-jakarta {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
 .scroll-smooth {
   scroll-behavior: smooth;
+}
+
+.landing-page {
+  --landing-ink: #071a3d;
+  --landing-sky: #1597ff;
+  background-color: #f7fbfe;
+  color: var(--landing-ink);
+  overflow-x: clip;
+  width: 100%;
+}
+
+.landing-page :where(h1, h2, h3, h4, h5, h6) {
+  color: var(--landing-ink);
+}
+
+.landing-page > * {
+  min-width: 0;
+}
+
+@media (max-width: 639px) {
+  .landing-page {
+    overflow-wrap: anywhere;
+  }
 }
 

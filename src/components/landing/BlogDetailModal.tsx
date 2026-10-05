@@ -107,7 +107,7 @@ export default function BlogDetailModal({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto">
+      <div className="font-sans fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -207,6 +207,7 @@ export default function BlogDetailModal({
                     src={article.author.avatar}
                     alt={article.author.name}
                     fill
+                    sizes="44px"
                     className="object-cover"
                   />
                 </div>
@@ -315,7 +316,7 @@ export default function BlogDetailModal({
                   return (
                     <p
                       key={index}
-                      className="whitespace-pre-line text-slate-600 leading-relaxed text-sm sm:text-[15px]"
+                      className="whitespace-pre-line text-[#1c2b45] leading-relaxed text-sm sm:text-[15px]"
                     >
                       {block.text}
                     </p>

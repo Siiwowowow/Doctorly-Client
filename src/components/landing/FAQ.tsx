@@ -42,7 +42,7 @@ export default function FAQ() {
   };
 
   return (
-    <section className="border-t border-gray-100 bg-slate-50/70 py-16 md:py-20">
+    <section id="faq" className="border-t border-gray-100 bg-slate-50/70 py-16 md:py-20">
       <div className="container mx-auto px-4 md:px-6">
         <div className="max-w-3xl mx-auto">
           

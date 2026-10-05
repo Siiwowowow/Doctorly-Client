@@ -167,16 +167,34 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
+    const handleCallAccepted = (payload: { callId: string }) => {
+      if (activeCallIdRef.current === payload?.callId || !payload?.callId) {
+        stopRingtone();
+        dismissIncomingCall();
+      }
+    };
+
+    const handleCallRejected = (payload: { callId: string }) => {
+      if (activeCallIdRef.current === payload?.callId || !payload?.callId) {
+        stopRingtone();
+        dismissIncomingCall();
+      }
+    };
+
     (socket as any).on("call:incoming", handleCallIncoming);
     (socket as any).on("call:canceled", handleCallCanceled);
     (socket as any).on("call:missed", handleCallMissed);
     (socket as any).on("call:ended", handleCallEnded);
+    (socket as any).on("call:accepted", handleCallAccepted);
+    (socket as any).on("call:rejected", handleCallRejected);
 
     return () => {
       (socket as any).off("call:incoming", handleCallIncoming);
       (socket as any).off("call:canceled", handleCallCanceled);
       (socket as any).off("call:missed", handleCallMissed);
       (socket as any).off("call:ended", handleCallEnded);
+      (socket as any).off("call:accepted", handleCallAccepted);
+      (socket as any).off("call:rejected", handleCallRejected);
       stopRingtone();
     };
   }, [socket, isConnected, dismissIncomingCall, stopRingtone, user?.id]);

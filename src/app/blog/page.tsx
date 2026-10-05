@@ -49,7 +49,7 @@ export default function BlogPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/50 pb-20">
+    <div className="font-sans min-h-screen bg-slate-50/50 pb-20">
       {/* Header Banner */}
       <div className="relative overflow-hidden bg-gradient-to-b from-blue-950 via-doctorly-primary to-blue-950 py-16 sm:py-20 text-white">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent pointer-events-none" />

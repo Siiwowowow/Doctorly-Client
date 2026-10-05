@@ -1,0 +1,57 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1600" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F9FCFF"/>
+      <stop offset="0.5" stop-color="#F2F8FF"/>
+      <stop offset="1" stop-color="#ECF5FF"/>
+    </linearGradient>
+
+    <radialGradient id="rightGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+      gradientTransform="translate(1290 400) rotate(150) scale(420 420)">
+      <stop stop-color="#3B82F6" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#3B82F6" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="leftGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+      gradientTransform="translate(200 720) rotate(-20) scale(320 220)">
+      <stop stop-color="#38BDF8" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#38BDF8" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="accentCircle" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#3B82F6"/>
+      <stop offset="1" stop-color="#38BDF8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Base background -->
+  <rect width="1600" height="900" rx="0" fill="url(#bg)"/>
+
+  <!-- Very subtle medical vibe -->
+  <ellipse cx="1290" cy="400" rx="420" ry="420" fill="url(#rightGlow)"/>
+  <ellipse cx="220" cy="740" rx="320" ry="220" fill="url(#leftGlow)"/>
+
+  <!-- Soft right-side hero shape -->
+  <path d="M1080 130C1206 92 1361 113 1450 208C1547 311 1544 473 1461 577C1373 686 1216 739 1086 689C957 639 892 525 896 400C900 277 971 163 1080 130Z"
+        fill="#3B82F6" fill-opacity="0.07"/>
+
+  <path d="M1180 280C1288 238 1425 267 1494 355C1559 437 1554 556 1484 635C1413 716 1287 745 1183 706C1074 666 1012 571 1016 469C1020 379 1078 320 1180 280Z"
+        fill="#0EA5E9" fill-opacity="0.05"/>
+
+  <!-- Small clean accent circles -->
+  <circle cx="1365" cy="195" r="34" fill="url(#accentCircle)" fill-opacity="0.95"/>
+  <circle cx="1440" cy="278" r="18" fill="#93C5FD" fill-opacity="0.55"/>
+
+  <!-- Minimal medical cross watermark -->
+  <g opacity="0.07" transform="translate(126 128)">
+    <rect x="42" y="0" width="26" height="110" rx="13" fill="#2563EB"/>
+    <rect x="0" y="42" width="110" height="26" rx="13" fill="#2563EB"/>
+  </g>
+
+  <!-- Tiny heartbeat line accent -->
+  <path d="M118 784H168L184 754L206 814L232 738L252 784H310"
+        stroke="#60A5FA" stroke-opacity="0.28" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Soft lower left circle -->
+  <circle cx="110" cy="735" r="92" fill="#60A5FA" fill-opacity="0.08"/>
+</svg>

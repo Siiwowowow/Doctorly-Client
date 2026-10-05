@@ -36,6 +36,8 @@ import {
 import { toast } from "sonner";
 import { endCall, getCallById, acceptCall, rejectCall, getCallIceServers } from "@/services/call.services";
 import { getIceServersConfig } from "@/lib/webrtc.config";
+import { CALL_VIDEO_CONSTRAINTS, getCallMediaSupportError, switchCallCamera } from "@/lib/call-camera";
+import { ringtonePlayer } from "@/lib/ringtone";
 import { format } from "date-fns";
 
 type CallConnectionStatus =
@@ -78,6 +80,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
   const [isEnding, setIsEnding] = useState(false);
   const [isAcceptingInPage, setIsAcceptingInPage] = useState(false);
   const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
+  const [isSwitchingCamera, setIsSwitchingCamera] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
   const [audioBlocked, setAudioBlocked] = useState(false);
@@ -97,6 +100,10 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
   const remoteStreamRef = useRef<MediaStream | null>(null);
+  const facingModeRef = useRef<"user" | "environment">("user");
+  const isAudioOnlyRef = useRef(initialTypeHint === "AUDIO");
+  const isSwitchingCameraRef = useRef(false);
+  const mediaGenerationRef = useRef(0);
   const pendingCandidatesQueue = useRef<RTCIceCandidateInit[]>([]);
   const pendingLocalCandidatesQueue = useRef<RTCIceCandidateInit[]>([]);
   const isInitiatorRef = useRef<boolean>(false);
@@ -155,6 +162,18 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
     };
   }, [connectionStatus]);
 
+  useEffect(() => {
+    if (connectionStatus === "RINGING") {
+      ringtonePlayer.start();
+    } else {
+      ringtonePlayer.stop();
+    }
+
+    return () => {
+      ringtonePlayer.stop();
+    };
+  }, [connectionStatus]);
+
   // 2. Chat Auto-scroll
   useEffect(() => {
     if (isChatOpen) {
@@ -163,131 +182,81 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
     }
   }, [messages, isChatOpen]);
 
-  // 3. Local Media Acquisition
+  // 3. Initial acquisition stays stable so media controls never rejoin signaling.
   const initLocalStream = useCallback(
-    async (targetFacingMode = facingMode, targetAudioOnly = isAudioOnly): Promise<MediaStream | null> => {
-      if (isAcquiringMediaRef.current) {
-        return isAcquiringMediaRef.current;
+    async (targetFacingMode = facingModeRef.current, targetAudioOnly = isAudioOnlyRef.current): Promise<MediaStream | null> => {
+      if (isAcquiringMediaRef.current) return isAcquiringMediaRef.current;
+      const supportError = getCallMediaSupportError();
+      if (supportError) {
+        setPermissionError(supportError);
+        setConnectionStatus("FAILED");
+        return null;
+      }
+      if (localStreamRef.current?.getTracks().some((track) => track.readyState === "live")) {
+        return localStreamRef.current;
       }
 
+      const generation = mediaGenerationRef.current;
       const mediaPromise = (async () => {
-        const previousStream = localStreamRef.current;
+        let stream: MediaStream | null = null;
         try {
-          logCall("MEDIA", "getUserMedia", { audio: true, video: !targetAudioOnly, facingMode: targetFacingMode });
-
-          let stream: MediaStream;
-
+          const audio = { echoCancellation: true, noiseSuppression: true, autoGainControl: true };
           if (targetAudioOnly) {
-            // Audio-only calls NEVER request camera permissions
-            stream = await navigator.mediaDevices.getUserMedia({
-              audio: {
-                echoCancellation: true,
-                noiseSuppression: true,
-                autoGainControl: true,
-              },
-              video: false,
-            });
+            stream = await navigator.mediaDevices.getUserMedia({ audio, video: false });
           } else {
             try {
               stream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                  facingMode: targetFacingMode,
-                  width: { ideal: 3840, max: 3840 },
-                  height: { ideal: 2160, max: 2160 },
-                },
-                audio: {
-                  echoCancellation: true,
-                  noiseSuppression: true,
-                  autoGainControl: true,
-                },
+                audio, video: { ...CALL_VIDEO_CONSTRAINTS, facingMode: { ideal: targetFacingMode } },
               });
-            } catch (videoErr) {
-              console.warn("[CALL][MEDIA] High-res video constraints failed, trying basic video:", videoErr);
-              const previousVideoTrack = previousStream?.getVideoTracks().find((track) => track.readyState === "live");
-              if (previousVideoTrack) {
-                previousStream?.getVideoTracks().forEach((track) => track.stop());
-                try {
-                  stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                      facingMode: targetFacingMode,
-                      width: { ideal: 3840, max: 3840 },
-                      height: { ideal: 2160, max: 2160 },
-                    },
-                    audio: true,
-                  });
-                } catch (cameraSwitchErr) {
-                  try {
-                    stream = await navigator.mediaDevices.getUserMedia({
-                      video: {
-                        facingMode,
-                        width: { ideal: 3840, max: 3840 },
-                        height: { ideal: 2160, max: 2160 },
-                      },
-                      audio: true,
-                    });
-                    setFacingMode(facingMode);
-                  } catch {
-                    throw cameraSwitchErr;
-                  }
-                }
-              } else {
-                try {
-                  stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                      facingMode: targetFacingMode,
-                      width: { ideal: 3840, max: 3840 },
-                      height: { ideal: 2160, max: 2160 },
-                    },
-                    audio: true,
-                  });
-                } catch (cameraErr) {
-                  console.warn("[CALL][MEDIA] Camera unavailable, falling back to audio stream:", cameraErr);
-                  toast.info("Camera not detected. Connecting audio only.");
+            } catch {
+              if (generation !== mediaGenerationRef.current) return null;
+              try {
+                stream = await navigator.mediaDevices.getUserMedia({ audio, video: { facingMode: { ideal: targetFacingMode } } });
+              } catch {
+                if (generation !== mediaGenerationRef.current) return null;
+                stream = await navigator.mediaDevices.getUserMedia({ audio, video: false });
+                if (generation === mediaGenerationRef.current) {
+                  isAudioOnlyRef.current = true;
                   setIsAudioOnly(true);
                   setIsVideoOn(false);
-                  stream = await navigator.mediaDevices.getUserMedia({
-                    audio: true,
-                    video: false,
-                  });
+                  toast.info("Camera unavailable. Connecting audio only.");
                 }
               }
             }
           }
+          if (generation !== mediaGenerationRef.current) {
+            stream.getTracks().forEach((track) => track.stop());
+            return null;
+          }
 
-          const audioTracksCount = stream.getAudioTracks().length;
-          const videoTracksCount = stream.getVideoTracks().length;
-          logCall("MEDIA", "local-stream-acquired", { audioTracks: audioTracksCount, videoTracks: videoTracksCount });
-
-          // Attach or replace tracks on existing RTCPeerConnection
-          if (peerConnectionRef.current && peerConnectionRef.current.signalingState !== "closed") {
-            const pc = peerConnectionRef.current;
-            const senders = pc.getSenders();
+          const pc = peerConnectionRef.current;
+          if (pc && pc.signalingState !== "closed") {
             for (const track of stream.getTracks()) {
-              const previousTrack = previousStream?.getTracks().find((oldTrack) => oldTrack.kind === track.kind);
-              if (previousTrack) track.enabled = previousTrack.enabled;
-              const sender = senders.find((candidate) => candidate.track?.kind === track.kind);
-              if (sender) {
-                await sender.replaceTrack(track);
-              } else {
-                pc.addTrack(track, stream);
-              }
+              pc.addTrack(track, stream);
             }
           }
-
           localStreamRef.current = stream;
-          if (previousStream && previousStream !== stream) {
-            previousStream.getTracks().forEach((track) => track.stop());
+          const videoTrack = stream.getVideoTracks()[0];
+          const actualFacingMode = videoTrack?.getSettings().facingMode;
+          if (actualFacingMode === "user" || actualFacingMode === "environment") {
+            facingModeRef.current = actualFacingMode;
+            setFacingMode(actualFacingMode);
           }
-          if (localVideoRef.current && !targetAudioOnly) {
+          if (localVideoRef.current) {
             localVideoRef.current.srcObject = stream;
+            localVideoRef.current.play().catch(() => {});
           }
           setPermissionError(null);
-
-          setIsMicOn(true);
-          if (!targetAudioOnly) setIsVideoOn(true);
+          setIsMicOn(stream.getAudioTracks()[0]?.enabled ?? false);
+          setIsVideoOn(videoTrack?.enabled ?? false);
+          logCall("MEDIA", "local-stream-acquired", {
+            audioTracks: stream.getAudioTracks().length, videoTracks: stream.getVideoTracks().length,
+          });
           return stream;
         } catch (err: any) {
-          logCall("MEDIA", "permission-denied", err?.name || err?.message);
+          stream?.getTracks().forEach((track) => track.stop());
+          if (generation !== mediaGenerationRef.current) return null;
+          logCall("MEDIA", "acquisition-failed", err?.name || err?.message);
           let errorMsg = "Microphone/Camera access was blocked. Please check browser settings.";
           if (err?.name === "NotAllowedError" || err?.name === "PermissionDeniedError") {
             errorMsg = "Permission denied. Please allow microphone and camera access in your browser settings.";
@@ -297,23 +266,24 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
             errorMsg = "Camera/microphone is in use by another application.";
           }
           setPermissionError(errorMsg);
+          setConnectionStatus("FAILED");
           toast.error(errorMsg);
           return null;
         } finally {
           isAcquiringMediaRef.current = null;
         }
       })();
-
       isAcquiringMediaRef.current = mediaPromise;
       return mediaPromise;
     },
-    [facingMode, isAudioOnly, logCall]
+    [logCall]
   );
 
   // 4. Safe Teardown & Local Cleanup
   const handleEndCallLocally = useCallback(
     (reason = "Consultation ended") => {
       logCall("PC", "cleanup", { reason });
+      mediaGenerationRef.current += 1;
 
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach((track) => track.stop());
@@ -352,6 +322,8 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
 
   // 5. Create RTCPeerConnection (Single Instance Guarantee)
   const getOrCreatePeerConnection = useCallback(() => {
+    const supportError = getCallMediaSupportError();
+    if (supportError) throw new Error(supportError);
     if (peerConnectionRef.current && peerConnectionRef.current.signalingState !== "closed") {
       logCall("PC", "reuse", { callId });
       return peerConnectionRef.current;
@@ -511,7 +483,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
 
     peerConnectionRef.current = pc;
     return pc;
-  }, [callId, isConnected, logCall, socket, user?.id, user?.role]);
+  }, [callId, logCall, socket, user?.id, user?.role]);
 
   // 6. Flush Queued ICE Candidates
   const flushPendingIceCandidates = useCallback(
@@ -539,6 +511,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
   // 7. Create Offer (DOCTOR / CALLER ONLY — Triggered after call:ready handshake)
   const createOffer = useCallback(async (iceRestart = false) => {
     if (isMakingOfferRef.current) return;
+    const generation = mediaGenerationRef.current;
     try {
       isMakingOfferRef.current = true;
       setConnectionStatus("CONNECTING");
@@ -548,6 +521,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
       if (!localStream) {
         localStream = await initLocalStream();
       }
+      if (!localStream || generation !== mediaGenerationRef.current) return;
 
       const pc = getOrCreatePeerConnection();
 
@@ -608,6 +582,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
   // 8. Handle Received Offer (PATIENT / CALLEE ONLY)
   const handleReceiveOffer = useCallback(
     async (offer: RTCSessionDescriptionInit) => {
+      const generation = mediaGenerationRef.current;
       try {
         logCall("SIGNAL", "offer-received", { sdpType: offer.type });
         setConnectionStatus("CONNECTING");
@@ -616,6 +591,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
         if (!localStream) {
           localStream = await initLocalStream();
         }
+        if (!localStream || generation !== mediaGenerationRef.current) return;
 
         const pc = getOrCreatePeerConnection();
 
@@ -705,6 +681,7 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
         setCallDetails(call);
 
         const isAudio = call.type === "AUDIO";
+        isAudioOnlyRef.current = isAudio;
         setIsAudioOnly(isAudio);
         if (isAudio) setIsVideoOn(false);
 
@@ -721,14 +698,15 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
         if (isCaller) {
           // Doctor / Caller flow: Start preview, wait for call:ready
           setConnectionStatus("RINGING");
-          initLocalStream();
+          initLocalStream(facingModeRef.current, isAudio);
         } else {
           // Patient / Callee flow: If accepted or joining, acquire media and emit call:ready
           if (call.status === "RINGING") {
             setConnectionStatus("RINGING");
           } else {
             setConnectionStatus("CONNECTING");
-            initLocalStream().then(() => {
+            initLocalStream(facingModeRef.current, isAudio).then((stream) => {
+              if (!stream) return;
               if (socket && isConnected) {
                 logCall("SIGNAL", "emit:call:ready", { callId, role: user?.role });
                 (socket as any).emit("call:ready", { callId, userId: user?.id, role: user?.role });
@@ -782,8 +760,10 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
     };
 
     // Caller receives call:accepted -> Callee accepted call
-    const handleCallAcceptedEvent = () => {
+    const handleCallAcceptedEvent = (payload: any) => {
+      if (payload.callId !== callId) return;
       logCall("SIGNAL", "recv:call:accepted");
+      ringtonePlayer.stop();
       toast.success("Recipient accepted call");
       if (isInitiatorRef.current && isPeerReadyRef.current) {
         createOffer();
@@ -905,6 +885,11 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
   // an otherwise healthy RTCPeerConnection.
   useEffect(() => {
     return () => {
+      mediaGenerationRef.current += 1;
+      if (iceRestartTimerRef.current) {
+        clearTimeout(iceRestartTimerRef.current);
+        iceRestartTimerRef.current = null;
+      }
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach((track) => track.stop());
         localStreamRef.current = null;
@@ -930,7 +915,8 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
     try {
       await acceptCall(callId);
       setConnectionStatus("CONNECTING");
-      await initLocalStream();
+      const stream = await initLocalStream();
+      if (!stream) return;
       if (socket && isConnected) {
         (socket as any).emit("call:join", { callId });
         (socket as any).emit("call:ready", { callId, userId: user?.id, role: user?.role });
@@ -995,10 +981,42 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
   };
 
   const toggleCameraFlip = async () => {
-    if (isAudioOnly) return;
-    const nextMode = facingMode === "user" ? "environment" : "user";
-    setFacingMode(nextMode);
-    await initLocalStream(nextMode, false);
+    if (isAudioOnly || isSwitchingCameraRef.current || isAcquiringMediaRef.current) return;
+    const stream = localStreamRef.current;
+    if (!stream?.getVideoTracks().length) return;
+    const generation = mediaGenerationRef.current;
+    const isActive = () => generation === mediaGenerationRef.current && localStreamRef.current === stream;
+    isSwitchingCameraRef.current = true;
+    setIsSwitchingCamera(true);
+    const previousMode = facingModeRef.current;
+    try {
+      const actualMode = await switchCallCamera({
+        stream,
+        facingMode: previousMode === "user" ? "environment" : "user",
+        previousFacingMode: previousMode,
+        getPeerConnection: () => peerConnectionRef.current,
+        isActive,
+      });
+      if (!isActive()) return;
+      facingModeRef.current = actualMode;
+      setFacingMode(actualMode);
+      logCall("MEDIA", "camera-switched", { facingMode: actualMode });
+    } catch (error) {
+      if (!isActive()) return;
+      console.warn("[CALL][MEDIA] Camera switch failed:", error);
+      toast.error("Unable to switch camera. Check camera access and try again.");
+    } finally {
+      isSwitchingCameraRef.current = false;
+      if (isActive()) {
+        const track = stream.getVideoTracks()[0];
+        setIsVideoOn(track?.readyState === "live" && track.enabled);
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = stream;
+          localVideoRef.current.play().catch(() => {});
+        }
+        setIsSwitchingCamera(false);
+      }
+    }
   };
 
   const toggleFullscreen = () => {
@@ -1027,7 +1045,8 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
     if (peerConnectionRef.current?.signalingState !== "closed") {
       peerConnectionRef.current?.restartIce();
     }
-    initLocalStream().then(() => {
+    initLocalStream().then((stream) => {
+      if (!stream) return;
       if (socket && isConnected) {
         if (isInitiatorRef.current) {
           createOffer(true);
@@ -1483,11 +1502,14 @@ export default function VideoCallPage(props: { params: Promise<{ id: string }> }
                 <Button
                   variant="secondary"
                   size="icon"
-                  className="rounded-full h-11 w-11 sm:h-12 sm:w-12 bg-white/10 hover:bg-white/20 text-white border border-white/10 sm:hidden"
+                  className="rounded-full h-11 w-11 sm:h-12 sm:w-12 bg-white/10 hover:bg-white/20 text-white border border-white/10"
                   onClick={toggleCameraFlip}
-                  title="Switch Camera"
+                  disabled={isSwitchingCamera || isEnding || !["RINGING", "CONNECTING", "CONNECTED", "RECONNECTING"].includes(connectionStatus)}
+                  aria-label={isSwitchingCamera ? "Switching camera" : "Switch camera"}
+                  aria-busy={isSwitchingCamera}
+                  title={isSwitchingCamera ? "Switching Camera..." : "Switch Camera"}
                 >
-                  <SwitchCamera className="h-5 w-5" />
+                  <SwitchCamera className={`h-5 w-5 ${isSwitchingCamera ? "animate-spin" : ""}`} />
                 </Button>
               </>
             )}

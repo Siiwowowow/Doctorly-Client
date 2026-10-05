@@ -1,85 +1,94 @@
-import { Smartphone, Download, Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
+"use client";
+
+import Image from "next/image";
+import { Activity, Apple, Beaker, FileText, Pill, Play, Stethoscope } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 export default function MobileExperience() {
   const t = useTranslations("mobileExperience");
+
   return (
-    <section className="py-24 bg-doctorly-bg overflow-hidden border-y border-gray-100">
-      <div className="container mx-auto px-4 md:px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center max-w-6xl mx-auto">
-          
-          <div className="order-2 lg:order-1 relative h-[500px] flex justify-center">
-            {/* Phone Mockup Frame */}
-            <div className="relative w-[280px] h-[580px] bg-black rounded-[40px] border-[10px] border-black shadow-2xl overflow-hidden z-10 transform lg:-rotate-6 hover:rotate-0 transition-transform duration-500">
-              
-              {/* Screen Content */}
-              <div className="absolute inset-0 bg-white overflow-hidden">
-                <div className="bg-doctorly-primary h-40 rounded-b-3xl p-6 text-white">
-                  <div className="flex justify-between items-center mb-6">
-                    <span className="font-bold">Doctorly</span>
-                    <div className="w-8 h-8 rounded-full bg-white/20"></div>
-                  </div>
-                  <h3 className="text-xl font-bold mb-1">{t("hiAisha")}</h3>
-                  <p className="text-xs text-white/80">{t("howAreYou")}</p>
-                </div>
-                
-                <div className="px-4 -mt-6">
-                  <div className="bg-white p-4 rounded-2xl shadow-lg border border-gray-100 mb-4">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 rounded-full bg-gray-200"></div>
-                      <div>
-                        <p className="text-sm font-bold">Dr. Sharma</p>
-                        <p className="text-[10px] text-gray-500">Video Consult • 11:30 AM</p>
-                      </div>
-                    </div>
-                    <Button className="w-full h-8 text-xs bg-doctorly-primary text-white rounded-lg">{t("joinCall")}</Button>
-                  </div>
-                  
-                  <h4 className="font-bold text-sm mb-3 text-gray-800">{t("topSpecialties")}</h4>
-                  <div className="grid grid-cols-4 gap-2 mb-6">
-                    {[1, 2, 3, 4].map((i) => (
-                      <div key={i} className="flex flex-col items-center gap-1">
-                        <div className="w-12 h-12 bg-gray-50 rounded-xl"></div>
-                        <div className="w-8 h-2 bg-gray-200 rounded"></div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+    <section className="font-sans w-full pt-10 sm:pt-12 lg:pt-16">
+      <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8">
+        <div className="relative overflow-hidden rounded-t-[30px] bg-[#eaf7ff] px-6 pt-10 sm:px-10 sm:pt-12 lg:min-h-[390px] lg:px-14 lg:pt-0">
+          <Image src="/doctorly-assest/bg-7.png" alt="" fill sizes="1136px" className="pointer-events-none select-none object-cover opacity-75" />
+
+          <div className="relative z-10 grid items-center gap-10 lg:min-h-[390px] lg:grid-cols-[52%_48%]">
+            <div className="pb-4 lg:py-12">
+              <div className="inline-flex items-center gap-2 text-xs font-extrabold tracking-[0.08em] text-[#1268e8] uppercase">
+                <span className="flex size-6 items-center justify-center rounded-full bg-white text-[#1268e8] shadow-sm">
+                  <Activity className="size-3.5" />
+                </span>
+                {t("eyebrow")}
+              </div>
+              <h2 className="mt-4 text-[36px] leading-[1.02] font-extrabold tracking-[-0.04em] text-[#09143b] sm:text-[46px] lg:text-[52px]">
+                {t("title")}
+              </h2>
+              <p className="mt-4 max-w-xl text-sm leading-6 font-medium text-[#536681] sm:text-base lg:text-lg">
+                {t("subtitle")}
+              </p>
+
+              <div className="mt-7 flex flex-wrap gap-3">
+                <a href="#" className="flex h-14 items-center gap-3 rounded-xl bg-black px-5 text-white transition hover:-translate-y-0.5 hover:bg-[#101827]">
+                  <Apple className="size-7 fill-current" />
+                  <span>
+                    <span className="block text-[9px] leading-none uppercase">Download on the</span>
+                    <strong className="mt-1 block text-base leading-none">{t("appStore")}</strong>
+                  </span>
+                </a>
+                <a href="#" className="flex h-14 items-center gap-3 rounded-xl bg-black px-5 text-white transition hover:-translate-y-0.5 hover:bg-[#101827]">
+                  <Play className="size-6 fill-current" />
+                  <span>
+                    <span className="block text-[9px] leading-none uppercase">Get it on</span>
+                    <strong className="mt-1 block text-base leading-none">{t("googlePlay")}</strong>
+                  </span>
+                </a>
               </div>
             </div>
 
-            {/* Floating Elements */}
-            <div className="absolute top-20 right-10 lg:-right-10 bg-white p-3 rounded-xl shadow-xl border border-gray-100 flex items-center gap-3 z-20 animate-bounce" style={{animationDuration: '3s'}}>
-              <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
-                <Smartphone className="w-5 h-5" />
+            <div className="relative mx-auto h-[340px] w-full max-w-[470px] lg:self-end">
+              <div className="absolute bottom-[-48px] left-[7%] h-[330px] w-[178px] rotate-[-8deg] overflow-hidden rounded-[34px] border-[9px] border-[#101722] bg-white shadow-[0_24px_50px_-25px_rgba(6,42,96,0.6)]">
+                <div className="absolute top-0 left-1/2 z-10 h-5 w-20 -translate-x-1/2 rounded-b-2xl bg-[#101722]" />
+                <div className="flex h-full flex-col items-center justify-center bg-[linear-gradient(145deg,#ffffff,#dff3ff)] px-4 text-center">
+                  <span className="flex size-14 items-center justify-center rounded-2xl bg-[#1268e8] text-white shadow-lg shadow-blue-500/25">
+                    <Activity className="size-8" />
+                  </span>
+                  <strong className="mt-4 text-xl text-[#09143b]">Doctorly</strong>
+                  <span className="mt-2 text-[10px] font-semibold text-[#6d7d96]">Better Care<br />Brighter Tomorrow</span>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-bold">{t("appAvailable")}</p>
-                <div className="flex text-yellow-400">
-                  {[...Array(5)].map((_, i) => <Star key={i} className="w-3 h-3 fill-current" />)}
+
+              <div className="absolute right-[5%] bottom-[-28px] h-[360px] w-[195px] rotate-[6deg] overflow-hidden rounded-[36px] border-[9px] border-[#101722] bg-white shadow-[0_28px_55px_-25px_rgba(6,42,96,0.7)] sm:right-[10%]">
+                <div className="absolute top-0 left-1/2 z-20 h-5 w-20 -translate-x-1/2 rounded-b-2xl bg-[#101722]" />
+                <div className="bg-[#1268e8] px-4 pt-9 pb-7 text-white">
+                  <p className="text-[10px] font-medium">Good Morning,</p>
+                  <p className="mt-1 text-xs font-bold">A healthier you today!</p>
+                </div>
+                <div className="-mt-3 grid grid-cols-2 gap-2 px-3">
+                  {[
+                    [Stethoscope, "Choose Doctor"],
+                    [Beaker, "Lab Tests"],
+                    [Pill, "Medicine"],
+                    [FileText, "Records"],
+                  ].map(([Icon, label]) => {
+                    const ServiceIcon = Icon as typeof Stethoscope;
+                    return (
+                      <div key={label as string} className="flex h-[76px] flex-col items-center justify-center rounded-xl bg-white text-center shadow-[0_8px_20px_-14px_rgba(4,52,120,0.55)]">
+                        <ServiceIcon className="size-5 text-[#1268e8]" />
+                        <span className="mt-2 text-[8px] font-bold text-[#273a5d]">{label as string}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="absolute inset-x-0 bottom-0 flex h-12 items-center justify-around border-t border-[#e8eef5] bg-white text-[#91a0b7]">
+                  <span className="size-2 rounded-full bg-[#1268e8]" />
+                  <span className="size-2 rounded-full bg-[#c5cfdd]" />
+                  <span className="size-2 rounded-full bg-[#c5cfdd]" />
+                  <span className="size-2 rounded-full bg-[#c5cfdd]" />
                 </div>
               </div>
             </div>
           </div>
-
-          <div className="order-1 lg:order-2">
-            <h2 className="text-3xl md:text-5xl font-bold text-doctorly-text mb-6 tracking-tight leading-tight">
-              {t("title")}
-            </h2>
-            <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-              {t("subtitle")}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button className="bg-doctorly-text hover:bg-black text-white rounded-xl h-14 px-8 text-base font-bold flex items-center gap-2">
-                <Download className="w-5 h-5" /> {t("appStore")}
-              </Button>
-              <Button className="bg-doctorly-text hover:bg-black text-white rounded-xl h-14 px-8 text-base font-bold flex items-center gap-2">
-                <Download className="w-5 h-5" /> {t("googlePlay")}
-              </Button>
-            </div>
-          </div>
-
         </div>
       </div>
     </section>

@@ -2,378 +2,181 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-
-import {
-  Search,
-  CalendarDays,
-  Star,
-  CheckCircle2,
-  ChevronRight,
-  Video,
-  SlidersHorizontal,
-  ArrowUpRight,
-} from "lucide-react";
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { useTranslations } from "next-intl";
 import Image from "next/image";
+import Link from "next/link";
+import { Search, Star, ArrowRight, X } from "lucide-react";
 import DOCTORS from "@/json/doctors.json";
 
 export default function DoctorSearch() {
-  const t = useTranslations("doctorSearch");
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [specialty, setSpecialty] = useState("");
 
-  const handleSearch = () => {
+  const handleSearch = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     const params = new URLSearchParams();
-    if (searchTerm) params.set("query", searchTerm);
-    if (specialty && specialty !== t("allSpecialties")) params.set("specialty", specialty);
-    
+    if (searchTerm.trim()) params.set("query", searchTerm.trim());
+    if (specialty) params.set("specialty", specialty);
     router.push(`/doctors?${params.toString()}`);
   };
-  
+
   return (
-    <section className="relative overflow-hidden bg-slate-50/70 py-16 md:py-20">
-      {/* Background decoration */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-[-120px] top-20 h-72 w-72 rounded-full bg-doctorly-primary/5 blur-3xl" />
-        <div className="absolute right-[-100px] bottom-0 h-80 w-80 rounded-full bg-doctorly-secondary/5 blur-3xl" />
-      </div>
-
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="mx-auto mb-10 max-w-2xl text-center"
-        >
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-doctorly-primary/15 bg-white px-3 py-1.5 text-xs font-semibold text-doctorly-primary shadow-sm">
-            <span className="size-1.5 animate-pulse rounded-full bg-doctorly-primary" />
-            {t("findTrusted")}
-          </div>
-
-          <h2 className="text-3xl font-extrabold tracking-tight text-doctorly-text sm:text-4xl md:text-[42px]">
-            {t("titleStart")}
-            <span className="text-doctorly-primary">{t("titleHighlight")}</span>
-          </h2>
-
-          <p className="mt-4 text-sm leading-6 text-gray-500 sm:text-base">
-            {t("subtitle")}
-          </p>
-        </motion.div>
-
-        {/* Modern Search */}
-        <motion.div
-          initial={{ opacity: 0, y: 25, scale: 0.98 }}
-          whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="mx-auto mb-14 max-w-5xl"
-        >
-          <div
-            className="
-              rounded-xl border border-gray-200/80
-              bg-white p-2 shadow-[0_12px_40px_rgba(15,23,42,0.06)]
-              md:rounded-xl md:p-2.5
-            "
-          >
-            <div className="flex flex-col gap-2 md:flex-row md:items-center">
-              {/* Search */}
-              <div className="group flex min-h-[58px] flex-1 items-center gap-3 rounded-xl bg-gray-50 px-4 transition-all focus-within:bg-white focus-within:ring-2 focus-within:ring-doctorly-primary/10">
-                <Search className="size-5 shrink-0 text-gray-400 transition-colors group-focus-within:text-doctorly-primary" />
-
-                <div className="min-w-0 flex-1">
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                    {t("searchLabel")}
-                  </label>
-
-                  <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                    placeholder={t("searchPlaceholder")}
-                    className="w-full bg-transparent text-sm font-medium text-gray-700 outline-none placeholder:text-gray-400"
-                  />
-                </div>
-              </div>
-
-              <div className="hidden h-10 w-px bg-gray-200 md:block" />
-
-              {/* Specialty */}
-              <div className="group flex min-h-[58px] flex-1 items-center gap-3 rounded-xl bg-gray-50 px-4 transition-all hover:bg-gray-100/70">
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white text-gray-400 shadow-sm">
-                  <SlidersHorizontal className="size-4" />
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                    {t("specialtyLabel")}
-                  </label>
-
-                  <select 
-                    value={specialty}
-                    onChange={(e) => setSpecialty(e.target.value)}
-                    className="w-full cursor-pointer appearance-none bg-transparent text-sm font-semibold text-gray-700 outline-none"
-                  >
-                    <option value="">{t("allSpecialties")}</option>
-                    <option value="Cardiology">Cardiology</option>
-                    <option value="Dermatology">Dermatology</option>
-                    <option value="Pediatrics">Pediatrics</option>
-                    <option value="Neurology">Neurology</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="hidden h-10 w-px bg-gray-200 md:block" />
-
-              {/* Availability */}
-              <div className="group flex min-h-[58px] flex-1 items-center gap-3 rounded-xl bg-gray-50 px-4 transition-all hover:bg-gray-100/70">
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white text-gray-400 shadow-sm">
-                  <CalendarDays className="size-4" />
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                    {t("availabilityLabel")}
-                  </label>
-
-                  <select className="w-full cursor-pointer appearance-none bg-transparent text-sm font-semibold text-gray-700 outline-none">
-                    <option>{t("anyAvailability")}</option>
-                    <option>{t("availableToday")}</option>
-                    <option>{t("availableTomorrow")}</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Search button */}
-              <Button
-                onClick={handleSearch}
-                className="
-                  min-h-[58px] rounded-xl bg-doctorly-primary px-7
-                  font-semibold text-white shadow-lg
-                  shadow-doctorly-primary/15 transition-all
-                  hover:-translate-y-0.5 hover:bg-doctorly-primary/90
-                "
-              >
-                <Search className="mr-2 size-4" />
-                {t("searchBtn")}
-              </Button>
-            </div>
-          </div>
-
-          {/* Quick filters */}
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-            <span className="mr-1 text-xs font-medium text-gray-400">
-              {t("popular")}
-            </span>
-
-            {["Cardiology", "Dermatology", "Pediatrics", "Neurology"].map(
-              (item) => (
-                <button
-                  key={item}
-                  className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-[11px] font-medium text-gray-500 transition-all hover:border-doctorly-primary/20 hover:bg-doctorly-primary/5 hover:text-doctorly-primary"
-                >
-                  {item}
-                </button>
-              )
-            )}
-          </div>
-        </motion.div>
-
-        {/* Results header */}
-        <div className="mb-5 flex items-center justify-between">
+    <section id="doctor-search" className="font-sans relative w-full py-10 sm:py-14 lg:py-16">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Header Section: Black and Blue Mixed + Attractive English */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-6 sm:mb-8">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-              {t("recommended")}
+            {/* Pill Badge */}
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-[#0d8bf2]/25 bg-white px-3 py-0.5 text-xs font-bold tracking-wider text-[#0d8bf2] uppercase shadow-xs">
+              <span className="size-2 rounded-full bg-[#0d8bf2]" />
+              <span>VERIFIED MEDICAL LEADERS</span>
+            </div>
+
+            {/* Title: Black and Blue Mixed */}
+            <h2 className="mt-2.5 font-sans text-2xl sm:text-3xl lg:text-[34px] xl:text-[36px] font-extrabold tracking-tight leading-tight">
+              <span className="text-black">Consult With Our Most</span>{" "}
+              <span className="text-[#0d8bf2]">Trusted Specialist Doctors</span>
+            </h2>
+
+            {/* Subtitle */}
+            <p className="mt-1.5 text-xs sm:text-sm text-slate-600 font-normal max-w-2xl leading-relaxed">
+              Board-certified practitioners with decades of clinical excellence. Book instant video consultations or visit chambers near you.
             </p>
-            <h3 className="mt-1 text-lg font-bold text-doctorly-text">
-              {t("availableDoctors")}
-            </h3>
           </div>
 
-          <button className="hidden items-center gap-1 text-sm font-semibold text-doctorly-primary sm:flex">
-            {t("sortBy")}
-            <ChevronRight className="size-4" />
-          </button>
+          {/* View All Doctors Link */}
+          <Link
+            href="/doctors"
+            className="group inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold transition-colors shrink-0"
+          >
+            <span className="text-black transition-colors group-hover:text-[#0d8bf2]">Explore All</span>
+            <span className="text-[#0d8bf2]">Specialists</span>
+            <ArrowRight className="size-4 text-[#0d8bf2] transition-transform duration-200 group-hover:translate-x-1" />
+          </Link>
         </div>
 
-        {/* Doctors */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {DOCTORS.map((doctor, index) => (
-            <motion.div
-              key={doctor.name}
-              initial={{ opacity: 0, y: 25 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{
-                duration: 0.5,
-                delay: index * 0.08,
-              }}
-              whileHover={{ y: -5 }}
-              className="
-                group relative overflow-hidden rounded-lg
-                border border-gray-200/80 bg-white
-                p-4 shadow-sm
-                transition-all duration-300
-                hover:border-doctorly-primary/20
-                hover:shadow-[0_18px_45px_rgba(15,23,42,0.08)]
-              "
+        {/* Search Dock: Sends user to /doctors on submit */}
+        <form onSubmit={handleSearch} className="mb-7 sm:mb-9 w-full max-w-3xl">
+          <div className="flex flex-col sm:flex-row items-center gap-2 rounded-2xl border border-slate-200/90 bg-white p-2 shadow-[0_4px_18px_-4px_rgba(13,139,242,0.06)] transition-all focus-within:border-[#0d8bf2] focus-within:shadow-[0_8px_24px_-4px_rgba(13,139,242,0.18)]">
+            {/* Search Input */}
+            <div className="flex flex-1 items-center gap-2.5 px-3 py-1.5 w-full">
+              <Search className="size-4.5 text-[#0d8bf2] shrink-0" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search by doctor name, department, symptoms, or hospital..."
+                className="w-full bg-transparent text-sm font-medium text-slate-800 outline-none placeholder:text-slate-400"
+              />
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm("")}
+                  className="text-slate-400 hover:text-slate-600 p-1"
+                >
+                  <X className="size-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Specialty Dropdown */}
+            <div className="hidden sm:flex items-center border-l border-slate-200/80 pl-3 pr-2 py-1">
+              <select
+                value={specialty}
+                onChange={(e) => setSpecialty(e.target.value)}
+                className="cursor-pointer appearance-none bg-transparent text-xs font-bold text-slate-700 outline-none pr-2"
+              >
+                <option value="">All Medical Specialties</option>
+                <option value="General Physician">General Medicine</option>
+                <option value="Cardiologist">Cardiology (Heart Care)</option>
+                <option value="Gynecologist">Gynecology & Obstetrics</option>
+                <option value="Dermatologist">Dermatology & Skin Care</option>
+                <option value="Mental Health Specialist">Neuro & Mental Health</option>
+              </select>
+            </div>
+
+            {/* Search Button */}
+            <button
+              type="submit"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-[#0d8bf2] hover:bg-[#0b78d1] px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-xs transition-all hover:shadow-md hover:shadow-[#0d8bf2]/20 cursor-pointer"
             >
-              {/* Online */}
-              <div className="absolute right-3 top-3 z-10">
-                {doctor.isOnline ? (
-                  <span className="flex items-center gap-1.5 rounded-full border border-emerald-100 bg-white/95 px-2 py-1 text-[9px] font-bold text-emerald-600 shadow-sm backdrop-blur">
-                    <span className="relative flex size-1.5">
-                      <span className="absolute size-full animate-ping rounded-full bg-emerald-500 opacity-60" />
-                      <span className="relative size-1.5 rounded-full bg-emerald-500" />
-                    </span>
-                    {t("online")}
-                  </span>
-                ) : (
-                  <span className="rounded-full bg-gray-100 px-2 py-1 text-[9px] font-semibold text-gray-400">
-                    {t("offline")}
-                  </span>
-                )}
-              </div>
+              <Search className="size-4" />
+              <span>Search Doctors</span>
+            </button>
+          </div>
+        </form>
 
-              {/* Doctor image */}
-              <div className="relative mb-4 flex justify-center pt-2">
-                <div className="relative">
-                  <div className="size-[92px] overflow-hidden rounded-2xl bg-gray-100 ring-4 ring-gray-50 transition-all duration-300 group-hover:ring-doctorly-primary/10 relative">
-                    <Image
-                      src={doctor.image}
-                      alt={doctor.name}
-                      fill
-                      sizes="92px"
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  </div>
+        {/* 5 Doctor Cards Grid: Matching user reference image with Black & Blue mixed typography */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 lg:gap-3.5 xl:gap-4">
+          {DOCTORS.slice(0, 5).map((doctor) => (
+            <Link
+              key={doctor.id || doctor.name}
+              href={`/doctors?doctor=${encodeURIComponent(doctor.name)}`}
+              className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_4px_18px_-4px_rgba(13,139,242,0.06)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_16px_32px_-6px_rgba(13,139,242,0.18)] hover:border-[#0d8bf2] cursor-pointer"
+            >
+              {/* Doctor Image Container */}
+              <div className="relative aspect-[4/3.8] w-full overflow-hidden bg-[#F1F5F9]">
+                <Image
+                  src={doctor.image}
+                  alt={doctor.name}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 240px"
+                  className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                  priority
+                />
 
-                  {doctor.isOnline && (
-                    <span className="absolute -bottom-1 -right-1 flex size-6 items-center justify-center rounded-full border-2 border-white bg-emerald-500 text-white shadow-sm">
-                      <Video className="size-3" />
-                    </span>
-                  )}
+                {/* Floating Top-Right Circular Arrow Button */}
+                <div className="absolute top-2.5 right-2.5 z-10">
+                  <span className="flex size-7 items-center justify-center rounded-full border border-slate-200/60 bg-white/95 text-slate-700 shadow-sm backdrop-blur-xs transition-all duration-300 group-hover:border-[#0d8bf2] group-hover:bg-[#0d8bf2] group-hover:text-white group-hover:scale-105">
+                    <ArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
+                  </span>
                 </div>
               </div>
 
-              {/* Identity */}
-              <div className="text-center">
-                <div className="flex items-center justify-center gap-1">
-                  <h3 className="text-[15px] font-bold text-doctorly-text">
+              {/* Doctor Info Body */}
+              <div className="p-4 sm:p-4.5 pt-3.5 flex flex-col flex-1 justify-between">
+                <div>
+                  {/* Doctor Name: Solid Black */}
+                  <h3
+                    style={{ color: "#000000" }}
+                    className="font-sans text-[15px] sm:text-[16px] font-extrabold leading-tight text-black! group-hover:text-[#0d8bf2] transition-colors"
+                  >
                     {doctor.name}
                   </h3>
 
-                  <CheckCircle2 className="size-3.5 shrink-0 text-doctorly-primary" />
+                  {/* Specialty: Clean #0d8bf2 Blue text */}
+                  <p className="mt-1 font-sans text-xs sm:text-[13px] font-bold text-[#0d8bf2] leading-snug">
+                    {doctor.specialty}
+                  </p>
                 </div>
 
-                <p className="mt-1 text-xs font-medium text-doctorly-primary">
-                  {doctor.specialty}
-                </p>
-              </div>
-
-              {/* Rating / Experience */}
-              <div className="mt-4 flex items-center justify-center gap-3 border-y border-gray-100 py-3">
-                <div className="flex items-center gap-1">
-                  <Star className="size-3.5 fill-amber-400 text-amber-400" />
-                  <span className="text-xs font-bold text-gray-700">
-                    {doctor.rating}
-                  </span>
-                  <span className="text-[10px] text-gray-400">
-                    ({doctor.reviews})
-                  </span>
-                </div>
-
-                <span className="h-4 w-px bg-gray-200" />
-
-                <span className="text-[10px] font-semibold text-gray-500">
-                  {doctor.experience}
-                </span>
-              </div>
-
-              {/* Availability */}
-              <div className="mt-4 rounded-xl bg-gray-50 px-3 py-2.5">
-                <div className="flex items-center justify-between gap-2">
-                  <div>
-                    <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
-                      {t("consultation")}
-                    </p>
-                    <p className="mt-0.5 text-sm font-bold text-doctorly-text">
-                      {doctor.fee}
-                    </p>
+                <div className="mt-3">
+                  {/* Rating: Black number with golden star */}
+                  <div className="flex items-center gap-1.5 text-xs font-medium">
+                    <Star className="size-3.5 fill-amber-400 text-amber-400 shrink-0" />
+                    <span className="font-extrabold text-black">{doctor.rating}</span>
+                    <span className="text-slate-400 font-normal">({doctor.reviews})</span>
                   </div>
 
-                  <div className="text-right">
-                    <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
-                      {t("nextAvailable")}
-                    </p>
-                    <p className="mt-0.5 text-[10px] font-bold text-doctorly-primary">
-                      {doctor.availability}
-                    </p>
+                  {/* Status row: Green dot + Available Now & Blue Book Slot */}
+                  <div className="mt-2.5 flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+                    <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-600">
+                      <span className="relative flex size-2">
+                        <span className="absolute size-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                        <span className="relative size-2 rounded-full bg-emerald-500" />
+                      </span>
+                      <span>Available Now</span>
+                    </span>
+
+                    <span className="text-[11px] font-bold text-[#0d8bf2] group-hover:underline flex items-center gap-0.5">
+                      Book Slot <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
+                    </span>
                   </div>
                 </div>
               </div>
-
-              {/* Actions */}
-              <div className="mt-3 grid grid-cols-[1fr_1.2fr] gap-2">
-                <Button
-                  variant="outline"
-                  className="
-                    h-9 rounded-lg border-gray-200
-                    text-xs font-semibold text-gray-600
-                    hover:border-doctorly-primary/20
-                    hover:bg-doctorly-primary/5
-                    hover:text-doctorly-primary
-                  "
-                >
-                  {t("profile")}
-                </Button>
-
-                <Button
-                  className="
-                    h-9 rounded-lg bg-doctorly-primary
-                    text-xs font-semibold text-white
-                    shadow-sm shadow-doctorly-primary/15
-                    hover:bg-doctorly-primary/90
-                  "
-                >
-                  {t("bookAppt")}
-                </Button>
-              </div>
-
-              {/* Hover line */}
-              <div className="absolute bottom-0 left-0 h-0.5 w-full origin-left scale-x-0 bg-doctorly-primary transition-transform duration-300 group-hover:scale-x-100" />
-            </motion.div>
+            </Link>
           ))}
         </div>
-
-        {/* View all */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.5 }}
-          className="mt-9 text-center"
-        >
-          <Button
-            onClick={() => router.push("/doctors")}
-            variant="outline"
-            className="
-              group h-10 rounded-xl border-gray-200
-              bg-white px-5 text-sm font-semibold
-              text-doctorly-primary
-              hover:border-doctorly-primary/20
-              hover:bg-doctorly-primary/5
-            "
-          >
-            {t("viewAll")}
-            <ArrowUpRight className="ml-1.5 size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-          </Button>
-        </motion.div>
       </div>
     </section>
   );

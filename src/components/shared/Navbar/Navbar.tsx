@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState } from "react";
@@ -6,7 +5,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { useAuth } from "@/providers/AuthProvider";
-import { useLocale, useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
 import { NavbarNotifications } from "./NavbarNotifications";
 import { getDefaultDashboardRoute, UserRole } from "@/lib/authUtils";
 import { Button } from "@/components/ui/button";
@@ -58,10 +57,12 @@ import {
 // Navigation
 // --------------------------------------------------
 const navLinks = [
-  { key: "home", href: "/", icon: HeartPulse },
-  { key: "findDoctors", href: "/doctors", icon: Search },
-  { key: "specialties", href: "/specialties", icon: Stethoscope },
-  { key: "appointments", href: "/user/appointments", icon: CalendarDays },
+  { label: "Home", href: "/", icon: HeartPulse },
+  { label: "Services", href: "/services", icon: Stethoscope },
+  { label: "Specialities", href: "/specialties", icon: Stethoscope },
+  { label: "Doctors", href: "/doctors", icon: Search },
+  { label: "About", href: "/about", icon: HeartPulse },
+  { label: "FAQ", href: "/faq", icon: CalendarDays },
 ];
 
 // --------------------------------------------------
@@ -73,7 +74,6 @@ export default function Navbar() {
   const { user, logout, isAuthenticated } = useAuth();
   
   const locale = useLocale();
-  const t = useTranslations("nav");
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const switchLanguage = () => {
@@ -110,6 +110,7 @@ export default function Navbar() {
     if (href === "/") {
       return pathname === "/";
     }
+
     return pathname === href || pathname.startsWith(`${href}/`);
   };
 
@@ -121,7 +122,7 @@ export default function Navbar() {
   // Render
   // --------------------------------------------------
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/70 bg-white/95 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 w-full border-b border-slate-100/80 bg-white/95 backdrop-blur-xl shadow-[0_2px_16px_-4px_rgba(13,21,46,0.04)]">
       {/* Main Navbar */}
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         
@@ -130,7 +131,7 @@ export default function Navbar() {
           <motion.div
             whileHover={{ scale: 1.06, rotate: -3 }}
             transition={{ type: "spring", stiffness: 400, damping: 18 }}
-            className="relative flex size-10 items-center justify-center overflow-hidden rounded-xl bg-doctorly-primary text-white shadow-lg shadow-doctorly-primary/20"
+            className="relative flex size-10 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-tr from-[#1D63ED] to-[#3B82F6] text-white shadow-md shadow-[#1D63ED]/25"
           >
             {/* animated glow */}
             <motion.div
@@ -141,17 +142,17 @@ export default function Navbar() {
             <Activity className="relative size-5" />
           </motion.div>
           <div className="flex flex-col leading-none">
-            <span className="text-lg font-extrabold tracking-tight text-doctorly-text">
+            <span className="text-lg font-extrabold tracking-tight text-[#0D152E]">
               Doctorly
             </span>
-            <span className="mt-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            <span className="mt-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-400">
               Better healthcare
             </span>
           </div>
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden h-16 items-center gap-1 md:flex">
+        <nav className="hidden h-16 items-center gap-6 md:flex lg:gap-8">
           {navLinks.map((link) => {
             const active = isActiveRoute(link.href);
             return (
@@ -159,23 +160,23 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 aria-current={active ? "page" : undefined}
-                className="relative flex h-full items-center px-3 text-sm font-medium transition-colors"
+                className="relative flex h-full items-center px-1 text-sm font-medium transition-colors"
               >
                 {active && (
                   <motion.div
                     layoutId="navbar-active"
                     transition={{ type: "spring", stiffness: 450, damping: 35 }}
-                    className="absolute inset-x-3 bottom-0 h-0.5 bg-doctorly-primary"
+                    className="absolute inset-x-0 bottom-0 h-0.75 rounded-full bg-[#1D63ED] shadow-sm shadow-[#1D63ED]/30"
                   />
                 )}
                 <span
-                  className={`relative z-10 ${
+                  className={`relative z-10 transition-colors ${
                     active
-                      ? "font-semibold text-doctorly-primary"
-                      : "text-muted-foreground hover:text-foreground"
+                      ? "font-bold text-[#1D63ED]"
+                      : "text-slate-600 hover:text-[#1D63ED]"
                   }`}
                 >
-                  {t(link.key as any)}
+                  {link.label}
                 </span>
               </Link>
             );
@@ -310,26 +311,32 @@ export default function Navbar() {
             </>
           ) : (
             <>
+              {/* Search Icon */}
+              <Link
+                href="/doctors"
+                className="flex size-9 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-blue-50/70 hover:text-[#1D63ED]"
+                aria-label="Search doctors"
+              >
+                <Search className="size-4" />
+              </Link>
+
               {/* Login */}
               <Link
                 href="/login"
-                className="flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-doctorly-primary"
+                className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-slate-700 transition-colors hover:text-[#1D63ED]"
               >
-                <LogIn className="size-4" />
-                {t("login")}
+                Login
               </Link>
-              {/* CTA */}
-              <motion.div whileHover={{ y: -2, scale: 1.015 }} whileTap={{ scale: 0.97 }}>
-                <Button
-                  asChild
-                  className="rounded-full bg-doctorly-primary px-5 font-semibold text-white shadow-lg shadow-doctorly-primary/20 transition-all hover:bg-doctorly-primary/90 hover:shadow-doctorly-primary/30"
-                >
-                  <Link href="/book" className="flex items-center gap-2">
-                    <CalendarDays className="size-4" />
-                    Book Consultation
-                  </Link>
-                </Button>
-              </motion.div>
+
+              {/* CTA Book Appointment */}
+              <Button
+                asChild
+                className="rounded-full bg-[#1D63ED] hover:bg-[#1552cc] px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-[#1D63ED]/25 transition-all hover:shadow-lg hover:shadow-[#1D63ED]/35 hover:-translate-y-0.5 active:translate-y-0"
+              >
+                <Link href="/book">
+                  Book Appointment
+                </Link>
+              </Button>
             </>
           )}
         </div>
@@ -437,7 +444,7 @@ export default function Navbar() {
                         }`}
                       >
                         <Icon className="size-5 shrink-0" />
-                        <span>{t(link.key as any)}</span>
+                        <span>{link.label}</span>
                         {active && (
                           <span className="ml-auto size-1.5 rounded-full bg-doctorly-primary" />
                         )}

@@ -8,7 +8,32 @@
 class RingtonePlayer {
   private audioCtx: AudioContext | null = null;
   private isPlaying = false;
-  private loopTimer: NodeJS.Timeout | null = null;
+  private loopTimer: ReturnType<typeof setTimeout> | null = null;
+
+  private playSoftTone(frequency: number, startTime: number, duration: number, volume = 0.12) {
+    if (!this.audioCtx || !this.isPlaying) return;
+
+    try {
+      const oscillator = this.audioCtx.createOscillator();
+      const gainNode = this.audioCtx.createGain();
+
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(frequency, startTime);
+
+      gainNode.gain.setValueAtTime(0.0001, startTime);
+      gainNode.gain.exponentialRampToValueAtTime(volume, startTime + 0.04);
+      gainNode.gain.setValueAtTime(volume, startTime + duration - 0.05);
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
+      oscillator.connect(gainNode);
+      gainNode.connect(this.audioCtx.destination);
+
+      oscillator.start(startTime);
+      oscillator.stop(startTime + duration);
+    } catch {
+      // Ignore tone generation errors when the browser context is unavailable.
+    }
+  }
 
   private initContext(): AudioContext {
     if (!this.audioCtx || this.audioCtx.state === 'closed') {
@@ -62,22 +87,23 @@ class RingtonePlayer {
     const ctx = this.initContext();
     const now = ctx.currentTime;
 
-    // Harmonic medical telemedicine chime (E5 -> G#5 -> B5 sequence)
-    this.playTonePair(659.25, 830.61, now + 0.0, 0.35); // E5 + G#5
-    this.playTonePair(830.61, 987.77, now + 0.4, 0.35); // G#5 + B5
-    this.playTonePair(659.25, 987.77, now + 0.8, 0.65); // E5 + B5 chord
+    // Messenger-inspired chime: soft, brief, and pleasant.
+    this.playSoftTone(659.25, now, 0.22, 0.09);
+    this.playSoftTone(783.99, now + 0.18, 0.24, 0.07);
+    this.playSoftTone(987.77, now + 0.38, 0.28, 0.06);
 
-    // Schedule next ring cycle in 2.8 seconds
+    // Schedule the next ring cycle.
     if (this.isPlaying) {
       this.loopTimer = setTimeout(() => {
         if (this.isPlaying) {
           this.playChimeCycle();
         }
-      }, 2800);
+      }, 2600);
     }
   }
 
   public start() {
+    if (typeof window === "undefined") return;
     if (this.isPlaying) return;
     this.isPlaying = true;
     try {
