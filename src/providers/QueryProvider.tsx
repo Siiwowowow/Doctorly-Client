@@ -10,7 +10,7 @@ import {
 import { ReactQueryStreamedHydration } from '@tanstack/react-query-next-experimental';
 
 function makeQueryClient() {
-  return new QueryClient({
+  const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
         // High-performance caching: data remains fresh for 10 mins, cached in memory for 60 mins
@@ -23,6 +23,25 @@ function makeQueryClient() {
       },
     },
   });
+
+  // Slots expire while a page is open. Poll even when Socket.IO is unavailable.
+  for (const key of [
+    "user-appointments",
+    "doctor-appointments",
+    "admin-appointments",
+    "doctor-schedules",
+    "available-schedules",
+    "doctor-available-schedules",
+  ]) {
+    queryClient.setQueryDefaults([key], {
+      staleTime: 0,
+      refetchInterval: 60_000,
+      refetchOnMount: "always",
+      refetchOnWindowFocus: "always",
+    });
+  }
+
+  return queryClient;
 }
 
 let browserQueryClient: QueryClient | undefined = undefined;

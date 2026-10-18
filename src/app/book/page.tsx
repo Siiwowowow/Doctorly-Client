@@ -73,6 +73,29 @@ export default function BookConsultationPage() {
     return () => clearTimeout(timer);
   }, [doctorId, preselectedScheduleId, isAuthenticated]);
 
+  useEffect(() => {
+    if (!doctorId || !isAuthenticated) return;
+    let disposed = false;
+    const refreshSlots = async () => {
+      try {
+        const response = await getDoctorSchedulesByDoctorId(doctorId, { isBooked: false });
+        if (disposed) return;
+        const available = response.data || [];
+        setSchedules(available);
+        setSelectedScheduleId(current =>
+          available.some(slot => slot.scheduleId === current) ? current : null
+        );
+      } catch {
+        // Keep the last successful result until the next refresh.
+      }
+    };
+    const interval = setInterval(refreshSlots, 60_000);
+    return () => {
+      disposed = true;
+      clearInterval(interval);
+    };
+  }, [doctorId, isAuthenticated]);
+
   const handleBook = async () => {
     if (!selectedScheduleId || !doctorId) return;
     setIsBooking(true);
