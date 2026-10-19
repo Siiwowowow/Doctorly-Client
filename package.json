@@ -55,7 +55,6 @@
     "tailwindcss": "^4",
     "tailwindcss-animate": "^1.0.7",
     "tsx": "^4.23.15",
-    "typescript": "^5",
-    "tsx": "^4.23.15"
+    "typescript": "^5"
   }
 }
