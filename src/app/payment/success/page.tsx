@@ -29,7 +29,7 @@ function PaymentSuccessContent() {
         const verifyRes = await verifyPaymentSession(sessionId);
         if (verifyRes?.data?.isPaid || verifyRes?.data?.appointment?.paymentStatus === PaymentStatus.PAID) {
           setVerified(true);
-          setPaymentData(verifyRes.data.payment || verifyRes.data.appointment?.payment);
+          setPaymentData(verifyRes.data.payment || verifyRes.data.appointment?.payment || { appointmentId: verifyRes.data.appointment?.id });
           setLoading(false);
           return true;
         }
@@ -119,7 +119,7 @@ function PaymentSuccessContent() {
     );
   }
 
-  const paymentId = paymentData?.id || appointmentId;
+  const paymentId = paymentData?.id || paymentData?.appointmentId || appointmentId;
 
   return (
     <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-3xl shadow-xl shadow-primary/5 border p-10 text-center animate-in fade-in zoom-in duration-500 slide-in-from-bottom-4">
@@ -141,6 +141,11 @@ function PaymentSuccessContent() {
       )}
 
       <div className="flex flex-col gap-3">
+        {paymentId && (
+          <Button asChild variant="outline" size="lg" className="w-full rounded-xl h-12">
+            <Link href={`/payment/invoice/${paymentId}`}>View Invoice</Link>
+          </Button>
+        )}
         {paymentId && (
           <InvoiceDownloadButton paymentId={paymentId} variant="outline" size="lg" className="w-full rounded-xl h-12 text-sm font-semibold border-doctorly-primary/30 text-doctorly-primary hover:bg-doctorly-primary/5">
             <FileText className="mr-2 size-4" /> Download Official Invoice

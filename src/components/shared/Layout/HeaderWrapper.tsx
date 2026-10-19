@@ -7,7 +7,7 @@ export default function HeaderWrapper({ children }: { children: React.ReactNode 
   const pathname = usePathname();
   const isDashboard = /^\/(admin|doctor|user|chat|video-call)(\/|$)/.test(pathname);
 
-  if (isDashboard) {
+  if (isDashboard || /^\/payment\/invoice(\/|$)/.test(pathname)) {
     return null;
   }
 

@@ -6,7 +6,8 @@
     "dev": "bun --bun next dev",
     "build": "bun --bun next build",
     "start": "bun --bun next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:invoice": "node --experimental-test-module-mocks --import tsx --test tests/invoiceDownload.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.0",
@@ -53,6 +54,8 @@
     "postcss": "^8.5.10",
     "tailwindcss": "^4",
     "tailwindcss-animate": "^1.0.7",
-    "typescript": "^5"
+    "tsx": "^4.23.15",
+    "typescript": "^5",
+    "tsx": "^4.23.15"
   }
 }

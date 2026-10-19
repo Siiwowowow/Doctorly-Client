@@ -6,22 +6,30 @@ const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5
 
 interface ServerFetchOptions extends RequestInit {
     params?: Record<string, unknown>;
+    baseUrl?: string;
     next?: {
         revalidate?: number | false;
         tags?: string[];
     };
 }
 
-export async function serverFetch<T>(
+export class ServerFetchError extends Error {
+    constructor(message: string, public readonly status: number) {
+        super(message);
+        this.name = "ServerFetchError";
+    }
+}
+export async function serverFetchResponse(
     endpoint: string,
     options: ServerFetchOptions = {}
-): Promise<ApiResponse<T>> {
+): Promise<Response> {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
     const sessionToken = cookieStore.get("better-auth.session_token")?.value;
     const refreshToken = cookieStore.get("refreshToken")?.value;
 
-    let url = `${BASE_API_URL}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
+    const apiBaseUrl = options.baseUrl || BASE_API_URL;
+    let url = `${apiBaseUrl}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
     if (options.params) {
         const searchParams = new URLSearchParams();
         Object.entries(options.params).forEach(([key, value]) => {
@@ -51,7 +59,7 @@ export async function serverFetch<T>(
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { params, ...fetchOptions } = options;
+    const { params, baseUrl, ...fetchOptions } = options;
 
     let res = await fetch(url, {
         ...fetchOptions,
@@ -61,7 +69,7 @@ export async function serverFetch<T>(
 
     if (res.status === 401 && refreshToken && sessionToken) {
         try {
-            const refreshRes = await fetch(`${BASE_API_URL}/auth/refresh-token`, {
+            const refreshRes = await fetch(`${apiBaseUrl}/auth/refresh-token`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -122,8 +130,12 @@ export async function serverFetch<T>(
 
     if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || `Request failed with status ${res.status}`);
+        throw new ServerFetchError(errorData.message || `Request failed with status ${res.status}`, res.status);
     }
 
-    return res.json();
+    return res;
+}
+
+export async function serverFetch<T>(endpoint: string, options: ServerFetchOptions = {}): Promise<ApiResponse<T>> {
+    return (await serverFetchResponse(endpoint, options)).json();
 }

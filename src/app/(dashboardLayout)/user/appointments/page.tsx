@@ -1,5 +1,4 @@
 /* eslint-disable react/no-unescaped-entities */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React from "react";
@@ -203,9 +202,12 @@ export default function AppointmentsPage() {
 
                       {/* Paid Invoice Logic */}
                       {apt.paymentStatus === PaymentStatus.PAID && (
-                        <InvoiceDownloadButton paymentId={(apt as any).payment?.id || apt.id} variant="outline" size="sm" className="text-xs">
-                          Download Invoice
-                        </InvoiceDownloadButton>
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm" className="text-xs" asChild><Link href={`/payment/invoice/${apt.id}`}>View Invoice</Link></Button>
+                          <InvoiceDownloadButton paymentId={apt.id} variant="outline" size="sm" className="text-xs">
+                            Download Invoice
+                          </InvoiceDownloadButton>
+                        </div>
                       )}
                       
                       {/* Join Video Call logic - when ringing or when PAID & (SCHEDULED or INPROGRESS) */}

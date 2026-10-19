@@ -136,6 +136,11 @@ export default function PaymentsPage() {
 
                   {/* Actions */}
                   <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                    {payment.status === PaymentStatus.PAID && (
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href={`/payment/invoice/${payment.id}`}>View Invoice</Link>
+                      </Button>
+                    )}
                     {payment.appointmentId && (
                       <Button variant="outline" size="icon" asChild title="View Appointment">
                         <Link href={`/user/appointments/${payment.appointmentId}`}>

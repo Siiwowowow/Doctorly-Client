@@ -3,6 +3,7 @@
 // src/services/payment.services.ts
 import { ApiResponse } from "@/types/api.types";
 import { serverFetch } from "@/lib/serverFetch";
+import { PaymentInvoice } from "@/types/invoice.types";
 
 export async function createCheckoutSession(appointmentId: string): Promise<ApiResponse<{ paymentUrl: string; sessionId: string }>> {
     return await serverFetch<{ paymentUrl: string; sessionId: string }>("/payments/create-checkout-session", {
@@ -31,6 +32,9 @@ export async function getAllPaymentsAdmin(params?: Record<string, unknown>): Pro
     return await serverFetch<any[]>("/payments/my-payments", { params });
 }
 
-export async function getPaymentInvoice(paymentId: string): Promise<ApiResponse<any>> {
-    return await serverFetch<any>(`/payments/invoice/${paymentId}`);
+export async function getPaymentInvoice(paymentId: string): Promise<ApiResponse<PaymentInvoice>> {
+    return await serverFetch<PaymentInvoice>(`/payments/invoice/${encodeURIComponent(paymentId)}`, {
+        baseUrl: process.env.INVOICE_API_BASE_URL,
+        headers: { Accept: "application/json" },
+    });
 }

@@ -8,11 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { format } from "date-fns"
-import { CalendarDays, Clock, User, Phone, MapPin, Video, Pill, FileText, MessageSquare, Receipt } from "lucide-react"
+import { CalendarDays, Clock, User, Phone, MapPin, Pill, FileText, MessageSquare, Receipt } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { BackButton } from "@/components/shared/BackButton"
 import { useQuery } from "@tanstack/react-query"
+import { InvoiceDownloadButton } from "@/components/shared/InvoiceDownloadButton"
 
 export default function UserAppointmentDetailsPage() {
   const { appointmentId } = useParams()
@@ -68,7 +69,7 @@ export default function UserAppointmentDetailsPage() {
         </div>
         
         <div className="flex flex-wrap items-center gap-3">
-          <JoinCallButton appointment={appointment as any} />
+          <JoinCallButton appointment={appointment} />
         </div>
       </div>
 
@@ -221,12 +222,13 @@ export default function UserAppointmentDetailsPage() {
               </div>
               
               {appointment.paymentStatus === PaymentStatus.PAID && (
-                <div className="pt-4 border-t">
+                <div className="pt-4 border-t space-y-2">
                   <Button variant="outline" className="w-full gap-2" asChild>
                     <Link href={`/payment/invoice/${appointment.id}`}>
                       <Receipt className="h-4 w-4" /> View Invoice
                     </Link>
                   </Button>
+                  <InvoiceDownloadButton paymentId={appointment.id} size="default" className="w-full">Download Invoice</InvoiceDownloadButton>
                 </div>
               )}
             </CardContent>
