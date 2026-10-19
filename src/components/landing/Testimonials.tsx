@@ -30,13 +30,13 @@ export default function Testimonials() {
     return (
       <div
         className="
-          w-[320px] md:w-[360px]
+          w-[clamp(220px,27vw,360px)]
           shrink-0
-          mx-3
-          rounded-lg
+          mx-[clamp(4px,0.8vw,12px)]
+          rounded-[clamp(8px,0.7vw,12px)]
           border border-gray-100
           bg-white
-          p-5
+          p-[clamp(12px,1.5vw,20px)]
           shadow-[0_10px_30px_-15px_rgba(0,0,0,0.15)]
           hover:shadow-[0_15px_35px_-15px_rgba(0,0,0,0.2)]
           transition-all duration-300
@@ -44,7 +44,7 @@ export default function Testimonials() {
       >
         {/* User */}
         <div className="flex items-center gap-3">
-          <div className="relative w-12 h-12 shrink-0 overflow-hidden rounded-full border-2 border-doctorly-primary/20">
+          <div className="relative size-[clamp(36px,3.5vw,48px)] shrink-0 overflow-hidden rounded-full border-2 border-doctorly-primary/20">
             <Image
               src={testimonial.image}
               alt={testimonial.name}
@@ -56,7 +56,7 @@ export default function Testimonials() {
 
           <div className="min-w-0">
             <div className="flex items-center gap-1">
-              <h4 className="font-semibold text-gray-900 truncate">
+              <h4 className="truncate text-[clamp(10px,1.15vw,16px)] font-semibold text-gray-900">
                 {testimonial.name}, {testimonial.age}
               </h4>
 
@@ -67,7 +67,7 @@ export default function Testimonials() {
                 viewBox="0 0 12 12"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
-                className="size-3.5 shrink-0 text-doctorly-primary"
+                className="size-[clamp(10px,1vw,14px)] shrink-0 text-doctorly-primary"
               >
                 <path
                   fillRule="evenodd"
@@ -78,18 +78,18 @@ export default function Testimonials() {
               </svg>
             </div>
 
-            <p className="text-xs text-gray-500 mt-0.5">
+            <p className="mt-0.5 text-[clamp(8px,0.85vw,12px)] text-gray-500">
               {testimonial.location}
             </p>
           </div>
         </div>
 
         {/* Rating */}
-        <div className="flex items-center gap-1 mt-4">
+        <div className="mt-[clamp(10px,1.2vw,16px)] flex items-center gap-1">
           {[...Array(testimonial.rating)].map((_, index) => (
             <span
               key={index}
-              className="text-doctorly-primary text-sm"
+              className="text-[clamp(10px,1.1vw,14px)] text-doctorly-primary"
             >
               ★
             </span>
@@ -97,17 +97,17 @@ export default function Testimonials() {
         </div>
 
         {/* Review */}
-        <p className="text-sm leading-6 text-gray-700 mt-3 min-h-[72px]">
+        <p className="mt-[clamp(8px,0.9vw,12px)] min-h-[clamp(60px,5.3vw,72px)] text-[clamp(10px,1.1vw,14px)] leading-[1.55] text-gray-700">
           "{testimonial.quote}"
         </p>
 
         {/* Consultation */}
-        <div className="flex items-center justify-between gap-3 mt-5 pt-4 border-t border-gray-100">
-          <span className="text-xs text-gray-400">
+        <div className="mt-[clamp(12px,1.4vw,20px)] flex items-center justify-between gap-2 border-t border-gray-100 pt-[clamp(10px,1.2vw,16px)]">
+          <span className="text-[clamp(8px,0.85vw,12px)] text-gray-400">
             {testimonial.consultation}
           </span>
 
-          <span className="text-xs font-medium text-doctorly-primary">
+          <span className="text-[clamp(8px,0.85vw,12px)] font-medium text-doctorly-primary">
             Verified Patient
           </span>
         </div>
@@ -116,19 +116,19 @@ export default function Testimonials() {
   };
 
   return (
-    <section className="overflow-hidden bg-doctorly-bg py-16 md:py-20">
+    <section className="overflow-hidden bg-doctorly-bg py-[clamp(40px,6vw,80px)]">
       {/* Section Header */}
       <div className="container mx-auto px-4 md:px-6">
-        <div className="mx-auto mb-10 max-w-2xl text-center md:mb-12">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-doctorly-primary mb-3">
+        <div className="mx-auto mb-[clamp(24px,3.5vw,48px)] max-w-2xl text-center">
+          <p className="mb-[clamp(8px,1vw,12px)] text-[clamp(9px,1vw,14px)] font-semibold uppercase tracking-[0.2em] text-doctorly-primary">
             {t("eyebrow") || "Patient Stories"}
           </p>
 
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-doctorly-text tracking-tight">
+          <h2 className="text-[clamp(24px,3.4vw,48px)] font-bold tracking-tight text-doctorly-text">
             {t("title")}
           </h2>
 
-          <p className="mt-4 text-gray-500 text-sm md:text-base">
+          <p className="mt-[clamp(8px,1.2vw,16px)] text-[clamp(10px,1.15vw,16px)] text-gray-500">
             {t("description") ||
               "Real experiences from patients who chose Doctorly for their healthcare journey."}
           </p>
@@ -136,12 +136,12 @@ export default function Testimonials() {
       </div>
 
       {/* Marquee Area */}
-      <div className="relative space-y-5">
+      <div className="relative space-y-[clamp(12px,1.5vw,20px)]">
         {/* Left Gradient */}
-        <div className="absolute left-0 top-0 bottom-0 w-16 md:w-32 z-10 pointer-events-none bg-gradient-to-r from-doctorly-bg to-transparent" />
+        <div className="pointer-events-none absolute top-0 bottom-0 left-0 z-10 w-[clamp(40px,8vw,128px)] bg-gradient-to-r from-doctorly-bg to-transparent" />
 
         {/* Right Gradient */}
-        <div className="absolute right-0 top-0 bottom-0 w-16 md:w-32 z-10 pointer-events-none bg-gradient-to-l from-doctorly-bg to-transparent" />
+        <div className="pointer-events-none absolute top-0 right-0 bottom-0 z-10 w-[clamp(40px,8vw,128px)] bg-gradient-to-l from-doctorly-bg to-transparent" />
 
         {/* First Row */}
         <div className="overflow-hidden">
@@ -201,4 +201,3 @@ export default function Testimonials() {
     </section>
   );
 }
-

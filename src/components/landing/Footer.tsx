@@ -9,9 +9,9 @@ export default function Footer() {
   const t = useTranslations("footer");
 
   return (
-    <footer className="font-sans bg-[#061a3a] text-[#b8c7dd]">
-      <div className="mx-auto w-full max-w-[1200px] px-6 py-12 sm:px-8 lg:px-12 lg:py-14">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.35fr_0.75fr_0.9fr_1fr] lg:gap-12">
+    <footer className="relative z-0 font-sans bg-[#061a3a] text-[#b8c7dd]">
+      <div className="mx-auto w-full max-w-[1200px] px-6 pt-20 pb-12 sm:px-8 sm:pt-24 lg:px-12 lg:pt-24 lg:pb-14">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-10 lg:grid-cols-[1.35fr_0.75fr_0.9fr_1fr] lg:gap-12">
           <div>
             <Link href="/" className="inline-flex items-center gap-3 text-2xl font-extrabold text-white">
               <span className="flex size-11 items-center justify-center rounded-xl bg-[#1268e8]">

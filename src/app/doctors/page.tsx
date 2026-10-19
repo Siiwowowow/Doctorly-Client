@@ -1,8 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { 
-  Star, 
+  Star,
+  Heart,
+  Video,
   Building2, 
   Stethoscope, 
   Search, 
@@ -10,7 +13,6 @@ import {
   GraduationCap, 
   Clock, 
   Calendar, 
-  Sparkles,
   ChevronLeft,
   ChevronRight
 } from "lucide-react";
@@ -23,11 +25,14 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import DoctorFilters from "@/components/doctors/DoctorFilters";
 import { Doctor, Specialty } from "@/types/api.types";
+import Footer from "@/components/landing/Footer";
 
 export const metadata = {
   title: "Find Verified Doctors | Doctorly",
   description: "Discover and consult BMDC-verified doctors and clinical specialists across Bangladesh.",
 };
+
+export const revalidate = 60;
 
 export default async function DoctorsPage(props: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -61,28 +66,25 @@ export default async function DoctorsPage(props: {
   const totalPages = meta?.totalPage ?? Math.ceil(totalDoctors / limit);
 
   return (
-    <main className="min-h-screen bg-muted/20 pb-20 pt-8">
+    <main className="min-h-screen overflow-hidden bg-[#f5faff] pb-20 pt-0 text-slate-900">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        
-        {/* Hero / Header Section */}
-        <div className="mb-10 text-center max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-doctorly-primary/10 text-doctorly-primary text-xs font-semibold mb-3">
-            <Sparkles className="size-3.5" />
-            <span>BMDC Verified Practitioners Only</span>
-          </div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
-            Find the Right Doctor for You
-          </h1>
-          <p className="mt-3 text-base text-muted-foreground">
-            Search from our verified network of licensed healthcare specialists across Bangladesh. Book video or in-person consultations in seconds.
-          </p>
-        </div>
+        <section className="relative left-1/2 mb-8 w-screen -translate-x-1/2 overflow-hidden border-y border-white/80 bg-[#eaf7ff]">
+          <Image
+            src="/doctorly-assest/doctors-page-banner.webp"
+            alt="Doctorly expert care team"
+            width={2048}
+            height={768}
+            priority
+            sizes="(max-width: 1280px) 100vw, 1280px"
+            className="block h-auto w-full select-none"
+          />
+        </section>
 
         {/* Dynamic Filter Component */}
         <DoctorFilters specialties={specialties} />
 
         {/* Active Results Counter */}
-        <div className="mb-6 flex items-center justify-between text-xs text-muted-foreground">
+        <div className="mb-6 flex items-center justify-between text-xs text-slate-500">
           <div>
             Showing <span className="font-semibold text-foreground">{doctors.length}</span> of <span className="font-semibold text-foreground">{totalDoctors}</span> verified doctors
             {specialty && (
@@ -136,48 +138,45 @@ export default async function DoctorsPage(props: {
               return (
                 <Card 
                   key={doctor.id} 
-                  className="flex h-full flex-col overflow-hidden transition-all duration-200 hover:shadow-md hover:border-doctorly-primary/40 border-border bg-card group"
+                  className="group relative flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-slate-200/80 bg-gradient-to-b from-white to-slate-50/70 shadow-[0_12px_35px_-26px_rgba(15,61,112,0.45)] transition-all duration-300 hover:-translate-y-1 hover:border-doctorly-primary/40 hover:shadow-[0_22px_42px_-25px_rgba(29,99,237,0.35)]"
                 >
-                  <CardHeader className="p-5 pb-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <Avatar className="size-16 border-2 border-background shadow-xs shrink-0">
-                        <AvatarImage src={profileImg} alt={doctor.name} className="object-cover" />
-                        <AvatarFallback className="bg-doctorly-primary/10 text-base font-bold text-doctorly-primary">
-                          {initials}
-                        </AvatarFallback>
-                      </Avatar>
+                  <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-400 via-blue-600 to-cyan-400" />
+                  <div className="relative aspect-[1.15/1] overflow-hidden bg-gradient-to-br from-sky-50 to-blue-100">
+                    <Avatar className="size-full rounded-none border-0 shadow-none">
+                      <AvatarImage src={profileImg} alt={doctor.name} className="object-cover object-top" />
+                      <AvatarFallback className="rounded-none bg-doctorly-primary/10 text-3xl font-bold text-doctorly-primary">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="absolute right-3 top-3 flex size-8 items-center justify-center rounded-full border border-white/80 bg-white/90 text-slate-400 shadow-sm">
+                      <Heart className="size-4" />
+                    </span>
+                    <span className="absolute bottom-3 left-3 inline-flex items-center gap-1 rounded-full bg-white/95 px-2 py-1 text-[9px] font-semibold text-emerald-600 shadow-sm">
+                      <span className="size-1.5 rounded-full bg-emerald-500" />
+                      Available Today
+                    </span>
+                  </div>
 
-                      <div className="flex flex-col items-end gap-1.5">
-                        <Badge 
-                          variant="outline" 
-                          className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[10px] font-semibold px-2 py-0.5"
-                        >
-                          <ShieldCheck className="size-3 mr-1 text-emerald-500" />
-                          Verified
-                        </Badge>
-                        <div className="flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[11px] font-bold text-amber-600 dark:text-amber-400">
-                          <Star className="size-3 fill-amber-500 text-amber-500" />
-                          {Number(doctor.averageRating || 5.0).toFixed(1)}
-                        </div>
+                  <CardHeader className="p-4 pb-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <Link href={`/doctors/${doctor.id}`} className="block transition-colors group-hover:text-doctorly-primary">
+                          <CardTitle className="line-clamp-1 text-sm font-bold text-foreground sm:text-base">
+                            {doctor.name}
+                          </CardTitle>
+                        </Link>
+                        <p className="mt-0.5 line-clamp-1 text-[10px] font-semibold text-doctorly-primary sm:text-xs">
+                          {doctor.designation || primarySpecialty}
+                        </p>
                       </div>
-                    </div>
-
-                    <div className="mt-3.5 space-y-1">
-                      <Link 
-                        href={`/doctors/${doctor.id}`}
-                        className="group-hover:text-doctorly-primary transition-colors block"
-                      >
-                        <CardTitle className="line-clamp-1 text-base font-bold text-foreground">
-                          {doctor.name}
-                        </CardTitle>
-                      </Link>
-                      <p className="line-clamp-1 text-xs font-semibold text-doctorly-primary">
-                        {doctor.designation || primarySpecialty}
-                      </p>
+                      <div className="flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-600">
+                        <Star className="size-3 fill-amber-400 text-amber-400" />
+                        {Number(doctor.averageRating || 5.0).toFixed(1)}
+                      </div>
                     </div>
                   </CardHeader>
 
-                  <CardContent className="p-5 pt-0 flex-1 space-y-3">
+                  <CardContent className="flex-1 space-y-3 p-4 pt-0">
                     {/* Specialty Pill */}
                     <div className="flex flex-wrap gap-1">
                       <Badge variant="secondary" className="text-[10px] font-medium py-0">
@@ -215,24 +214,25 @@ export default async function DoctorsPage(props: {
 
                     {/* Consultation Fee */}
                     <div className="pt-2 flex items-baseline justify-between border-t border-border/50">
-                      <span className="text-[11px] text-muted-foreground">Consultation Fee</span>
+                      <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                        <Video className="size-3 text-doctorly-primary" />
+                        Video Consultation
+                      </span>
                       <span className="text-sm font-bold text-foreground font-mono">
                         ৳{doctor.appointmentFee ?? 0}
                       </span>
                     </div>
                   </CardContent>
 
-                  <CardFooter className="p-4 pt-0 gap-2 bg-transparent">
-                    <Button asChild variant="outline" size="sm" className="w-1/2 text-xs h-8.5">
-                      <Link href={`/doctors/${doctor.id}`}>
-                        Profile
+                  <CardFooter className="flex flex-col gap-2 p-4 pt-0">
+                    <Button asChild size="sm" className="h-9 w-full rounded-lg text-[11px] font-bold shadow-sm">
+                      <Link href={`/book?doctorId=${doctor.id}`}>
+                        <Calendar className="mr-1.5 size-3.5" />
+                        Book Appointment
                       </Link>
                     </Button>
-                    <Button asChild size="sm" className="w-1/2 text-xs h-8.5 gap-1 shadow-xs">
-                      <Link href={`/book?doctorId=${doctor.id}`}>
-                        <Calendar className="size-3" />
-                        Book
-                      </Link>
+                    <Button asChild variant="outline" size="sm" className="h-8 w-full rounded-lg border-slate-200 text-[10px] font-semibold">
+                      <Link href={`/doctors/${doctor.id}`}>View Profile</Link>
                     </Button>
                   </CardFooter>
                 </Card>
@@ -240,6 +240,39 @@ export default async function DoctorsPage(props: {
             })}
           </div>
         )}
+
+        <section className="mt-10 overflow-hidden rounded-[1.75rem] border border-sky-100 bg-gradient-to-r from-[#e5f6ff] via-white to-[#dff4ff]">
+          <div className="grid items-stretch md:grid-cols-[0.9fr_1.1fr]">
+            <div className="relative min-h-[190px] overflow-hidden bg-sky-100 sm:min-h-[230px]">
+              <Image
+                src="/doctorly-assest/bangladeshi-doctor-consultation.webp"
+                alt="Doctorly doctors caring for patients"
+                fill
+                sizes="(max-width: 768px) 100vw, 40vw"
+                className="object-cover object-center"
+              />
+            </div>
+            <div className="flex flex-col justify-center p-6 sm:p-8 lg:p-10">
+              <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-doctorly-primary">
+                Doctorly Care Network
+              </span>
+              <h2 className="mt-2 max-w-lg text-2xl font-black leading-tight tracking-[-0.03em] text-slate-900 sm:text-3xl">
+                Join 500,000+ patients who trust Doctorly
+              </h2>
+              <p className="mt-2 max-w-xl text-xs leading-relaxed text-slate-600 sm:text-sm">
+                Find verified specialists, get personalized care, and take your next confident step toward better health.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-[10px] font-semibold text-slate-600 sm:text-xs">
+                <span className="inline-flex items-center gap-1.5"><ShieldCheck className="size-3.5 text-emerald-500" /> Verified doctors</span>
+                <span className="inline-flex items-center gap-1.5"><ShieldCheck className="size-3.5 text-emerald-500" /> Secure consultations</span>
+              </div>
+              <Link href="/book" className="mt-5 inline-flex w-fit items-center gap-2 rounded-lg bg-doctorly-primary px-5 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-blue-700">
+                Book Appointment
+                <Calendar className="size-3.5" />
+              </Link>
+            </div>
+          </div>
+        </section>
 
         {/* Pagination Navigation */}
         {totalPages > 1 && (
@@ -279,6 +312,7 @@ export default async function DoctorsPage(props: {
         )}
 
       </div>
+      <Footer />
     </main>
   );
 }

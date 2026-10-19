@@ -12,8 +12,10 @@ const nextConfig: NextConfig = {
   },
   images: {
     formats: ["image/avif", "image/webp"],
-    qualities: [75, 85],
-    minimumCacheTTL: 86400, // 24 hours
+    qualities: [70, 75, 80, 85, 90],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 31536000, // 1 year edge cache
     remotePatterns: [
       {
         protocol: "https",
@@ -45,4 +47,3 @@ const nextConfig: NextConfig = {
 };
 
 export default withNextIntl(nextConfig);
-

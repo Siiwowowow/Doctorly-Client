@@ -8,6 +8,7 @@ export async function getAllDoctors(queryParams?: Record<string, any>): Promise<
     return await serverFetch<Doctor[]>("/doctors", {
         params: queryParams,
         next: { revalidate: 60, tags: ["doctors"] },
+        includeCookies: false,
     });
 }
 

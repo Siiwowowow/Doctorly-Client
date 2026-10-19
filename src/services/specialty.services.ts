@@ -7,7 +7,7 @@ const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5
 
 export async function getAllSpecialties(): Promise<ApiResponse<Specialty[]>> {
     const res = await fetch(`${BASE_API_URL}/specialties`, {
-        next: { revalidate: 3600 },
+        next: { revalidate: 3600, tags: ["specialties"] },
     });
 
     if (!res.ok) {

@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/sheet";
 import {
   Activity,
+  BookOpen,
   MessageSquare,
   Clock,
   CalendarDays,
@@ -61,8 +62,8 @@ const navLinks = [
   { label: "Services", href: "/services", icon: Stethoscope },
   { label: "Specialities", href: "/specialties", icon: Stethoscope },
   { label: "Doctors", href: "/doctors", icon: Search },
-  { label: "About", href: "/about", icon: HeartPulse },
-  { label: "FAQ", href: "/faq", icon: CalendarDays },
+  { label: "Blog", href: "/blog", icon: BookOpen },
+  { label: "About", href: "/about", icon: HeartPulse, hasDropdown: true },
 ];
 
 // --------------------------------------------------
@@ -152,7 +153,7 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden h-16 items-center gap-6 md:flex lg:gap-8">
+        <nav className="hidden h-16 items-center gap-1.5 lg:flex xl:gap-2">
           {navLinks.map((link) => {
             const active = isActiveRoute(link.href);
             return (
@@ -160,23 +161,19 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 aria-current={active ? "page" : undefined}
-                className="relative flex h-full items-center px-1 text-sm font-medium transition-colors"
+                className="relative flex items-center text-sm transition-all"
               >
-                {active && (
-                  <motion.div
-                    layoutId="navbar-active"
-                    transition={{ type: "spring", stiffness: 450, damping: 35 }}
-                    className="absolute inset-x-0 bottom-0 h-0.75 rounded-full bg-[#1D63ED] shadow-sm shadow-[#1D63ED]/30"
-                  />
-                )}
                 <span
-                  className={`relative z-10 transition-colors ${
+                  className={`inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full text-sm transition-all duration-200 ${
                     active
-                      ? "font-bold text-[#1D63ED]"
-                      : "text-slate-600 hover:text-[#1D63ED]"
+                      ? "font-bold text-[#0D8BF2] bg-[#E8F3FC] shadow-xs"
+                      : "font-medium text-slate-600 hover:text-[#0D8BF2] hover:bg-slate-50"
                   }`}
                 >
-                  {link.label}
+                  <span>{link.label}</span>
+                  {link.hasDropdown && (
+                    <ChevronDown className="size-3.5 text-slate-400 -mr-0.5" />
+                  )}
                 </span>
               </Link>
             );
@@ -184,7 +181,7 @@ export default function Navbar() {
         </nav>
 
         {/* Desktop Right Side */}
-        <div className="hidden items-center gap-2 md:flex">
+        <div className="hidden items-center gap-2 lg:flex">
           <button
             onClick={switchLanguage}
             className="flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-doctorly-primary"
@@ -342,7 +339,7 @@ export default function Navbar() {
         </div>
 
         {/* Mobile */}
-        <div className="flex items-center gap-2 md:hidden">
+        <div className="flex items-center gap-2 lg:hidden">
           <button
             onClick={switchLanguage}
             className="flex h-9 items-center justify-center rounded-full border border-border/70 px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"

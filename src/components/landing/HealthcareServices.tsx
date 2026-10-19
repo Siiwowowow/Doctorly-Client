@@ -8,7 +8,6 @@ import { useLocale, useTranslations } from "next-intl";
 export default function HealthcareServices() {
   const t = useTranslations("services");
   const locale = useLocale();
-
   const services = [
     {
       title: t("srv1Title"),
@@ -91,15 +90,43 @@ export default function HealthcareServices() {
     },
   ];
 
+  const renderServiceCard = (service: (typeof services)[number]) => (
+    <Link
+      key={service.title}
+      href={service.href}
+      className="group flex min-h-[clamp(100px,24vw,250px)] min-w-0 w-full flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 p-[clamp(6px,1.4vw,20px)] shadow-[0_4px_18px_-4px_rgba(13,139,242,0.08)] backdrop-blur-xs transition-all duration-300 hover:-translate-y-1 hover:border-[#0d8bf2] hover:bg-white hover:shadow-[0_12px_28px_-6px_rgba(13,139,242,0.2)]"
+    >
+      <div className="flex w-full flex-col items-center text-center">
+        <div className={`flex size-[clamp(24px,4.8vw,64px)] items-center justify-center rounded-full ${service.haloBg} shadow-xs transition-transform duration-300 group-hover:scale-105 [&>svg]:size-[clamp(12px,2.4vw,32px)]`}>
+          {service.icon}
+        </div>
+
+        <h3 style={{ color: "#000000" }} className="mt-[clamp(5px,1.2vw,16px)] w-full break-words font-sans text-[clamp(8px,1.3vw,17px)] font-bold leading-tight text-black!">
+          {service.title}
+        </h3>
+
+        <p className="mt-[clamp(3px,0.6vw,8px)] w-full max-w-[170px] break-words font-sans text-[clamp(7px,1vw,13px)] font-medium leading-snug text-[#0d8bf2]">
+          {service.desc}
+        </p>
+      </div>
+
+      <div className="mt-4 flex w-full justify-start pt-1">
+        <span className="flex size-[clamp(20px,2.3vw,30px)] items-center justify-center rounded-full border border-[#DCEAF8] bg-white text-[#0d8bf2] shadow-xs transition-all duration-300 group-hover:border-[#0d8bf2] group-hover:bg-[#0d8bf2] group-hover:text-white group-hover:shadow-[0_4px_12px_rgba(13,139,242,0.3)]">
+          <ArrowRight className="size-[clamp(9px,1.1vw,14px)] transition-transform duration-300 group-hover:translate-x-0.5" />
+        </span>
+      </div>
+    </Link>
+  );
+
   return (
-    <section id="services" className="font-sans relative overflow-hidden py-8 sm:py-10 lg:py-12 border-b border-sky-100/60">
+    <section id="services" className="relative overflow-hidden border-b border-sky-100/60 py-[clamp(16px,3vw,48px)] font-sans">
       {/* Rich Healthcare Brand Background from doctorly-assest */}
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <Image
-          src="/doctorly-assest/bg-7.png"
+          src="/doctorly-assest/bg-7.webp"
           alt="Healthcare background"
           fill
-          priority
+          loading="lazy"
           sizes="100vw"
           className="object-cover object-right-top opacity-60 mix-blend-multiply"
         />
@@ -108,19 +135,19 @@ export default function HealthcareServices() {
       </div>
 
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Top Header Section - Compact & Tight */}
-        <div className="mb-5 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-end sm:justify-between">
-          <div className="max-w-2xl">
+        {/* Top Header Section */}
+        <div className="mb-[clamp(12px,2vw,24px)] flex items-end justify-between gap-[clamp(4px,1vw,12px)]">
+          <div className="min-w-0 max-w-2xl">
             {/* Pill Badge: Cloud Icon + OUR SERVICES */}
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-[#0d8bf2]/25 bg-white/90 px-3 py-0.5 text-xs font-bold tracking-wider text-[#0d8bf2] uppercase shadow-xs backdrop-blur-xs">
-              <svg className="size-3.5 fill-[#0d8bf2] shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+            <div className="inline-flex items-center gap-1 rounded-full border border-[#0d8bf2]/25 bg-white/90 px-1.5 py-0.5 text-[6px] font-bold tracking-wider text-[#0d8bf2] uppercase shadow-xs backdrop-blur-xs sm:gap-1.5 sm:px-2 sm:text-[8px] lg:px-3 lg:text-xs">
+              <svg className="size-2 shrink-0 fill-[#0d8bf2] sm:size-2.5 lg:size-3.5" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z" />
               </svg>
               <span>{t("eyebrow")}</span>
             </div>
 
             {/* Heading: Black and Blue (#0d8bf2) mixed together - Sleek & punchy */}
-            <h2 className="mt-2 font-sans text-xl sm:text-2xl lg:text-[28px] font-extrabold leading-tight tracking-tight">
+            <h2 className="mt-1 whitespace-nowrap font-sans text-[clamp(0.5rem,2vw,1.75rem)] leading-tight font-extrabold tracking-tight sm:mt-1.5 lg:mt-2">
               {locale === "bn" ? (
                 <>
                   <span className="text-black">আপনার হাতের মুঠোয়</span>{" "}
@@ -135,63 +162,26 @@ export default function HealthcareServices() {
             </h2>
 
             {/* Subtitle */}
-            <p className="mt-1 font-sans text-xs sm:text-sm leading-relaxed text-slate-600 font-normal">
+            <p className="mt-0.5 whitespace-nowrap font-sans text-[6px] leading-relaxed font-normal text-slate-600 sm:text-[8px] md:text-[10px] lg:mt-1 lg:text-sm">
               {t("subtitle")}
             </p>
           </div>
 
-          {/* View All Services Link: Blue text with light blue circular arrow */}
-          <Link
-            href="/services"
-            className="group inline-flex w-fit items-center gap-2 font-sans text-xs sm:text-sm font-bold text-[#0d8bf2] transition-colors hover:text-[#0b78d1]"
-          >
-            <span>{t("viewAll")}</span>
-            <span className="flex size-7 items-center justify-center rounded-full bg-white text-[#0d8bf2] border border-[#0d8bf2]/20 shadow-xs transition-all duration-300 group-hover:bg-[#0d8bf2] group-hover:text-white group-hover:translate-x-0.5 group-hover:shadow-[0_4px_12px_rgba(13,139,242,0.3)]">
-              <ArrowRight className="size-3.5" />
-            </span>
-          </Link>
+          <div className="flex shrink-0 items-center">
+            <Link
+              href="/services"
+              className="group inline-flex w-fit items-center gap-[clamp(3px,0.6vw,8px)] whitespace-nowrap font-sans text-[clamp(6px,0.95vw,14px)] font-bold text-[#0d8bf2] transition-colors hover:text-[#0b78d1]"
+            >
+              <span>{t("viewAll")}</span>
+              <span className="flex size-[clamp(16px,2.1vw,28px)] items-center justify-center rounded-full border border-[#0d8bf2]/20 bg-white text-[#0d8bf2] shadow-xs transition-all duration-300 group-hover:translate-x-0.5 group-hover:bg-[#0d8bf2] group-hover:text-white group-hover:shadow-[0_4px_12px_rgba(13,139,242,0.3)]">
+                <ArrowRight className="size-[clamp(8px,1vw,14px)]" />
+              </span>
+            </Link>
+          </div>
         </div>
 
-        {/* 5 Service Cards Grid - Compact height & reduced gap */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 lg:gap-3.5">
-          {services.map((service) => {
-            return (
-              <Link
-                key={service.title}
-                href={service.href}
-                className="group flex min-h-[220px] sm:min-h-[235px] flex-col justify-between rounded-2xl border border-white/90 bg-white/90 p-4 sm:p-5 shadow-[0_4px_18px_-4px_rgba(13,139,242,0.08)] backdrop-blur-xs transition-all duration-300 hover:-translate-y-1 hover:border-[#0d8bf2] hover:bg-white hover:shadow-[0_12px_28px_-6px_rgba(13,139,242,0.2)]"
-              >
-                <div>
-                  {/* Icon Halo: Soft pastel background, NO black */}
-                  <div
-                    className={`flex size-11 sm:size-12 items-center justify-center rounded-xl ${service.haloBg} shadow-xs transition-transform duration-300 group-hover:scale-105`}
-                  >
-                    {service.icon}
-                  </div>
-
-                  {/* Title: Solid Black */}
-                  <h3
-                    style={{ color: "#000000" }}
-                    className="mt-3.5 sm:mt-4 font-sans text-[16px] sm:text-[17px] font-bold leading-tight text-black!"
-                  >
-                    {service.title}
-                  </h3>
-
-                  {/* Description: Clean #0d8bf2 Blue text */}
-                  <p className="mt-1.5 font-sans text-[12px] sm:text-[13px] font-medium leading-snug text-[#0d8bf2]">
-                    {service.desc}
-                  </p>
-                </div>
-
-                {/* Bottom Circular Arrow Button - Sleek & Compact */}
-                <div className="mt-3 pt-1">
-                  <span className="flex size-7.5 items-center justify-center rounded-full border border-[#DCEAF8] bg-white text-[#0d8bf2] shadow-xs transition-all duration-300 group-hover:border-[#0d8bf2] group-hover:bg-[#0d8bf2] group-hover:text-white group-hover:shadow-[0_4px_12px_rgba(13,139,242,0.3)]">
-                    <ArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
-                  </span>
-                </div>
-              </Link>
-            );
-          })}
+        <div className="grid grid-cols-5 gap-[clamp(3px,1vw,14px)]">
+          {services.map(renderServiceCard)}
         </div>
       </div>
     </section>

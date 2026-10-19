@@ -1,12 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 export default function Specialties() {
   const t = useTranslations("specialties");
   const locale = useLocale();
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const specialties = [
     {
@@ -140,11 +142,39 @@ export default function Specialties() {
     },
   ];
 
+  const renderSpecialtyCard = (spec: (typeof specialties)[number]) => (
+    <Link
+      key={spec.id}
+      href={spec.href}
+      className="group flex min-h-[clamp(210px,30vw,250px)] flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-[clamp(12px,1.4vw,20px)] shadow-[0_4px_18px_-4px_rgba(13,139,242,0.08)] backdrop-blur-xs transition-all duration-300 hover:-translate-y-1 hover:border-[#0d8bf2] hover:shadow-[0_12px_28px_-6px_rgba(13,139,242,0.2)]"
+    >
+      <div className="flex w-full flex-col items-center text-center">
+        <div className={`flex size-[clamp(48px,4.8vw,64px)] items-center justify-center rounded-full ${spec.haloBg} shadow-xs transition-transform duration-300 group-hover:scale-108`}>
+          {spec.icon}
+        </div>
+
+        <h3 style={{ color: "#000000" }} className="mt-[clamp(12px,1.2vw,16px)] font-sans text-[clamp(15px,1.3vw,17px)] font-bold leading-tight text-black!">
+          {spec.name}
+        </h3>
+
+        <p className="mt-[clamp(6px,0.6vw,8px)] max-w-[170px] font-sans text-[clamp(11px,1vw,13px)] font-medium leading-snug text-[#0d8bf2]">
+          {spec.desc}
+        </p>
+      </div>
+
+      <div className="mt-4 flex w-full justify-start pt-1">
+        <span className="flex size-[clamp(28px,2.3vw,30px)] items-center justify-center rounded-full border border-[#DCEAF8] bg-white text-[#0d8bf2] shadow-xs transition-all duration-300 group-hover:border-[#0d8bf2] group-hover:bg-[#0d8bf2] group-hover:text-white group-hover:shadow-[0_4px_12px_rgba(13,139,242,0.3)]">
+          <ArrowRight className="size-[clamp(12px,1.1vw,14px)] transition-transform duration-300 group-hover:translate-x-0.5" />
+        </span>
+      </div>
+    </Link>
+  );
+
   return (
     <section id="specialties" className="font-sans relative w-full py-8 sm:py-10 lg:py-12">
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Top Header Section - Compact & Sleek */}
-        <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mb-6 flex items-end justify-between gap-2 sm:mb-8 sm:gap-3">
           <div className="max-w-2xl">
             {/* Pill Badge: Dot + OUR SPECIALTIES */}
             <div className="inline-flex items-center gap-1.5 rounded-full border border-[#0d8bf2]/25 bg-white px-3 py-0.5 text-xs font-bold tracking-wider text-[#0d8bf2] uppercase shadow-xs">
@@ -185,45 +215,39 @@ export default function Specialties() {
           </Link>
         </div>
 
-        {/* 5 Specialty Cards Grid - Standalone Cards without outer container */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 lg:gap-3.5">
-          {specialties.map((spec) => (
-            <Link
-              key={spec.id}
-              href={spec.href}
-              className="group flex min-h-[230px] sm:min-h-[250px] flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_4px_18px_-4px_rgba(13,139,242,0.08)] backdrop-blur-xs transition-all duration-300 hover:-translate-y-1 hover:border-[#0d8bf2] hover:shadow-[0_12px_28px_-6px_rgba(13,139,242,0.2)]"
+        {/* Desktop: show every specialty together */}
+        <div className="hidden gap-3.5 lg:grid lg:grid-cols-5">
+          {specialties.map(renderSpecialtyCard)}
+        </div>
+
+        {/* Small and medium screens: two cards with controls below */}
+        <div className="lg:hidden">
+          <div className="grid grid-cols-2 gap-3">
+            {renderSpecialtyCard(specialties[activeIndex])}
+            {renderSpecialtyCard(specialties[(activeIndex + 1) % specialties.length])}
+          </div>
+
+          <div className="mt-4 flex items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => setActiveIndex((index) => (index - 1 + specialties.length) % specialties.length)}
+              aria-label="Previous specialty"
+              className="flex size-9 items-center justify-center rounded-full border border-[#0d8bf2]/20 bg-white text-[#0d8bf2] shadow-sm transition hover:bg-[#0d8bf2] hover:text-white"
             >
-              {/* Top Content (Centered like the reference image) */}
-              <div className="flex w-full flex-col items-center text-center">
-                {/* Icon Halo */}
-                <div
-                  className={`flex size-14 sm:size-16 items-center justify-center rounded-full ${spec.haloBg} shadow-xs transition-transform duration-300 group-hover:scale-108`}
-                >
-                  {spec.icon}
-                </div>
-
-                {/* Title: Solid Black */}
-                <h3
-                  style={{ color: "#000000" }}
-                  className="mt-3.5 sm:mt-4 font-sans text-[16px] sm:text-[17px] font-bold leading-tight text-black!"
-                >
-                  {spec.name}
-                </h3>
-
-                {/* Description: Clean #0d8bf2 Blue text */}
-                <p className="mt-1.5 font-sans text-[12px] sm:text-[13px] font-medium leading-snug text-[#0d8bf2] max-w-[170px]">
-                  {spec.desc}
-                </p>
-              </div>
-
-              {/* Bottom Action: Circular Arrow Button on Bottom-Left */}
-              <div className="mt-4 pt-1 w-full flex justify-start">
-                <span className="flex size-7.5 items-center justify-center rounded-full border border-[#DCEAF8] bg-white text-[#0d8bf2] shadow-xs transition-all duration-300 group-hover:border-[#0d8bf2] group-hover:bg-[#0d8bf2] group-hover:text-white group-hover:shadow-[0_4px_12px_rgba(13,139,242,0.3)]">
-                  <ArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
-                </span>
-              </div>
-            </Link>
-          ))}
+              <ArrowLeft className="size-4" />
+            </button>
+            <span className="min-w-12 text-center text-xs font-semibold text-slate-500">
+              {activeIndex + 1} / {specialties.length}
+            </span>
+            <button
+              type="button"
+              onClick={() => setActiveIndex((index) => (index + 1) % specialties.length)}
+              aria-label="Next specialty"
+              className="flex size-9 items-center justify-center rounded-full border border-[#0d8bf2]/20 bg-white text-[#0d8bf2] shadow-sm transition hover:bg-[#0d8bf2] hover:text-white"
+            >
+              <ArrowRight className="size-4" />
+            </button>
+          </div>
         </div>
       </div>
     </section>

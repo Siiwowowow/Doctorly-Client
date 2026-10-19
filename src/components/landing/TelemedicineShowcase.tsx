@@ -14,8 +14,6 @@ import {
   ShieldCheck,
   CheckCircle2,
   FileText,
-  Clock,
-  Sparkles,
   ArrowRight,
   Stethoscope,
   Wifi,
@@ -126,7 +124,7 @@ export default function TelemedicineShowcase() {
                   <div className="flex items-center gap-2.5">
                     <div className="relative size-9 overflow-hidden rounded-full border border-white/40">
                       <Image
-                        src="/doctors/doctor2.png"
+                        src="/doctors/doctor2.webp"
                         alt="Doctor"
                         fill
                         sizes="36px"
@@ -160,10 +158,10 @@ export default function TelemedicineShowcase() {
                 {/* Doctor Main Video Stream */}
                 <div className="relative aspect-[4/3] sm:aspect-[16/10] w-full overflow-hidden bg-slate-900">
                   <Image
-                    src="/doctors/doctor2.png"
+                    src="/doctors/doctor2.webp"
                     alt="Doctor Video Consultation"
                     fill
-                    priority
+                    loading="lazy"
                     sizes="(max-width: 768px) 100vw, 600px"
                     className="object-cover object-center"
                   />
@@ -173,9 +171,10 @@ export default function TelemedicineShowcase() {
                   {/* Patient PiP (Picture in Picture) */}
                   <div className="absolute bottom-20 right-3.5 sm:bottom-22 sm:right-5 z-20 h-28 w-20 sm:h-36 sm:w-28 overflow-hidden rounded-2xl border-2 border-white/40 bg-slate-800 shadow-2xl">
                     <Image
-                      src="/doctors/doctor1.png"
+                      src="/doctors/doctor1.webp"
                       alt="Patient Camera Feed"
                       fill
+                      loading="lazy"
                       sizes="120px"
                       className="object-cover"
                     />

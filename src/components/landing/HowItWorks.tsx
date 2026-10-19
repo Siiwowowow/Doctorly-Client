@@ -42,16 +42,17 @@ export default function HowItWorks() {
   return (
     <section
       id="how-it-works"
-      className="font-sans relative overflow-hidden bg-gradient-to-r from-[#EBF9F6] via-[#F4FBFA] to-[#F1F9FD] border-y border-[#D6F5EE]/80 py-10 sm:py-12 lg:py-14"
+      className="relative overflow-hidden border-y border-[#D6F5EE]/80 bg-gradient-to-r from-[#EBF9F6] via-[#F4FBFA] to-[#F1F9FD] py-[clamp(20px,3vw,56px)] font-sans"
     >
-      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-[1440px] overflow-hidden px-0">
+        <div className="mx-auto w-[1280px] [zoom:0.25] sm:[zoom:0.5] md:[zoom:0.6] lg:[zoom:0.8] xl:[zoom:1]">
         {/* Main Content Layout: Left Phone Mockup & Right Header + 4 Steps */}
-        <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8 lg:gap-6 xl:gap-8">
+        <div className="flex h-[500px] flex-row items-center gap-8">
           {/* Left Column: Phone Mockup with Organic Mint Splash Backdrop & Handwritten Note */}
-          <div className="relative shrink-0 flex justify-center lg:w-[320px] xl:w-[350px]">
+          <div className="relative flex h-full w-[32%] shrink-0 justify-center">
             {/* Organic Watercolor Mint Splash SVG Shape Behind Phone */}
             <div className="absolute -inset-10 -z-10 flex items-center justify-center pointer-events-none">
-              <svg className="w-88 h-88 sm:w-96 sm:h-96 text-[#CEF3EB]/85" viewBox="0 0 200 200" fill="currentColor">
+              <svg className="size-[clamp(150px,28vw,384px)] text-[#CEF3EB]/85" viewBox="0 0 200 200" fill="currentColor">
                 <path
                   d="M43.3,-62.7C55.4,-54.6,64.2,-41.8,70.1,-27.5C76.1,-13.2,79.1,2.6,75.4,17.2C71.8,31.7,61.4,45,48.5,54.4C35.5,63.7,20.1,69.1,4.2,70.9C-11.7,72.7,-28.1,70.9,-41.6,62.8C-55.1,54.6,-65.7,40.1,-71.4,24.1C-77.2,8,-78.1,-9.6,-72.6,-24.5C-67.1,-39.4,-55.1,-51.7,-41.6,-59.3C-28.1,-66.9,-13,-69.8,1.4,-71.7C15.8,-73.6,31.2,-70.7,43.3,-62.7Z"
                   transform="translate(100 100)"
@@ -69,12 +70,12 @@ export default function HowItWorks() {
             <span className="absolute -bottom-2 right-12 text-[#0d8bf2] text-sm select-none">✦</span>
 
             {/* Playful Handwritten Note Above Phone */}
-            <div className="pointer-events-none absolute -top-11 left-0 sm:-top-12 sm:left-2 z-20 select-none flex items-end gap-1.5">
-              <p className="font-cursive text-2xl sm:text-[26px] font-bold text-[#00897B] -rotate-6 leading-tight whitespace-nowrap">
-                {locale === "bn" ? "আপনার স্বাস্থ্য আপনার হাতে" : "Your health\nin your hands"}
+            <div className="hidden">
+              <p className="-rotate-6 whitespace-nowrap font-cursive text-[clamp(10px,1.9vw,26px)] leading-tight font-bold text-[#00897B]">
+                {locale === "bn" ? "আপনার স্বাস্থ্য আপনার হাতে" : "Your health in your hands"}
               </p>
               {/* Cute Burst Lines Doodle \ | / */}
-              <svg className="size-6 text-[#00BCD4] -rotate-12 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <svg className="mb-2 size-[clamp(12px,1.8vw,24px)] -rotate-12 text-[#00BCD4]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <line x1="12" y1="2" x2="12" y2="7" />
                 <line x1="4.5" y1="5.5" x2="8" y2="9" />
                 <line x1="19.5" y1="5.5" x2="16" y2="9" />
@@ -82,7 +83,7 @@ export default function HowItWorks() {
             </div>
 
             {/* Realistic Smartphone Frame with Subtle Angle */}
-            <div className="relative w-64 sm:w-70 rounded-[38px] border-[7px] border-slate-900 bg-slate-900 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.25)] overflow-hidden select-none -rotate-1 sm:-rotate-2 hover:rotate-0 transition-transform duration-500">
+            <div className="relative aspect-[9/18] w-64 origin-center scale-100 rotate-[-1deg] select-none overflow-hidden rounded-[38px] border-[7px] border-slate-900 bg-slate-900 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.25)] transition-transform duration-500 hover:rotate-0">
               {/* Top Notch / Dynamic Island */}
               <div className="absolute top-2.5 left-1/2 -translate-x-1/2 h-3.5 w-24 rounded-full bg-slate-900 z-30 flex items-center justify-center gap-2">
                 <span className="size-1 rounded-full bg-slate-700" />
@@ -90,9 +91,9 @@ export default function HowItWorks() {
               </div>
 
               {/* Screen Content */}
-              <div className="bg-white">
+              <div className="flex h-full flex-col overflow-hidden rounded-[31px] bg-white">
                 {/* Status Bar */}
-                <div className="flex items-center justify-between px-6 pt-2 pb-1 text-[10px] font-semibold text-slate-800">
+                <div className="flex flex-none items-center justify-between px-6 pt-2 pb-1 text-[10px] font-semibold text-slate-800">
                   <span>9:41</span>
                   <div className="flex items-center gap-1.5 text-slate-700">
                     <span className="text-[10px]">5G</span>
@@ -101,14 +102,14 @@ export default function HowItWorks() {
                 </div>
 
                 {/* Top Half: Video Consultation Call Screen */}
-                <div className="relative h-56 w-full bg-slate-100 overflow-hidden">
+                <div className="relative min-h-0 flex-1 w-full overflow-hidden bg-slate-100">
                   <Image
-                    src="/doctors/doc-ahmed-hd.jpg"
+                    src="/doctors/doc-ahmed-hd.webp"
                     alt="Doctor Consultation"
                     fill
                     sizes="280px"
                     className="object-cover object-top"
-                    priority
+                    loading="lazy"
                   />
 
                   {/* Gradient Overlay for controls */}
@@ -152,7 +153,7 @@ export default function HowItWorks() {
                 </div>
 
                 {/* Bottom Half: App Dashboard Grid Shortcuts */}
-                <div className="p-3.5 bg-white">
+                <div className="flex-none bg-white p-3.5">
                   <div className="grid grid-cols-4 gap-2 text-center">
                     <div className="flex flex-col items-center">
                       <div className="flex size-9 items-center justify-center rounded-xl bg-blue-50 text-[#0d8bf2] shadow-xs">
@@ -201,15 +202,15 @@ export default function HowItWorks() {
           </div>
 
           {/* Right Column: Unified Header + 4 Steps Spreading out comfortably */}
-          <div className="flex-1 w-full flex flex-col justify-between">
+          <div className="flex min-w-0 flex-1 flex-col justify-between">
             {/* Top Header Section with Cursive Note on Right */}
-            <div className="relative mb-10 sm:mb-12">
+            <div className="relative mb-12">
               <div className="mx-auto max-w-2xl text-center">
                 {/* Pill Badge with Doodle Arrow to its left */}
                 <div className="inline-flex items-center gap-2">
                   {/* Left Hand-drawn Arrow Doodle pointing to Badge */}
                   <svg
-                    className="size-5 text-[#00BCD4] -rotate-12 hidden sm:block"
+                    className="size-[clamp(10px,1.5vw,20px)] -rotate-12 text-[#00BCD4]"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -229,7 +230,7 @@ export default function HowItWorks() {
                 </div>
 
                 {/* Heading: Black and Blue mixed together */}
-                <h2 className="mt-3.5 font-sans text-2xl sm:text-3xl lg:text-[34px] font-extrabold leading-tight tracking-tight">
+                <h2 className="mt-3.5 font-sans text-[34px] font-extrabold leading-tight tracking-tight">
                   {locale === "bn" ? (
                     <>
                       <span className="text-black">শুরু করুন মাত্র</span>{" "}
@@ -244,7 +245,7 @@ export default function HowItWorks() {
                 </h2>
 
                 {/* Subtitle */}
-                <p className="mt-2 font-sans text-sm leading-relaxed text-slate-600 sm:text-base font-normal">
+                <p className="mt-2 font-sans text-base leading-relaxed font-normal text-slate-600">
                   {locale === "bn" ? (
                     <>
                       <span className="font-semibold text-[#0d8bf2]">স্বাস্থ্যসেবা</span> এখন মাত্র কয়েকটি ক্লিকেই আপনার কাছে।
@@ -258,7 +259,7 @@ export default function HowItWorks() {
               </div>
 
               {/* Top Right Cursive Annotation with Hand-drawn Arrow */}
-              <div className="pointer-events-none absolute right-0 top-0 hidden select-none xl:block">
+              <div className="hidden">
                 <p className="font-cursive text-xl font-bold text-[#00897B] rotate-3 whitespace-nowrap">
                   {t("noteRight")}
                 </p>
@@ -281,7 +282,7 @@ export default function HowItWorks() {
 
             {/* 4 Connected Steps Flow (Well-organized & Horizontal Sequence) */}
             <div className="w-full">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-4 lg:gap-3 items-start relative">
+              <div className="relative grid grid-cols-4 items-start gap-3">
                 {steps.map((step, idx) => {
                   const Icon = step.icon;
                   const isLast = idx === steps.length - 1;
@@ -291,30 +292,30 @@ export default function HowItWorks() {
                       {/* Step Icon Circle with Cyan Number Badge */}
                       <div className="relative">
                         {/* Number Badge at Top-Left */}
-                        <span className="absolute -top-1.5 -left-1.5 size-7 sm:size-7.5 rounded-full bg-[#00BCD4] text-white text-xs font-black flex items-center justify-center shadow-md border-2 border-white z-20">
+                        <span className="absolute -top-1.5 -left-1.5 z-20 flex size-7.5 items-center justify-center rounded-full border-2 border-white bg-[#00BCD4] text-xs font-black text-white shadow-md">
                           {step.step}
                         </span>
 
                         {/* Soft Circular Icon Halo */}
-                        <div className="flex size-18 sm:size-20 items-center justify-center rounded-full bg-white border-2 border-[#C6F2EA] shadow-[0_4px_16px_rgba(0,188,212,0.12)] transition-transform duration-300 group-hover:scale-105 group-hover:border-[#00BCD4]">
-                          <Icon className="size-7 sm:size-7.5 text-[#00BCD4]" strokeWidth={2.2} />
+                        <div className="flex size-20 items-center justify-center rounded-full border-2 border-[#C6F2EA] bg-white shadow-[0_4px_16px_rgba(0,188,212,0.12)] transition-transform duration-300 group-hover:scale-105 group-hover:border-[#00BCD4]">
+                          <Icon className="size-7.5 text-[#00BCD4]" strokeWidth={2.2} />
                         </div>
                       </div>
 
                       {/* Step Title: Black and Blue mixed */}
-                      <h3 className="mt-4 font-sans text-base sm:text-[17px] font-bold leading-tight">
+                      <h3 className="mt-4 font-sans text-[17px] font-bold leading-tight">
                         <span className="text-black">{step.titlePart1}</span>{" "}
                         <span className="text-[#0d8bf2]">{step.titlePart2}</span>
                       </h3>
 
                       {/* Description: Well-organized, readable text */}
-                      <p className="mt-2 font-sans text-xs sm:text-[13px] leading-relaxed text-slate-500 max-w-[200px]">
+                      <p className="mt-2 max-w-[200px] font-sans text-[13px] leading-relaxed text-slate-500">
                         {step.desc}
                       </p>
 
                       {/* Connecting Arrow between steps (only on desktop between cards) */}
                       {!isLast && (
-                        <div className="hidden lg:flex absolute -right-3 top-8 text-[#00BCD4]/70 z-10">
+                        <div className="absolute top-8 -right-3 z-10 flex text-[#00BCD4]/70">
                           <ArrowRight className="size-5" />
                         </div>
                       )}
@@ -324,6 +325,7 @@ export default function HowItWorks() {
               </div>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </section>

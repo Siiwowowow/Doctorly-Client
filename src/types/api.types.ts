@@ -132,6 +132,18 @@ export interface Specialty {
     deletedAt?: string | null;
 }
 
+export interface Service {
+    id: string;
+    title: string;
+    slug: string;
+    description: string;
+    icon?: string | null;
+    isActive: boolean;
+    sortOrder: number;
+    createdAt: string;
+    updatedAt: string;
+}
+
 export interface DoctorSpecialty {
     id: string;
     doctorId: string;

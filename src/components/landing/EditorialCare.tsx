@@ -39,78 +39,68 @@ export default function EditorialCare() {
   ];
 
   return (
-    <section className="font-sans relative w-full overflow-x-clip py-8 sm:py-9 lg:py-10">
-      <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8">
+    <section className="relative w-full overflow-x-clip py-[clamp(16px,3vw,40px)] font-sans">
+      <div className="mx-auto w-full max-w-[1440px] px-[clamp(0px,3vw,40px)]">
         <div className="relative">
-          <div className="absolute -top-4 right-4 z-30 hidden rotate-2 bg-[#ffe13b] px-4 py-2 text-[11px] font-black tracking-[0.12em] text-[#09143b] uppercase shadow-[5px_5px_0_#ff5f7e] md:block">
+          <div className="absolute -top-[clamp(8px,1.2vw,16px)] right-[clamp(8px,2vw,28px)] z-30 rotate-2 bg-[#ffe13b] px-[clamp(6px,1.1vw,16px)] py-[clamp(4px,0.6vw,8px)] text-[clamp(5px,0.8vw,11px)] font-black tracking-[0.12em] text-[#09143b] uppercase shadow-[clamp(3px,0.4vw,5px)_clamp(3px,0.4vw,5px)_0_#ff5f7e]">
             {t("sticker")}
           </div>
 
-          <div className="relative min-h-[500px] overflow-hidden bg-[#dff2ff] shadow-[10px_10px_0_#78d5ff] sm:min-h-[540px] md:min-h-[320px] lg:min-h-[340px]">
+          <div className="relative h-[clamp(250px,31vw,340px)] overflow-hidden bg-[#dff2ff] shadow-[clamp(5px,0.7vw,10px)_clamp(5px,0.7vw,10px)_0_#78d5ff]">
             <Image
-              src="/doctorly-assest/banner5.png"
+              src="/doctorly-assest/banner5.webp"
               alt="A doctor having a thoughtful conversation with a patient"
               fill
-              sizes="(max-width: 768px) 100vw, 1136px"
-              className="hidden scale-x-[1.06] select-none object-cover object-center md:block"
+              loading="lazy"
+              sizes="(max-width: 1440px) 100vw, 1440px"
+              className="pointer-events-none scale-x-[1.06] select-none object-cover object-center"
             />
 
-            <div className="absolute inset-x-0 bottom-0 h-[42%] md:hidden">
-              <div className="absolute inset-0 bg-[#dff2ff]" />
-              <Image
-                src="/doctorly-assest/banner4.png"
-                alt="Doctor consulting with a patient"
-                fill
-                sizes="100vw"
-                className="relative select-none object-contain object-bottom"
-              />
-            </div>
+            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,#fff_0%,rgba(255,255,255,0.98)_37%,rgba(255,255,255,0.66)_52%,transparent_70%)]" />
 
-            <div className="pointer-events-none absolute inset-0 hidden bg-[linear-gradient(90deg,#fff_0%,rgba(255,255,255,0.98)_37%,rgba(255,255,255,0.66)_52%,transparent_70%)] md:block" />
-
-            <div className="relative z-10 max-w-xl px-5 pt-7 sm:px-8 sm:pt-9 md:max-w-[50%] md:px-8 md:py-8 lg:px-10 lg:py-9 xl:max-w-[48%] xl:px-12">
-              <div className="inline-flex items-center gap-2 bg-[#09143b] px-3 py-1.5 text-[10px] font-black tracking-[0.08em] text-white uppercase shadow-[4px_4px_0_#ff5f7e] sm:text-[11px]">
-                <span className="size-2 bg-[#ffe13b]" />
+            <div className="relative z-10 w-[48%] max-w-[650px] px-[clamp(10px,3.5vw,48px)] py-[clamp(18px,3vw,36px)]">
+              <div className="inline-flex items-center gap-[clamp(3px,0.6vw,8px)] bg-[#09143b] px-[clamp(5px,0.9vw,12px)] py-[clamp(3px,0.45vw,6px)] text-[clamp(5px,0.75vw,11px)] font-black tracking-[0.08em] text-white uppercase shadow-[clamp(2px,0.3vw,4px)_clamp(2px,0.3vw,4px)_0_#ff5f7e]">
+                <span className="size-[clamp(4px,0.55vw,8px)] bg-[#ffe13b]" />
                 {t("eyebrow")}
               </div>
 
-              <h2 className="mt-4 text-[34px] leading-[0.94] font-black tracking-[-0.045em] text-[#09143b] sm:text-[40px] md:text-[38px] lg:text-[46px] xl:text-[50px]">
+              <h2 className="mt-[clamp(6px,1.2vw,16px)] text-[clamp(18px,3.5vw,50px)] leading-[0.96] font-black tracking-[-0.045em] text-[#09143b]">
                 {t("titleLine1")}
-                <span className="mt-1 block text-[#1268e8]">{t("titleLine2")}</span>
+                <span className="mt-[clamp(2px,0.35vw,4px)] block text-[#1268e8]">{t("titleLine2")}</span>
               </h2>
 
-              <p className="mt-4 max-w-md text-[14px] leading-5 font-bold text-[#42516d] sm:text-[15px] lg:text-base">
+              <p className="mt-[clamp(6px,1.2vw,16px)] max-w-md text-[clamp(6px,1.1vw,16px)] leading-[1.35] font-bold text-[#42516d]">
                 {t("description")}
               </p>
             </div>
 
-            <div className="absolute right-3 bottom-3 z-10 flex max-w-[225px] items-center gap-2.5 bg-[#ffe13b] p-2.5 shadow-[5px_5px_0_#1268e8] sm:right-5 sm:bottom-5 md:right-5 md:bottom-5">
-              <span className="flex size-10 shrink-0 items-center justify-center bg-[#ff5f7e] text-white">
-                <HeartPulse className="size-5" aria-hidden="true" />
+            <div className="absolute right-[clamp(8px,2vw,24px)] bottom-[clamp(8px,2vw,24px)] z-10 flex w-[clamp(145px,17vw,225px)] items-center gap-[clamp(4px,0.8vw,10px)] bg-[#ffe13b] p-[clamp(5px,0.8vw,10px)] shadow-[clamp(2px,0.4vw,5px)_clamp(2px,0.4vw,5px)_0_#1268e8]">
+              <span className="flex size-[clamp(24px,3vw,40px)] shrink-0 items-center justify-center bg-[#ff5f7e] text-white">
+                <HeartPulse className="size-[clamp(12px,1.5vw,20px)]" aria-hidden="true" />
               </span>
               <span>
-                <strong className="block text-xs font-black text-[#09143b] sm:text-sm">{t("calloutTitle")}</strong>
-                <span className="mt-0.5 block text-[11px] leading-4 font-bold text-[#53617a]">{t("calloutDescription")}</span>
+                <strong className="block text-[clamp(6px,1vw,14px)] font-black text-[#09143b]">{t("calloutTitle")}</strong>
+                <span className="mt-[clamp(1px,0.15vw,2px)] block text-[clamp(5px,0.75vw,11px)] leading-[1.25] font-bold text-[#53617a]">{t("calloutDescription")}</span>
               </span>
             </div>
           </div>
 
-          <div className="relative z-20 mt-4 grid gap-3 sm:grid-cols-2 lg:-mt-6 lg:grid-cols-4 lg:px-5">
+          <div className="relative z-20 -mt-[clamp(14px,2.4vw,24px)] grid grid-cols-4 gap-[clamp(4px,0.9vw,12px)] px-[clamp(4px,1.5vw,20px)]">
             {features.map(({ icon: Icon, title, description, cardClass, iconClass }, index) => (
               <article
                 key={title}
-                className={`group relative min-h-[132px] overflow-hidden p-4 shadow-[7px_7px_0_rgba(9,20,59,0.9)] transition-transform duration-200 hover:translate-x-1 hover:translate-y-1 hover:shadow-none lg:min-h-[148px] ${cardClass}`}
+                className={`group relative min-h-[clamp(82px,10.5vw,148px)] overflow-hidden p-[clamp(5px,1.2vw,16px)] shadow-[clamp(3px,0.5vw,7px)_clamp(3px,0.5vw,7px)_0_rgba(9,20,59,0.9)] transition-transform duration-200 hover:translate-x-1 hover:translate-y-1 hover:shadow-none ${cardClass}`}
               >
-                <div className="relative z-10 flex items-start gap-3 lg:block">
-                  <span className={`flex size-11 shrink-0 items-center justify-center shadow-[3px_3px_0_rgba(9,20,59,0.28)] ${iconClass}`}>
-                    <Icon className="size-5" strokeWidth={2.6} aria-hidden="true" />
+                <div className="relative z-10 block">
+                  <span className={`flex size-[clamp(22px,3.2vw,44px)] items-center justify-center shadow-[clamp(2px,0.3vw,3px)_clamp(2px,0.3vw,3px)_0_rgba(9,20,59,0.28)] ${iconClass}`}>
+                    <Icon className="size-[clamp(11px,1.5vw,20px)]" strokeWidth={2.6} aria-hidden="true" />
                   </span>
-                  <span className="pr-4 lg:mt-3 lg:block lg:pr-0">
-                    <h3 className="text-[15px] leading-[1.05] font-black text-[#09143b]">{title}</h3>
-                    <p className="mt-1.5 text-xs leading-4 font-bold text-[#34435c]">{description}</p>
+                  <span className="mt-[clamp(3px,0.8vw,12px)] block">
+                    <h3 className="text-[clamp(6px,1.05vw,15px)] leading-[1.05] font-black text-[#09143b]">{title}</h3>
+                    <p className="mt-[clamp(2px,0.4vw,6px)] text-[clamp(4px,0.75vw,12px)] leading-[1.25] font-bold text-[#34435c]">{description}</p>
                   </span>
                 </div>
-                <span className="pointer-events-none absolute -right-1 -bottom-3 text-[58px] leading-none font-black text-[#09143b]/10" aria-hidden="true">
+                <span className="pointer-events-none absolute -right-1 -bottom-2 text-[clamp(28px,4.2vw,58px)] leading-none font-black text-[#09143b]/10" aria-hidden="true">
                   0{index + 1}
                 </span>
               </article>

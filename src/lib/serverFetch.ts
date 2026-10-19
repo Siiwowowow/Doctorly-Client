@@ -7,6 +7,7 @@ const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5
 interface ServerFetchOptions extends RequestInit {
     params?: Record<string, unknown>;
     baseUrl?: string;
+    includeCookies?: boolean;
     next?: {
         revalidate?: number | false;
         tags?: string[];
@@ -19,14 +20,15 @@ export class ServerFetchError extends Error {
         this.name = "ServerFetchError";
     }
 }
+
 export async function serverFetchResponse(
     endpoint: string,
     options: ServerFetchOptions = {}
 ): Promise<Response> {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("accessToken")?.value;
-    const sessionToken = cookieStore.get("better-auth.session_token")?.value;
-    const refreshToken = cookieStore.get("refreshToken")?.value;
+    const cookieStore = options.includeCookies === false ? null : await cookies();
+    const accessToken = cookieStore?.get("accessToken")?.value;
+    const sessionToken = cookieStore?.get("better-auth.session_token")?.value;
+    const refreshToken = cookieStore?.get("refreshToken")?.value;
 
     const apiBaseUrl = options.baseUrl || BASE_API_URL;
     let url = `${apiBaseUrl}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
@@ -59,15 +61,17 @@ export async function serverFetchResponse(
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { params, baseUrl, ...fetchOptions } = options;
+    const { params, includeCookies, baseUrl, ...fetchOptions } = options;
+
+    const requestCache = options.cache ?? (options.next ? undefined : "no-store");
 
     let res = await fetch(url, {
         ...fetchOptions,
         headers,
-        cache: options.cache || "no-store",
+        cache: requestCache,
     });
 
-    if (res.status === 401 && refreshToken && sessionToken) {
+    if (res.status === 401 && refreshToken && sessionToken && cookieStore) {
         try {
             const refreshRes = await fetch(`${apiBaseUrl}/auth/refresh-token`, {
                 method: "POST",
@@ -120,7 +124,7 @@ export async function serverFetchResponse(
                 res = await fetch(url, {
                     ...fetchOptions,
                     headers,
-                    cache: options.cache || "no-store",
+                    cache: requestCache,
                 });
             }
         } catch (e) {
